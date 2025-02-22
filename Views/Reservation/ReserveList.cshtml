@@ -1,0 +1,881 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<ReservationListViewModel>
+
+<style>
+
+    .btnAct {
+        background: white;
+        width: 100%;
+        color: black;
+        border-radius: 0;
+    }
+
+        .btnAct:hover {
+            background: #ccc;
+        }
+
+    .calendar-modal-wrapper {
+        max-width: 80%; /* Increase width for better view */
+    }
+
+    #reservationCalendar {
+        width: 100%;
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-modal-wrapper .btn-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 1.5rem;
+        color: #000;
+        cursor: pointer;
+        z-index: 9999;
+    }
+
+    .calendar-modal-wrapper .fc-event {
+        cursor: pointer;
+    }
+
+    .fc-tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        pointer-events: none;
+        z-index: 9999;
+        font-size: 12px;
+        text-align: left;
+    }
+
+
+    /* Scoped to the calendar modal */
+    .calendar-modal-wrapper .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        outline: 0;
+        background-color: rgba(0, 0, 0, 0.5); /* Backdrop color */
+    }
+
+    .calendar-modal-wrapper .modal-dialog {
+        max-width: 80%; /* Adjust width */
+        margin: 1.75rem auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .calendar-modal-wrapper .modal-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.3rem;
+        outline: 0;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .calendar-modal-wrapper .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: 0.3rem;
+        border-top-right-radius: 0.3rem;
+        background-color: #f8f9fa; /* Light gray */
+    }
+
+    .calendar-modal-wrapper .modal-title {
+        margin: 0;
+        line-height: 1.5;
+        font-size: 1.25rem;
+    }
+
+    .calendar-modal-wrapper .btn-close {
+        padding: 0.5rem;
+        border: none;
+        background: transparent;
+        font-size: 1.5rem;
+        color: #000;
+        opacity: 0.5;
+        cursor: pointer;
+    }
+
+        .calendar-modal-wrapper .btn-close:hover {
+            opacity: 0.75;
+        }
+
+    .calendar-modal-wrapper .modal-body {
+        position: relative;
+        padding: 1.5rem;
+    }
+
+    #reservationCalendar {
+        width: 100%;
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+
+    .details-card {
+        position: absolute;
+        display: none;
+        width: 350px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 20px;
+    }
+
+        .details-card.visible {
+            display: block;
+        }
+
+        .details-card .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .details-card input,
+        .details-card button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+            .details-card button.submit-button {
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                cursor: pointer;
+            }
+
+                .details-card button.submit-button:hover {
+                    background-color: #0056b3;
+                }
+
+    #custom-container {
+        width: 18rem;
+        position: relative;
+    }
+
+    /* Styling the select element */
+    .custom-select {
+        width: 100%;
+        padding: 10px 15px;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #333;
+        font-size: 16px;
+        appearance: none; /* Remove default dropdown arrow */
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        /* Hover and focus effects */
+        .custom-select:hover,
+        .custom-select:focus {
+            border-color: var(--color-primary-6);
+            box-shadow: 0 4px 10px rgba(29, 95, 105, 0.3);
+            transform: scale(1.05);
+        }
+
+    /* Adding a custom dropdown arrow */
+    #custom-container::after {
+        content: '▼';
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none; /* Prevent arrow from being clicked */
+        font-size: 14px;
+        color: var(--color-primary-6);
+        transition: all 0.3s ease;
+    }
+
+    #custom-container:hover::after {
+        color: var(--color-primary-6);
+    }
+
+
+
+    .undo-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #f4f4f4;
+        border: 1px solid #ccc;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .undo-button {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .progress-bar-container {
+        position: relative;
+        height: 5px;
+        background: #ddd;
+        flex-grow: 1;
+        margin-left: 10px;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: #007bff;
+        animation: progress-bar-animation 5s linear forwards;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let reservationId = null;
+
+        $(document).on("click", "tr.data-row", function (e) {
+            console.log("Row clicked. Checking target...");
+
+            // Prevent modal from appearing if checkbox or status button is clicked
+            if ($(e.target).is("input[type='checkbox']") || $(e.target).is(".status-btn")) {
+                console.log("Checkbox or status button clicked. Modal will not appear.");
+                return;
+            }
+
+            // Retrieve the reservation ID and status from the clicked row
+            reservationId = $(this).data("reservationid");
+            const reservationStatus = $(this).data("status");
+            console.log(`Retrieved Reservation ID: ${reservationId}, Status: ${reservationStatus}`);
+
+            if (reservationStatus === "Pending") {
+                // Get the click position
+                const clickPosition = {
+                    top: e.pageY,
+                    left: e.pageX
+                };
+
+                // Display the modal beside the click position
+                const modal = $("#reservationActionModel");
+                modal.css({
+                    display: "block",
+                    position: "absolute",
+                    top: clickPosition.top + "px",
+                    left: clickPosition.left + 10 + "px" // Offset slightly to the right of the click
+                });
+            } else {
+                Swal.fire({
+                    title: 'Action Not Allowed',
+                    text: 'This reservation is not allowed to modify.',
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+
+        // Close the modal if clicked outside
+        $(document).on("click", function (e) {
+            const modal = $("#reservationActionModel");
+            if (
+                !$(e.target).closest("#reservationActionModel").length && // Click is not inside the modal
+                !$(e.target).closest("tr.data-row").length // Click is not on a data row
+            ) {
+                console.log("Clicked outside the modal or row. Hiding modal.");
+                modal.css("display", "none");
+            }
+        });
+
+        $(document).on("click", "#modifyReservation", function () {
+            if (!reservationId) {
+                console.error("No reservation ID found.");
+                return;
+            }
+
+            console.log(`Setting Reservation ID for update: ${reservationId}`);
+
+            // Create a form dynamically to submit the reservation ID
+            const form = $("<form>", {
+                method: "post",
+                action: "/Reservation/SetReservationForUpdate",
+            }).append(
+                $("<input>", {
+                    type: "hidden",
+                    name: "reservationId",
+                    value: reservationId,
+                })
+            );
+
+            $("body").append(form);
+            form.submit();
+        });
+
+        // Handle the "Close" button click
+        $(document).on("click", "#closeReservationActionCard", function () {
+            console.log("Closing modal.");
+            $("#reservationActionModel").css("display", "none");
+        });
+
+
+
+
+        $(document).on('click', '#viewReservationSchedule', function () {
+        console.log('View Reservation Schedule button clicked.');
+
+        var calendar; // Declare the calendar variable
+
+        $('#reservationScheduleModal').on('shown.bs.modal', function () {
+            console.log('Modal is shown.');
+
+            if (!calendar) {
+                console.log('Initializing calendar...');
+                var calendarEl = document.getElementById('reservationCalendar');
+
+                if (!calendarEl) {
+                    console.error('Calendar element not found!');
+                    return;
+                }
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        console.log('Fetching events from server...');
+                        console.log('Start Date:', fetchInfo.startStr, 'End Date:', fetchInfo.endStr);
+
+                        $.ajax({
+                            url: '/Reservation/GetReservationSchedule',
+                            data: {
+                                startDate: fetchInfo.startStr,
+                                endDate: fetchInfo.endStr
+                            },
+                            success: function (data) {
+                                console.log('Events fetched successfully:', data);
+                                successCallback(data);
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Failed to fetch events:', error);
+                                failureCallback();
+                            }
+                        });
+                    },
+                    eventMouseEnter: function (info) {
+                        var user = info.event.extendedProps.user;
+                        var tooltip = `<div class="fc-tooltip" style="top:${info.jsEvent.pageY}px; left:${info.jsEvent.pageX}px;">
+                            <strong>User:</strong> ${user.name} <br>
+                            <strong>Email:</strong> ${user.email}
+                        </div>`;
+                        $('body').append(tooltip);
+                    },
+                    eventMouseLeave: function () {
+                        $('.fc-tooltip').remove();
+                    },
+                    eventContent: function (arg) {
+                        let titleElement = document.createElement('div');
+                        titleElement.innerHTML = arg.event.title; // Only show room name
+
+                        return { domNodes: [titleElement] };
+                    }
+                });
+
+                calendar.render();
+                console.log('Calendar rendered successfully.');
+            }
+        });
+
+        $('#reservationScheduleModal').on('hidden.bs.modal', function () {
+            console.log('Modal is hidden.');
+
+            if (calendar) {
+                calendar.destroy();
+                calendar = null;
+                console.log('Calendar instance destroyed.');
+            }
+        });
+    });
+
+
+                // testing only above
+        $(document).on('click', '.status-btn', function () {
+        const button = $(this);
+        const row = button.closest('tr'); // Find the corresponding row
+        const reservationId = row.data('reservationid'); // Get the reservationId from the data attribute
+        const currentStatus = button.text().trim(); // Get the current status from the button text
+
+        // If the current status is "Completed" or "Canceled," do nothing
+        if (currentStatus === "Completed" || currentStatus === "Canceled") {
+            Swal.fire({
+                title: 'Action Not Allowed',
+                text: 'This reservation\'s payment\'s status cannot be changed.',
+                icon: 'info',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Show SweetAlert with options to change status
+        Swal.fire({
+            title: 'Update Payment Status',
+            text: `Current Status: ${currentStatus}`,
+            icon: 'question',
+            input: 'select',
+            inputOptions: {
+                Completed: 'Completed',
+                Canceled: 'Canceled'
+            },
+            inputPlaceholder: 'Select new status',
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const newStatus = result.value;
+
+                // Send the updated status to the server via AJAX
+                $.ajax({
+                    url: '/Reservation/UpdateStatus', // Adjust this URL based on your route configuration
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        id: reservationId,
+                        status: newStatus
+                    }),
+                    success: function (response) {
+                        if (response.success) {
+                            // Update the button text and style
+                            button.text(newStatus)
+                                .css('background-color', newStatus === "Completed" ? "#28a745" : "#dc3545")
+                                .css('color', 'white');
+
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'The reservation\'s status has been updated.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message || 'Failed to update payment status.',
+                                icon: 'error',
+                                confirmButtonText: 'Try Again'
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while updating the status.',
+                            icon: 'error',
+                            confirmButtonText: 'Try Again'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+
+    /////////////
+            // Handle "Select All" checkbox
+    $('#selectAll').on('change', function () {
+        const isChecked = $(this).is(':checked');
+        console.log(`Select All checkbox clicked. Checked state: ${isChecked}`); // Debug: Log Select All state
+        $('.data-row .checkbox:visible').prop('checked', isChecked); // Only select visible checkboxes
+        toggleBulkActions();
+    });
+
+    // Handle individual checkbox clicks
+    $('.data-row .checkbox').on('change', function () {
+        const allVisibleCheckboxes = $('.data-row .checkbox:visible');
+        const allChecked = allVisibleCheckboxes.length === allVisibleCheckboxes.filter(':checked').length;
+        $('#selectAll').prop('checked', allChecked);
+        console.log(`Checkbox clicked. Is all checked: ${allChecked}`); // Debug: Log state of all checkboxes
+        toggleBulkActions();
+    });
+
+    // Show or hide bulk actions
+    function toggleBulkActions() {
+        const selectedCount = $('.data-row .checkbox:checked:visible').length; // Only count visible selected checkboxes
+        console.log(`Selected Count: ${selectedCount}`); // Debug: Log selected count
+        $('#labelItemsSelected').text(`${selectedCount} items selected`);
+        if (selectedCount > 0) {
+            $('#bulkActions').removeClass('hidden');
+        } else {
+            $('#bulkActions').addClass('hidden');
+        }
+    }
+
+    // Cancel selections
+    $('#cancelActionBtn').on('click', function () {
+        $('.data-row .checkbox:visible').prop('checked', false); // Only uncheck visible checkboxes
+        $('#selectAll').prop('checked', false);
+        console.log('Cancel button clicked. All selections cleared.'); // Debug: Log cancel action
+        toggleBulkActions();
+    });
+
+    // Bulk update status
+    $('#bulkUpdateStatus').on('click', function () {
+        console.log('Bulk update button clicked. Retrieving selected reservations...'); // Debug: Log button click
+
+        // Retrieve selected reservation IDs
+        const selectedIds = $('.data-row .checkbox:checked:visible').map(function () {
+            const reservationId = $(this).data('reservationid');
+            console.log(`Checkbox Data Attribute Retrieved: ${reservationId}`); // Debug: Log each ID retrieved
+            return reservationId;
+        }).get();
+
+        console.log(`Selected Reservation IDs: ${selectedIds}`); // Debug: Log all selected IDs
+
+        if (selectedIds.length === 0) {
+            Swal.fire({
+                title: 'Info',
+                text: 'No reservations selected for update.',
+                icon: 'info',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Update Status',
+            text: `You are about to update ${selectedIds.length} reservations.`,
+            icon: 'question',
+            input: 'select',
+            inputOptions: {
+                Completed: 'Completed',
+                Canceled: 'Canceled'
+            },
+            inputPlaceholder: 'Select new status',
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const newStatus = result.value;
+
+                // Send the update request
+                $.ajax({
+                    url: '/Reservation/UpdateStatusBulk',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ reservationIds: selectedIds, status: newStatus }),
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                // Update the status in the table dynamically without refreshing the page
+                                selectedIds.forEach(id => {
+                                    const row = $(`.data-row[data-reservationid="${id}"]`);
+                                    const button = row.find('.status-btn');
+                                    button.text(newStatus)
+                                        .css('background-color', newStatus === "Completed" ? "#28a745" : "#dc3545")
+                                        .css('color', 'white');
+                                    row.find('.checkbox').remove(); // Remove checkbox as it's no longer "Pending"
+                                });
+                                toggleBulkActions(); // Hide bulk actions if no rows are selectable
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'Try Again'
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while updating the statuses.',
+                            icon: 'error',
+                            confirmButtonText: 'Try Again'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+
+    ///////////////
+
+
+
+        $(document).on("click", "th.sortable", function (e) {
+        // Prevent infinite loop by checking if the event originated from the `a` tag
+        if (e.target.tagName !== "A") {
+            // Find the `a` tag inside the clicked `th` and trigger its native click event
+            $(this).find("a#sort-link")[0].click();
+        }
+    });
+
+    });
+
+    function getHiddenFormValues() {
+        const sort = $('input[name="sort"]').val(); // Retrieve 'sort' value
+        const dir = $('input[name="dir"]').val(); // Retrieve 'dir' value
+        const page = $('input[name="page"]').val(); // Retrieve 'page' value
+        const pageSize = $('input[name="pageSize"]').val(); // Retrieve 'pageSize' value
+        const searchBar = $('input[name="searchBar"]').val(); // Retrieve 'searchBar' value
+
+        return {
+            sort: sort,
+            dir: dir,
+            page: page,
+            pageSize: pageSize,
+            searchBar: searchBar
+        };
+    }
+
+    function refreshList() {
+        const formValues = getHiddenFormValues(); // Get the hidden form values
+
+        // Use the retrieved hidden form values to refresh the table
+        $.ajax({
+            url: `Index?searchBar=${formValues.searchBar}&sort=${formValues.sort}&dir=${formValues.dir}&page=${formValues.page}&pageSize=${formValues.pageSize}`,
+            type: 'GET',
+            success: function (html) {
+                // Replace the content with the updated list
+                $('#target').html(html); // Replace #roomTableContainer with your container ID
+            },
+            error: function () {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to reload room data.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        });
+    }
+
+        $(document).on('click', '#exportToExcel', function (e) {
+        e.preventDefault(); // Prevent the default action (like refreshing)
+
+        // Debug: Confirm the click event is triggered
+        console.log("Export to Excel button clicked!");
+
+        // Get the current status filter value
+        var statusFilter = $('#statusFilter').val();
+
+        // Debug: Confirm the current status filter value
+        console.log("Current statusFilter:", statusFilter);
+
+        // Construct the export URL dynamically
+        var exportUrl = `/Reservation/ExportReservationsToExcel?statusFilter=${encodeURIComponent(statusFilter)}`;
+
+        // Debug: Check the constructed URL
+        console.log("Export URL:", exportUrl);
+
+        // Redirect to the export URL
+        window.location.href = exportUrl;
+    });
+
+</script>
+
+
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column gap-3 grow">
+        <section class="flex gap-2 items-center justify-between">
+
+            <div id="bulkActions" class="bulk-actions hidden items-center" style="-webkit-user-select: none;-ms-user-select: none;user-select: none;">
+                <i class="icon pencil-button" id="bulkUpdateStatus">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M204.2,41.8a16,16,0,0,0-22.6,0L57.1,155.6a16,16,0,0,0-3.6,7.2L35.4,215a8,8,0,0,0,10.4,10.4L74.8,201.6a16,16,0,0,0,7.2-3.6L204.2,64.4a16,16,0,0,0,0-22.6ZM92,188l-5.7,5.7-14.8-14.8L77.2,166l14.8,14.8L92,188Zm106.6-106.6-90,90-19.6-19.6,90-90a8,8,0,0,1,11.2,11.2Z"></path>
+                    </svg>
+                </i>
+                <small id="labelItemsSelected">0 items selected</small>
+                <i class="icon" id="cancelActionBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+                    </svg>
+                </i>
+            </div>
+
+            <h1 id="title" class="leading-none">Reservation</h1>
+
+            <!-- Search and Actions -->
+            <div class="flex gap-1 items-center">
+                <div style="display: flex; border: 1px solid #ccc; padding: 1%; align-items: center; justify-content: space-between;">
+                    <!-- Loader Image -->
+                    <img src="/images/loader.gif" id="loader" style="display: none; position: absolute; width: 24px; height: 24px; z-index: 999;">
+
+                    <!-- Search Form -->
+                    <form data-ajax="true"
+                          data-ajax-update="#target"
+                          data-ajax-loading="#loader"
+                          id="searchForm" style="display: flex; align-items: center; flex-grow: 1; width: 100%;">
+                        @Html.TextBox("searchBar", "", new { type = "search", autofocus = "", data_trim = "", @class = "search-bar", id = "searchBar", placeholder = "Search by Customer or Room Name...", style = "outline: none;" })
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                             viewBox="0 0 256 256" id="searchIcon">
+                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                        </svg>
+                    </form>
+                </div>
+
+
+
+                <!-- Optional button if needed -->
+                <a href="@Url.Action("CreateInfoForm")" class="button icon create-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fdfdfe"
+                         viewBox="0 0 256 256">
+                        <path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
+                    </svg>
+                </a>
+            </div>
+
+
+        </section>
+
+        <form data-ajax="true"
+              data-ajax-update="#target"
+              data-ajax-loading="#loader"
+              id="searchForm">
+
+            <div style="display:flex; gap:1rem;">
+                <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                    <label for="pageSize" style="width:15rem;">Page Size:</label>
+
+                    @Html.DropDownList("pageSize", new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "5", Value = "5" },
+                    new SelectListItem { Text = "10", Value = "10" },
+                    new SelectListItem { Text = "15", Value = "15" }
+                    }, new { id = "pageSize", @class = "form-control custom-select", onchange = "$(this.form).submit();" })
+                </div>
+                <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                    <label for="status" style="width:15rem;">Status :</label>
+                    @Html.DropDownList(
+                             "statusFilter",
+                             new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "All", Value = "", Selected = ViewBag.Status == "" },
+                    new SelectListItem { Text = "Pending", Value = "Pending", Selected = ViewBag.Status == "Pending" },
+                    new SelectListItem { Text = "Completed", Value = "Completed", Selected = ViewBag.Status == "Completed" },
+                    new SelectListItem { Text = "Canceled", Value = "Canceled", Selected = ViewBag.Status == "Canceled" }
+                    },
+                             new { id = "statusFilter", @class = "form-control custom-select", onchange = "$(this.form).submit();" }
+                             )
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-left: auto;">
+                    <button id="viewReservationSchedule" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reservationScheduleModal">
+                        View Reservation Schedule
+                    </button>
+                    <button id="exportToExcel" class="btn btn-secondary">Export to Excel</button>
+                </div>
+
+
+
+            </div>
+
+            <div class="calendar-modal-wrapper">
+                <div class="modal fade" id="reservationScheduleModal" tabindex="-1" aria-labelledby="reservationScheduleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="reservationScheduleModalLabel">Reservation Schedule</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="reservationCalendar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+
+        <section class="flex flex-column gap-2">
+            @* add right here *@
+            <div id="reservationActionModel" style="display:none; position:absolute; width:300px; background-color:white; border:1px solid #ccc; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                <button class="btnAct" id="modifyReservation">Modify Reservations</button>
+                <button class="btnAct" id="closeReservationActionCard">Close</button>
+            </div>
+            <div id="target">
+                <partial name="_ReservationList" />
+            </div>
+        </section>
+
+
+
+
+    </main>
+</div>
+
+
+@section foot {
+    <script>
+
+
+
+        let timer = null;
+
+        // Dynamically search while typing
+        $('#searchBar').on('input', function(e) {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 800);
+        });
+
+
+
+
+    </script>
+
+
+
+}
+

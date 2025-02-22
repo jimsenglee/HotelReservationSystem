@@ -1,0 +1,833 @@
+﻿@inject HotelRoomReservationDB db
+@if (User.IsInRole("Customer") || !User.Identity.IsAuthenticated)
+{
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    @* <meta name="description" content="Sona Template"> *@
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="keywords" content="Sona, unica, creative, html">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" href="/images/webcon.png">
+
+    <title>TOP TOP HOTEL</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Cabin:400,500,600,700&display=swap" rel="stylesheet">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Css Styles -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/elegant-icons.css" type="text/css">
+    <link rel="stylesheet" href="/css/flaticon.css" type="text/css">
+    <link rel="stylesheet" href="/css/owl.carousel.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/nice-select.css" type="text/css">
+    <link rel="stylesheet" href="/css/jquery-ui.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/magnific-popup.css" type="text/css">
+    <link rel="stylesheet" href="/css/slicknav.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/style.css" type="text/css" asp-append-version="true">
+        <script src="https://js.stripe.com/v3/"></script>
+        <script src="/js/jquery-3.3.1.min.js"></script>
+        <script src="/js/moment.min.js"></script> 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="/js/bootstrap.min.js"></script> 
+        <script src="/js/jquery.magnific-popup.min.js"></script> 
+        <script src="/js/jquery.nice-select.min.js"></script>
+        <script src="/js/jquery-ui.min.js"></script>
+        <script src="/js/jquery.slicknav.js"></script>
+        <script src="/js/owl.carousel.min.js"></script>
+
+    <style>
+            .subscribe-btn {
+                background-color: #007bff; /* Primary blue color */
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 20px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+                .subscribe-btn:hover {
+                    background-color: #0056b3; /* Darker blue on hover */
+                }
+
+                .subscribe-btn:active {
+                    background-color: #003f7f; /* Even darker blue when clicked */
+                }
+    </style>
+    @RenderSection("head", false)
+</head>
+<body>
+    
+
+
+    <!-- Offcanvas Menu Section Begin (Responsive element for call sidebar through handburger icon)-->
+    <div class="offcanvas-menu-overlay"></div>
+    <div class="canvas-open">
+        <i class="icon_menu"></i>
+    </div>
+    <div class="offcanvas-menu-wrapper">
+        <div class="canvas-close">
+            <i class="icon_close"></i>
+        </div>
+        <div class="search-icon  search-switch">
+            <i class="icon_search"></i>
+        </div>
+        <div class="header-configure-area">
+            <div class="language-option">
+                <img src="/images/top.png" alt="">
+                <span>EN <i class="fa fa-angle-down"></i></span>
+                <div class="flag-dropdown">
+                    <ul>
+                        <li><a href="#">Zi</a></li>
+                        <li><a href="#">Fr</a></li>
+                    </ul>
+                </div>
+            </div>
+            <a href="#" class="bk-btn">Booking Now</a>
+        </div>
+        <nav class="mainmenu mobile-menu">
+            <ul>
+                <li class="active"><a href="/Home/Index">Home</a></li>
+                <li><a href="/Rooms">Rooms</a></li>
+                <li><a href="/AboutUs">About Us</a></li>
+                <li>
+                    <a href="./pages.html">Pages</a>
+                    <ul class="dropdown">
+                        <li><a href="./room-details.html">Room Details</a></li>
+                        <li><a href="#">Deluxe Room</a></li>
+                        <li><a href="#">Family Room</a></li>
+                        <li><a href="#">Premium Room</a></li>
+                    </ul>
+                </li>
+                <li><a href="./blog.html">News</a></li>
+                <li><a href="./contact.html">Contact</a></li>
+            </ul>
+        </nav>
+        <div id="mobile-menu-wrap"></div>
+        <div class="top-social">
+            <a href="#"><i class="fa fa-facebook"></i></a>
+            <a href="#"><i class="fa fa-twitter"></i></a>
+            <a href="#"><i class="fa fa-tripadvisor"></i></a>
+            <a href="#"><i class="fa fa-instagram"></i></a>
+        </div>
+        <ul class="top-widget">
+            <li><i class="fa fa-phone"></i> (12) 345 67890</li>
+            <li><i class="fa fa-envelope"></i> info.colorlib@gmail.com</li>
+        </ul>
+    </div>
+    <!-- Offcanvas Menu Section End -->
+    @* Sidebar *@
+    <header class="header-section header-normal">
+        <div class="menu-item">
+            <div class="container" style="max-width:1600px">
+                <div class="row">
+                    <div class="col-lg-2">
+                        <div class="logo" style="padding: 15px 0 0 0;">
+                            <a href="/Home/Index">
+                                <img src="/images/top.png" alt="" width="50" height="50">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-10">
+                        <div class="nav-menu">
+                            <nav class="mainmenu">
+                                <ul>
+                                    <li class="active"><a href="/Home/Index">Home</a></li>
+                                    <li><a href="/Rooms">Rooms</a></li>
+                                    <li><a href="/AboutUs">About Us</a></li>
+                                    <li><a href="/Contact">Contact</a></li>
+                               <li><a href="/Memberships/MembershipsPage">Membership</a></li> </ul>
+                            </nav>
+                            
+                            @if (User.IsInRole("Customer")){
+                                //var photoURL = db.Customer.Find(User.Identity!.Name);
+                                <span style="color: darkgoldenrod; margin-right: 10px;">
+                                    Hi, @User.FindFirst("Names")?.Value.Split(' ')[0]
+                                </span>
+                                <div class="nav-right profile" style="margin-left:0; width:35px" onclick="window.location.replace('/Account/Profile');">
+                                    @* <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16" style="background-color:#E0E0E0; border-radius: 20px; padding: 10%;"> *@
+                                    @*     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" /> *@
+                                    @* </svg> *@ 
+                                    <img src="/images/user_photo/@User.FindFirst("Portrait")?.Value"
+                                         alt="Profile Picture"
+                                         style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                </div>
+
+                                <button onclick="window.location.replace('/Account/Logout');" class="btn-danger small-btn" style="margin-left: 10px;padding: 10px;border: none;border-radius: 5px;cursor: pointer;font-size: 15px;">
+                                    Logout
+                                </button>
+
+                                
+                                
+                            }
+                            else if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <script>
+                                    window.location.replace('/Account/AccessDenied');
+                                </script>
+                            }
+                            else
+                            {
+                                <button id="load-login" onclick="window.location.replace('/Account/Login');" class="small-btn" style="background-color: black;color:white;padding: 10px;border: none;border-radius: 5px;cursor: pointer;font-size: 15px;">Login</button>
+                            }
+                        
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    @if (TempData["FlashMessage"] != null)
+    {
+        <div class="flash animate--drop-in-fade-out">
+            <div class="flash__icon">
+                <i class="icon fa fa-check-circle-o"></i>
+            </div>
+            <p class="flash__body">@Html.Raw(TempData["FlashMessage"])</p>
+        </div>
+
+        TempData.Remove("FlashMessage");
+    }
+    
+
+   
+
+    @RenderBody()
+    @* 
+            Inject the main contentn of individual page here
+            在此处注入单个页面的主要内容 
+        *@
+
+    <footer class="footer-section">
+        <div class="container">
+            <div class="footer-text">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="ft-about">
+                            <div class="logo">
+                                <a href="#">
+                                    <img src="/images/footer-logo.png" alt="">
+                                </a>
+                            </div>
+                            <p>We inspire and reach millions of travelers<br /> across 90 local websites</p>
+                             <div class="fa-social">
+                                    <a href="https://www.facebook.com" target="_blank"><i class="fa fa-facebook"></i></a>
+                                    <a href="https://www.twitter.com" target="_blank"><i class="fa fa-twitter"></i></a>
+                                    <a href="https://www.tripadvisor.com" target="_blank"><i class="fa fa-tripadvisor"></i></a>
+                                    <a href="https://www.instagram.com" target="_blank"><i class="fa fa-instagram"></i></a>
+                                    <a href="https://www.youtube.com" target="_blank"><i class="fa fa-youtube-play"></i></a>
+                             </div> 
+                        </div>
+                    </div>
+                    <div class="col-lg-3 offset-lg-1">
+                        <div class="ft-contact">
+                            <h6>Contact Us</h6>
+                            <ul>
+                                    <li>04-899 5230</li>
+                                    <li>manager@gmail.com</li>
+                                    <li>77, Lorong Lembah Permai 3, 11200 Tanjung Bungah, Pulau Pinang</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 offset-lg-1">
+                        <div class="ft-newslatter">
+                            <h6>New latest</h6>
+                            <p>Get the latest updates and offers.</p>
+                                <button class="subscribe-btn"><a href="/Contact">Contact Us</a></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="copyright-option">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-7">
+                        <ul>
+                            <li><a href="/Contact">Contact</a></li>
+                                <li><a href="/Home/TermAndCondition">Terms of use</a></li>
+                            <li><a href="/Home/Privacy">Privacy</a></li>
+                            <li><a href="/Home/EnvironmentPolicy">Environmental Policy</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="co-text">
+                            <p>
+                                <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                                Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                                <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    @* <script src="/js/jquery-3.3.1.min.js"></script> *@
+    @* <script src="/js/bootstrap.min.js"></script> *@
+    @* <script src="/js/jquery.magnific-popup.min.js"></script> *@
+    @* <script src="/js/jquery.nice-select.min.js"></script> *@
+    @* <script src="/js/jquery-ui.min.js"></script> *@
+    @* <script src="/js/jquery.slicknav.js"></script> *@
+    @* <script src="/js/owl.carousel.min.js"></script> *@
+    <script src="/js/main.js"></script>
+    <script>
+           // Select all <li> elements with links inside the navigation menu
+    const menuItems = document.querySelectorAll('.mainmenu ul li a');
+
+    // Get the current page URL
+    const currentUrl = window.location.pathname;
+
+    menuItems.forEach(link => {
+        // Check if the href of the link matches the current URL
+        if (link.getAttribute('href') === currentUrl) {
+            // Add the 'active' class to the parent <li>
+            link.parentElement.classList.add('active');
+        } else {
+            // Remove the 'active' class from other <li> elements
+            link.parentElement.classList.remove('active');
+        }
+    });
+</script>
+
+    @RenderSection("foot", false)
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (TempData["loginSuccess"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '@Html.Raw(TempData["loginSuccess"])',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        </script>
+    }
+    @if (TempData["logoutMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '@Html.Raw(TempData["logoutMessage"])',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        </script>
+    }
+</body>
+</html>
+}
+
+
+
+
+else if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+{
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        @if (User.IsInRole("Admin")){
+        <title>TOP TOP HOTEL ADMIN</title>
+        } else{
+        <title>TOP TOP HOTEL MANAGER</title>
+        }
+        <link rel="shortcut icon" href="/images/webcon.png">
+        <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true">
+             
+      <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.4/dist/sweetalert2.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.4/dist/sweetalert2.all.min.js"></script>
+        <script src="https://kit.fontawesome.com/9d9abff864.js" crossorigin="anonymous"></script>
+        <script src="/js/jquery.min.js" asp-append-version="true"></script>
+        <script src="/js/jquery.unobtrusive-ajax.min.js" asp-append-version="true"></script>
+        <script src="/js/jquery.validate.min.js" asp-append-version="true"></script>
+        <script src="/js/jquery.validate.unobtrusive.min.js" asp-append-version="true"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
+
+
+    <link rel="stylesheet" href="~/css/app.css">  <!-- Link to your custom CSS file -->
+         <script>
+
+               $(document).ready(function () {
+                // Extend jQuery with toggle, hide, and show methods for convenience
+                $.fn.extend({
+                    toggleElement: function (on) {
+                        return this.each(function () {
+                            switch (on) {
+                                case undefined:
+                                    $(this).toggleClass('hidden');
+                                    break;
+                                case true:
+                                    $(this).removeClass('hidden');
+                                    break;
+                                case false:
+                                    $(this).addClass('hidden');
+                                    break;
+                            }
+                        });
+                    },
+                    hideElement: function () {
+                        return this.toggleElement(false);
+                    },
+                    showElement: function () {
+                        return this.toggleElement(true);
+                    }
+                });
+
+                // const checkboxes = $('.checkbox').not('#selectAll'); // Exclude "Select All"
+                // const labelItemsSelected = $('#labelItemsSelected');
+                const bulkActions = $('#bulkActions');
+                const title = $('#title');
+                const selectAllCheckbox = $('#selectAll');
+
+                let numberItemsSelected = 0;
+
+                const updateBulkActions = () => {
+                //        const bulkActions = $('#bulkActions');
+                // const title = $('#title');
+                     const labelItemsSelected = $('#labelItemsSelected');
+                    labelItemsSelected.text(
+                        numberItemsSelected === 1
+                            ? `${numberItemsSelected} item selected`
+                            : `${numberItemsSelected} items selected`
+                    );
+                       const labelItemsSelectedForStatus = $('#labelItemsSelectedForStatus');
+                        labelItemsSelectedForStatus.text(
+                        numberItemsSelected === 1
+                            ? `${numberItemsSelected} item selected`
+                            : `${numberItemsSelected} items selected`
+                           );
+                           const labelItemsSelectedForExport = $('#labelItemsSelectedForExport');
+                        labelItemsSelectedForExport.text(
+                        numberItemsSelected === 1
+                            ? `${numberItemsSelected} item selected`
+                            : `${numberItemsSelected} items selected`
+                           );
+
+                    if (numberItemsSelected > 0) {
+                        bulkActions.showElement();
+                        title.hideElement();
+                    } else {
+                        bulkActions.hideElement();
+                       title.showElement();
+                    }
+                };
+
+                // Reinitialize checkbox logic
+
+                //  function reinitializeCheckboxes () {
+                //     const allCheckboxes = $('.checkbox').not('#selectAll'); // Exclude "Select All"
+
+                //     // Update `numberItemsSelected` based on current checkbox states
+                //     numberItemsSelected = allCheckboxes.filter(':checked').length;
+
+                //     // Update the "Select All" checkbox state
+                //     document.getElementById("selectAll").prop('checked', allCheckboxes.length > 0 && allCheckboxes.length === numberItemsSelected);
+
+                //     // Attach change events to checkboxes
+                //     allCheckboxes.off('change').on('change', function () {
+                //         numberItemsSelected += this.checked ? 1 : -1;
+                //         updateBulkActions();
+
+                //         // Update "Select All" checkbox state
+                //         document.getElementById("selectAll").prop('checked', allCheckboxes.length > 0 && allCheckboxes.length === numberItemsSelected);
+                //     });
+                // };
+
+                // Initialize Cancel button
+                function initializeCancelButtonWtihClick(){
+                    $('#cancelActionBtn').off('click').on('click', function () {
+                        // Uncheck all checkboxes, including "Select All"
+                        $("#selectAll").prop('checked', false);
+                        const allCheckboxes = $('.checkbox').not('#selectAll');
+                        allCheckboxes.prop('checked', false);
+
+                        // Reset selected item count and hide bulk actions
+                        numberItemsSelected = 0;
+                        updateBulkActions();
+                    });
+                    $('#cancelActionBtnForStatus').off('click').on('click', function () {
+                        // Uncheck all checkboxes, including "Select All"
+                         $("#selectAll").prop('checked', false);
+                        const allCheckboxes = $('.checkbox').not('#selectAll');
+                        allCheckboxes.prop('checked', false);
+
+                        // Reset selected item count and hide bulk actions
+                        numberItemsSelected = 0;
+                        updateBulkActions();
+                       });
+                       $('#cancelActionBtnForExport').off('click').on('click', function () {
+                        // Uncheck all checkboxes, including "Select All"
+                         $("#selectAll").prop('checked', false);
+                        const allCheckboxes = $('.checkbox').not('#selectAll');
+                        allCheckboxes.prop('checked', false);
+
+                        // Reset selected item count and hide bulk actions
+                        numberItemsSelected = 0;
+                        updateBulkActions();
+                       });
+                };
+                   function initializeCancelButton(){
+                        // Uncheck all checkboxes, including "Select All"
+                        $("#selectAll").prop('checked', false);
+                        const allCheckboxes = $('.checkbox').not('#selectAll');
+                        allCheckboxes.prop('checked', false);
+
+                        // Reset selected item count and hide bulk actions
+                        numberItemsSelected = 0;
+                        updateBulkActions();
+                };
+
+                // Reinitialize elements on AJAX content load
+                $(document).on('ajaxComplete', function () {
+                    bulkActions.hideElement();
+                    title.showElement();
+                    $('#selectAll').on('change', function () {
+                    initializeSelectAllCheckbox();
+                    });
+
+                    $('.checkbox').not('#selectAll').on('click', function(){
+                        initializeCheckBoxes();
+                    });
+
+                    $('#cancelActionBtn').off('click').on('click', function () {
+                    initializeCancelButton();
+                    });
+                     $('#cancelActionBtnForStatus').off('click').on('click', function () {
+                    initializeCancelButton();
+                     });
+                     $('#cancelActionBtnForExport').off('click').on('click', function () {
+                    initializeCancelButton();
+                     });
+                });
+
+                function initializeSelectAllCheckboxWithClick(){
+                    $('#selectAll').on('change', function () {
+                        const isChecked = document.getElementById("selectAll").checked;
+                        const allCheckboxes = $('.checkbox').not('#selectAll'); // Exclude "Select All"
+                        allCheckboxes.prop('checked', isChecked);
+                        numberItemsSelected = isChecked ? allCheckboxes.length : 0;
+                        updateBulkActions();
+                        });
+                }
+                function initializeSelectAllCheckbox(){
+                        const isChecked = document.getElementById("selectAll").checked;
+                        const allCheckboxes = $('.checkbox').not('#selectAll'); // Exclude "Select All"
+                        console.log(isChecked);
+                        allCheckboxes.prop('checked', isChecked);
+                        numberItemsSelected = isChecked ? allCheckboxes.length : 0;
+                        updateBulkActions();
+                }
+                function initializeCheckBoxes(){
+                           numberItemsSelected = $('.data-row .checkbox:checked').length;
+                        updateBulkActions();
+                }
+                function initializeCheckBoxesWtihClick(){
+                    $('.checkbox').not('#selectAll').on('click', function(){
+                        numberItemsSelected = $('.data-row .checkbox:checked').length;
+                        updateBulkActions();
+                        });
+                }
+                // Initial setup
+                // reinitializeCheckboxes();
+                initializeSelectAllCheckboxWithClick();
+                initializeCancelButtonWtihClick();
+                initializeCheckBoxesWtihClick();
+            });
+
+
+                // Select all <li> elements with links inside the navigation menu
+                 menuItems = document.querySelectorAll('.mainmenu ul li');
+
+                // Get the current page URL
+                 currentUrl = window.location.pathname;
+
+                menuItems.forEach(link => {
+                    // Check if the href of the link matches the current URL
+                    if (link.getAttribute('href') === currentUrl) {
+                        // Add the 'active' class to the parent <li>
+                        link.parentElement.classList.add('active');
+                    } else {
+                        // Remove the 'active' class from other <li> elements
+                        link.parentElement.classList.remove('active');
+                    }
+                });
+        </script> 
+        @RenderSection("head", false)
+    </head>
+
+    <body>
+        <nav class="main-menu">
+            <div class="logo">
+                <img src="/images/top.png" alt="Company Logo" style="height: 40px; width: 40px;">
+                <!-- <img src="image.png" alt="Company Logo" > -->
+                <span class="nav-text">TOP TOP</span>
+            </div>
+            <ul style="margin-top:2rem">
+                <li>
+                    <a asp-controller="Admin" asp-action="Index">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor"
+                                 class="bi bi-speedometer" viewBox="0 0 16 16" id="sidebarIcon" style="">
+                                <path d="M8 2a.5.5 0 0 1 .5.5V4a.5.5 0 0 1-1 0V2.5A.5.5 0 0 1 8 2M3.732 3.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707M2 8a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 8m9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5m.754-4.246a.39.39 0 0 0-.527-.02L7.547 7.31A.91.91 0 1 0 8.85 8.569l3.434-4.297a.39.39 0 0 0-.029-.518z" />
+                                <path fill-rule="evenodd"
+                                      d="M6.664 15.889A8 8 0 1 1 9.336.11a8 8 0 0 1-2.672 15.78zm-4.665-4.283A11.95 11.95 0 0 1 8 10c2.186 0 4.236.585 6.001 1.606a7 7 0 1 0-12.002 0" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Dashboard
+                        </span>
+                    </a>
+
+                </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="UserManagement">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-person" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            User Management
+                        </span>
+                    </a>
+                </li>              
+                <li class="has-subnav">
+                    <a asp-controller="Reservation" asp-action="ReserveList">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-cart" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Reservation Management
+                        </span>
+                    </a>
+
+                </li>
+                <li class="has-subnav">
+                    <a asp-controller="Memberships" asp-action="MemberManagement">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-person-vcard-fill" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm9 1.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0-.5.5M9 8a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 0-1h-4A.5.5 0 0 0 9 8m1 2.5a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5m-1 2C9 10.567 7.21 9 5 9c-2.086 0-3.8 1.398-3.984 3.181A1 1 0 0 0 2 13h6.96q.04-.245.04-.5M7 6a2 2 0 1 0-4 0 2 2 0 0 0 4 0" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Membership Management
+                        </span>
+                    </a>
+
+                </li>
+ <li class="has-subnav">
+                    <a asp-controller="Rewards" asp-action="RewardsManagement">
+                        <div class="sidebarIcons">
+                           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  version="1.1" id="Capa_1" viewBox="0 0 296.906 296.906" width="30px" height="30px" fill="currentColor" xml:space="preserve">
+                           @* fill="#000000" height="800px" width="800px"    *@
+                           
+                               
+                          
+<g>
+	<path d="M65.486,185.302c-0.185-0.184-0.362-0.374-0.546-0.559l-23.798,83.136c-1.514,5.288,1.651,8.685,7.032,7.549l29.481-6.222   c0.391-0.082,0.796-0.143,1.208-0.19l17.442-61.512C85.043,201.905,74.641,194.456,65.486,185.302z"/>
+	<path d="M93.313,273.043c0.455,0.347,0.89,0.706,1.278,1.086l20.992,20.518c3.934,3.844,8.39,2.663,9.903-2.625l20.719-72.381   c-12.417-0.231-24.516-2.384-35.959-6.313L93.313,273.043z"/>
+	<path d="M150.7,219.641l20.719,72.381c1.514,5.288,5.97,6.469,9.903,2.625l20.992-20.518c0.35-0.342,0.737-0.666,1.142-0.98   l-16.812-59.815C175.206,217.258,163.112,219.409,150.7,219.641z"/>
+	<path d="M231.966,184.742c-0.184,0.186-0.361,0.375-0.546,0.559c-9.156,9.156-19.563,16.607-30.83,22.206L217.872,269   c0.471,0.049,0.935,0.111,1.378,0.205l29.481,6.222c5.381,1.136,8.546-2.261,7.032-7.549L231.966,184.742z"/>
+	<path d="M250.786,102.334C250.786,45.816,204.97,0,148.452,0C91.936,0,46.12,45.816,46.12,102.334   c0,56.518,45.816,102.334,102.332,102.334C204.97,204.668,250.786,158.852,250.786,102.334z M148.452,183.961   c-45.008,0-81.625-36.617-81.625-81.627c0-45.01,36.617-81.627,81.625-81.627c45.01,0,81.627,36.617,81.627,81.627   C230.079,147.344,193.462,183.961,148.452,183.961z"/>
+	<path d="M148.452,168.961c36.738,0,66.627-29.889,66.627-66.627c0-36.738-29.889-66.627-66.627-66.627   c-36.736,0-66.625,29.889-66.625,66.627C81.827,139.072,111.716,168.961,148.452,168.961z"/>
+</g>
+</svg>
+                        </div>
+                        <span class="nav-text">
+                            Membership Management
+                        </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="Feedback" asp-action="Index">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-chat-dots" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+                                <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Survey Management
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Rooms" asp-action="Index">
+                        <div class="sidebarIcons">
+                            <svg class="svg-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                                 id="sidebarIcon">
+                                <path d="M789.3 513.2c31.1 0 56.5 3.6 75.5 10.7 14.5 5.4 25.2 12.8 32.7 22.6 13.9 18 19.8 46.3 19.8 94.7v213.3h-42.7v-21.3c0-35.3-28.7-64-64-64H213.3c-35.3 0-64 28.7-64 64v21.3h-42.7V641.2c0-48.3 5.9-76.6 19.8-94.7 7.6-9.8 18.3-17.2 32.7-22.6 19-7.1 44.4-10.7 75.5-10.7h554.7m0-42.7H234.7C83.5 470.5 64 546.9 64 641.2v213.3c0 23.6 19.1 42.7 42.7 42.7h42.7c23.6 0 42.7-19.1 42.7-42.7v-21.3c0-11.8 9.6-21.3 21.3-21.3h597.3c11.8 0 21.3 9.6 21.3 21.3v21.3c0 23.6 19.1 42.7 42.7 42.7h42.7c23.6 0 42.7-19.1 42.7-42.7V641.2c-0.1-94.3-19.6-170.7-170.8-170.7z"
+                                      fill="currentcolor" />
+                                <path d="M512 169.5c44.3 0 87 7.4 123.5 21.5 32.6 12.6 59.1 30.2 74.6 49.7l10 12.5 15.7 2.9c8.8 1.6 18.3 3.3 28.3 5.1 13.4 2.4 27.3 4.8 41.2 7.4 40.2 7.5 69.3 42.8 69.3 83.8v131.3c-29.2-8.7-60.2-13.2-85.3-13.2H234.7c-25.2 0-56.1 4.5-85.3 13.2V352.4c0-41 29.2-76.3 69.3-83.8 13.9-2.6 27.8-5.1 41.2-7.4 10.1-1.8 19.5-3.4 28.3-5.1l15.7-2.9 10-12.5c15.5-19.5 41.9-37.1 74.6-49.7 36.5-14.1 79.2-21.5 123.5-21.5m0-42.7c-102.5 0-190.6 35.8-231.5 87.3-20.3 3.7-45 7.9-69.7 12.5-60.4 11.3-104.1 64.3-104.1 125.8v198.3c29.2-23.5 87.6-37.6 128-37.6h554.7c40.4 0 98.8 14.1 128 37.6V352.4c0-61.5-43.7-114.4-104.1-125.8-24.6-4.6-49.4-8.8-69.7-12.5-41-51.5-129.1-87.3-231.6-87.3z"
+                                      fill="currentcolor" />
+                                <path d="M177.1 516.3l7.8-28.9c7.9-29.4 29.4-55.9 60.5-74.5 30-17.9 67.8-27.7 106.6-27.7 39 0 75.6 9.5 105.9 27.4 31 18.3 52.6 44.4 60.9 73.4l7.7 27.2H234.7c-8.9 0-18 0.3-27.7 1l-29.9 2.1z m64.5-45.8h220.8c-6.9-7.9-15.8-15.1-26.2-21.2-23.4-13.8-53.3-21.5-84.2-21.5-31.2 0-61.3 7.7-84.7 21.7-10.3 6.2-18.9 13.3-25.7 21z"
+                                      fill="currentcolor" />
+                                <path d="M846.9 516.3l-29.8-2.1c-9.8-0.7-18.8-1-27.7-1h-292l7.7-27.2c8.3-29 29.9-55.1 60.9-73.4 30.3-17.9 67-27.4 105.9-27.4 38.8 0 76.7 9.9 106.6 27.7 31.1 18.6 52.7 45 60.5 74.5l7.9 28.9z m-285.3-45.8h220.8c-6.8-7.8-15.5-14.9-25.7-21-23.4-14-53.5-21.7-84.7-21.7-30.9 0-60.8 7.6-84.2 21.5-10.5 6.2-19.3 13.3-26.2 21.2z"
+                                      fill="currentcolor" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Room Management
+                        </span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a asp-controller="RoomType" asp-action="Index">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-building" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z" />
+                                <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Room Category Management
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="CombinationOfCharts">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-pie-chart" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M7.5 1.018a7 7 0 0 0-4.79 11.566L7.5 7.793zm1 0V7.5h6.482A7 7 0 0 0 8.5 1.018M14.982 8.5H8.207l-4.79 4.79A7 7 0 0 0 14.982 8.5M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Combination Reports
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="CompactOfData">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-pie-chart" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path d="M7.5 1.018a7 7 0 0 0-4.79 11.566L7.5 7.793zm1 0V7.5h6.482A7 7 0 0 0 8.5 1.018M14.982 8.5H8.207l-4.79 4.79A7 7 0 0 0 14.982 8.5M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Compare Reports
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="contactAdminSide">
+                        <div class="sidebarIcons">
+                            <?xml version="1.0" ?><svg height="24" viewBox="0 0 1792 1792" width="24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"/></svg>
+                        </div>
+                        <span class="nav-text">
+                            Messages
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Admin" asp-action="AdminProfile">
+                        <div class="sidebarIcons">
+                            <svg fill="currentColor" id="sidebarIcon" height="200px" width="200px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 402.161 402.161" xml:space="preserve" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <g> <path d="M201.08,49.778c-38.794,0-70.355,31.561-70.355,70.355c0,18.828,7.425,40.193,19.862,57.151 c14.067,19.181,32,29.745,50.493,29.745c18.494,0,36.426-10.563,50.494-29.745c12.437-16.958,19.862-38.323,19.862-57.151 C271.436,81.339,239.874,49.778,201.08,49.778z M201.08,192.029c-13.396,0-27.391-8.607-38.397-23.616 c-10.46-14.262-16.958-32.762-16.958-48.28c0-30.523,24.832-55.355,55.355-55.355s55.355,24.832,55.355,55.355 C256.436,151.824,230.372,192.029,201.08,192.029z"></path> <path d="M201.08,0C109.387,0,34.788,74.598,34.788,166.292c0,91.693,74.598,166.292,166.292,166.292 s166.292-74.598,166.292-166.292C367.372,74.598,292.773,0,201.08,0z M201.08,317.584c-30.099-0.001-58.171-8.839-81.763-24.052 c0.82-22.969,11.218-44.503,28.824-59.454c6.996-5.941,17.212-6.59,25.422-1.615c8.868,5.374,18.127,8.099,27.52,8.099 c9.391,0,18.647-2.724,27.511-8.095c8.201-4.97,18.39-4.345,25.353,1.555c17.619,14.93,28.076,36.526,28.895,59.512 C259.25,308.746,231.178,317.584,201.08,317.584z M296.981,283.218c-3.239-23.483-15.011-45.111-33.337-60.64 c-11.89-10.074-29.1-11.256-42.824-2.939c-12.974,7.861-26.506,7.86-39.483-0.004c-13.74-8.327-30.981-7.116-42.906,3.01 c-18.31,15.549-30.035,37.115-33.265,60.563c-33.789-27.77-55.378-69.868-55.378-116.915C49.788,82.869,117.658,15,201.08,15 c83.423,0,151.292,67.869,151.292,151.292C352.372,213.345,330.778,255.448,296.981,283.218z"></path> <path d="M302.806,352.372H99.354c-4.142,0-7.5,3.358-7.5,7.5c0,4.142,3.358,7.5,7.5,7.5h203.452c4.142,0,7.5-3.358,7.5-7.5 C310.307,355.73,306.948,352.372,302.806,352.372z"></path> <path d="M302.806,387.161H99.354c-4.142,0-7.5,3.358-7.5,7.5c0,4.142,3.358,7.5,7.5,7.5h203.452c4.142,0,7.5-3.358,7.5-7.5 C310.307,390.519,306.948,387.161,302.806,387.161z"></path> </g> </g> </g> </g></svg>
+                        </div>
+                        <span class="nav-text">
+                            Profile
+                        </span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="logout">
+                <li>
+                    <a href="#" onclick="window.location.replace('/Account/Logout');">
+                        <div class="sidebarIcons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-box-arrow-right" viewBox="0 0 16 16" id="sidebarIcon">
+                                <path fill-rule="evenodd"
+                                      d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+                                <path fill-rule="evenodd"
+                                      d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+                            </svg>
+                        </div>
+                        <span class="nav-text">
+                            Logout
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <body>
+            @RenderBody()
+        </body>
+
+@*       <script src="/js/jquery.min.js"></script>
+    <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="/js/jquery.validate.min.js"></script>
+    <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/Charts.js" asp-append-version="true"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script> *@
+  @* <script src="/js/jquery.min.js"></script> *@
+  @*   <script src="/js/jquery.unobtrusive-ajax.min.js"></script> *@
+  @*   <script src="/js/jquery.validate.min.js"></script> *@
+  @*   <script src="/js/jquery.validate.unobtrusive.min.js"></script> *@
+    <script src="~/js/Charts.js" asp-append-version="true"></script> 
+   <script src="~/js/app.js" asp-append-version="true"></script>
+
+        @if (TempData["loginSuccess"] != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@Html.Raw(TempData["loginSuccess"])',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+            </script>
+        }
+        @if (TempData["logoutMessage"] != null)
+        {
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@Html.Raw(TempData["logoutMessage"])',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });logoutMessage
+            </script>
+        }
+        @RenderSection("foot", false)
+    </body>
+
+    </html>
+
+
+
+}

@@ -1,0 +1,456 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.CreateReservationViewModel
+<style>
+	.form-container {
+		display: flex;
+		gap: 20px;
+	}
+
+	.form-section {
+		flex: 1;
+		padding: 20px;
+		gap: 1rem;
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		justify-content: center;
+	}
+
+	.form-group {
+		margin-bottom: 15px;
+	}
+
+		.form-group label {
+			display: block;
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+
+		.form-group input, .form-group select, .form-group textarea {
+			width: 100%;
+			padding: 1rem;
+			box-sizing: border-box;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+
+		.form-group textarea {
+			resize: vertical;
+		}
+
+	.form-actions {
+		display: flex;
+		justify-content: flex-end; /* Align buttons to the right */
+		padding-top: 20px;
+	}
+
+		.form-actions button {
+			margin-left: 10px; /* Space between buttons */
+			cursor: pointer;
+		}
+
+
+	.upload-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+		max-width: 500px;
+		margin: auto;
+		margin-bottom: 2rem;
+	}
+
+	.dropbox {
+		border: 2px dashed #ccc;
+		border-radius: 8px;
+		padding: 20px;
+		text-align: center;
+		width: 100%;
+		max-width: 500px;
+		position: relative;
+		background-color: #f9f9f9;
+		transition: background-color 0.3s;
+	}
+
+		.dropbox:hover {
+			background-color: #f1f1f1;
+		}
+
+	.plus-icon {
+		font-size: 36px;
+		font-weight: bold;
+		color: #666;
+		margin-bottom: 10px;
+	}
+
+	button#selectImages {
+		margin-top: 10px;
+		background-color: #007bff;
+		color: white;
+		border: none;
+		padding: 10px 15px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+		button#selectImages:hover {
+			background-color: #0056b3;
+		}
+
+	.preview-container {
+		display: flex;
+		flex-wrap: wrap;
+		margin-top: 20px;
+		gap: 10px;
+		align-items: center;
+		justify-content: center;
+	}
+
+		.preview-container img {
+			width: 100px;
+			height: 100px;
+			object-fit: cover;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+		}
+
+	/* Container styling for images */
+	.image-container {
+		position: relative;
+		display: inline-block;
+		margin: 10px;
+	}
+
+		/* Styling the image */
+		.image-container img {
+			width: 100px;
+			height: 100px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+
+	/* Cancel button styling */
+	.cancel-button {
+		position: absolute;
+		top: -5px;
+		right: -5px;
+		background-color: #ff4d4d;
+		color: white;
+		border: none;
+		border-radius: 50%;
+		font-size: 12px;
+		width: 10px;
+		height: 10px;
+		padding: 1rem;
+		cursor: pointer;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
+
+		.cancel-button:hover {
+			background-color: #ff1a1a;
+		}
+
+	.field-validation-error,
+	.validation-summary-errors {
+		color: red;
+	}
+
+	.input-validation-error {
+		border: 2px solid red !important;
+		outline: none;
+	}
+
+</style>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+	$(document).ready(function () {
+		$('#RoomType').select2({
+			placeholder: "Select Room Type",
+			allowClear: true,
+			width: '100%'
+		});
+
+		const roomTypeDropdown = $('#RoomType');
+		const checkInDateField = $('#CheckInDate');
+		const checkOutDateField = $('#CheckOutDate');
+		const totalPriceField = $('#TotalPrice');
+		const validationMessages = $('span.text-danger');
+		const alternativeDatesContainer = $('#alternativeDates');
+		const validationMessage = $('#validationMessage');
+		const maxDaysAllowed = 10;
+		let roomPrice = 0;
+
+		function calculateTotalPrice() {
+			const checkInDate = new Date(checkInDateField.val());
+			const checkOutDate = new Date(checkOutDateField.val());
+
+			console.log(`Check-In Date: ${checkInDate}`);
+			console.log(`Check-Out Date: ${checkOutDate}`);
+			console.log(`Room Price: ${roomPrice}`);
+
+			if (!checkInDate || !checkOutDate || roomPrice <= 0 || isNaN(checkInDate) || isNaN(checkOutDate)) {
+				totalPriceField.val('Invalid');
+				console.log('Total Price: Invalid (Invalid dates or room price)');
+				return;
+			}
+
+			const nights = (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24);
+			console.log(`Nights: ${nights}`);
+
+			if (nights <= 0 || nights > maxDaysAllowed) {
+				totalPriceField.val('Invalid');
+				console.log('Total Price: Invalid (Invalid number of nights)');
+				return;
+			}
+
+			const basePrice = roomPrice * nights;
+			const sstTax = basePrice * 0.06;
+			const guestFee = 10;
+
+			const totalPrice = basePrice + sstTax + guestFee;
+			totalPriceField.val(totalPrice.toFixed(2));
+			console.log(`Total Price: ${totalPrice.toFixed(2)}`);
+		}
+
+		const today = new Date();
+		const maxCheckInDate = new Date();
+		maxCheckInDate.setDate(today.getDate() + 90);
+
+		checkInDateField.attr('min', today.toISOString().split('T')[0]);
+		checkInDateField.attr('max', maxCheckInDate.toISOString().split('T')[0]);
+
+		const minInitialCheckOutDate = new Date();
+		minInitialCheckOutDate.setDate(today.getDate() + 1);
+
+		const maxInitialCheckOutDate = new Date(minInitialCheckOutDate);
+		maxInitialCheckOutDate.setDate(minInitialCheckOutDate.getDate() + maxDaysAllowed);
+
+		checkOutDateField.attr('min', minInitialCheckOutDate.toISOString().split('T')[0]);
+		checkOutDateField.attr('max', maxInitialCheckOutDate.toISOString().split('T')[0]);
+
+		function checkRoomAvailability() {
+			const roomTypeId = roomTypeDropdown.val();
+			const checkInDate = checkInDateField.val();
+			const checkOutDate = checkOutDateField.val();
+
+			if (!roomTypeId || !checkInDate || !checkOutDate) {
+				validationMessage.html("Room Type, Check-In Date, and Check-Out Date are required.").css('color', 'red');
+				alternativeDatesContainer.empty();
+				return;
+			}
+
+			$.ajax({
+				url: '/Reservation/CheckRoomTypeAvailability',
+				type: 'GET',
+				data: {
+					roomTypeId: roomTypeId,
+					checkInDate: checkInDate,
+					checkOutDate: checkOutDate
+				},
+				success: function (response) {
+					validationMessage.html('');
+					alternativeDatesContainer.empty();
+
+					if (response.isAvailable) {
+						validationMessage.html('Room is available.').css('color', 'green');
+					} else {
+						let alternativesHTML = 'The selected room type is not available for the given dates. <br> Suggested alternative dates:<br>';
+						validationMessage.html("The selected room type is not available for the given dates.").css('color', 'red');
+
+						if (response.alternatives?.$values && response.alternatives.$values.length > 0) {
+							response.alternatives.$values.forEach(function (alt) {
+								const alternativeMessage = `Check-In: ${alt.startDate}, Check-Out: ${alt.endDate}<br>`;
+								alternativesHTML += alternativeMessage;
+							});
+							alternativeDatesContainer.html(alternativesHTML).css('color', 'red');
+						}
+					}
+				},
+				error: function () {
+					validationMessage.html("An error occurred while checking room availability. Please try again.").css('color', 'red');
+					alternativeDatesContainer.empty();
+				}
+			});
+		}
+
+		// Set initial room price based on the selected room type
+		const initialSelectedOption = roomTypeDropdown.find('option:selected');
+		roomPrice = parseFloat(initialSelectedOption.data('price')) || 0;
+		console.log(`Initial Room Price set to ${roomPrice}`);
+
+		roomTypeDropdown.on('change', function () {
+			const selectedOption = $(this).find('option:selected');
+			roomPrice = parseFloat(selectedOption.data('price')) || 0;
+			console.log(`Room Type Changed: Room Price set to ${roomPrice}`);
+			calculateTotalPrice();
+			checkRoomAvailability();
+		});
+
+		checkInDateField.on('change', function () {
+			const checkInDate = new Date(this.value);
+			if (isNaN(checkInDate) || checkInDate < today) {
+				validationMessage.html("Invalid Check-In Date selected.").css('color', 'red');
+				checkOutDateField.val('');
+				return;
+			}
+
+			const minCheckOutDate = new Date(checkInDate);
+			minCheckOutDate.setDate(minCheckOutDate.getDate() + 1);
+
+			const maxCheckOutDate = new Date(checkInDate);
+			maxCheckOutDate.setDate(maxCheckOutDate.getDate() + maxDaysAllowed);
+
+			checkOutDateField.attr('min', minCheckOutDate.toISOString().split('T')[0]);
+			checkOutDateField.attr('max', maxCheckOutDate.toISOString().split('T')[0]);
+
+			calculateTotalPrice();
+			checkRoomAvailability();
+		});
+
+		checkOutDateField.on('change', function () {
+			calculateTotalPrice();
+			checkRoomAvailability();
+		});
+
+		const form = $('form');
+		form.on('submit', function (event) {
+			event.preventDefault();
+
+			let hasErrors = false;
+			validationMessages.each(function () {
+				if ($(this).text().trim() !== '') {
+					hasErrors = true;
+				}
+			});
+
+			if ( alternativeDatesContainer.html().trim() !== ''|| validationMessage.text().trim() !== '' || hasErrors || totalPriceField.val() === 'Invalid') {
+				Swal.fire({
+					title: 'Validation Error',
+					text: 'Please resolve all validation errors before submitting.',
+					icon: 'error',
+					confirmButtonColor: '#d33'
+				});
+				return;
+			}
+
+			Swal.fire({
+				title: 'Are you sure?',
+				text: 'Do you want to update this reservation?',
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Yes'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					form[0].submit();
+				}
+			});
+		});
+	});
+</script>
+
+
+
+
+
+@* m 
+
+@if (!ViewData.ModelState.IsValid)
+{
+	<div class="alert alert-danger">
+		<ul>
+			@foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+			{
+				<li>@error.ErrorMessage</li>
+			}
+		</ul>
+	</div>
+}*@
+
+
+<div class="body-content flex flex-column">
+	<main class="flex flex-column grow">
+		<section class="flex flex-column gap-2">
+			<form asp-action="UpdateReservationDetails" asp-controller="Reservation" method="post">
+				<div class="form-container">
+					<!-- Left Section -->
+					<div class="form-section">
+						<div class="form-group">
+							<label asp-for="UserName">Customer Name</label>
+							<input asp-for="UserName" class="form-control" readonly />
+							<span asp-validation-for="UserName" class="text-danger"></span>
+						</div>
+
+						<div class="form-group">
+							<label asp-for="UserEmail">Customer Email</label>
+							<input asp-for="UserEmail" type="email" class="form-control" readonly />
+							<span asp-validation-for="UserEmail" class="text-danger"></span>
+						</div>
+
+						<div class="form-group">
+							<label asp-for="RoomTypeId">Room Type</label>
+							<select asp-for="RoomTypeId" id="RoomType" class="form-control">
+								<option value="">Select Room Type</option>
+								@foreach (var roomType in Model.RoomTypeList)
+								{
+									<option value="@roomType.Id" data-price="@roomType.Price">@roomType.Name (RM @roomType.Price.ToString("N2"))</option>
+								}
+							</select>
+							<span asp-validation-for="RoomTypeId" class="text-danger"></span>
+							<div id="alternativeDates"></div>
+						</div>
+
+
+
+					</div>
+
+
+
+					<!-- Right Section -->
+					<div class="form-section">
+						<div class="form-group">
+							<label for="CheckInDate">Check-In Date</label>
+							<input asp-for="CheckInDate" id="CheckInDate" type="date" class="form-control" />
+							<span asp-validation-for="CheckInDate" class="text-danger"></span>
+						</div>
+
+						<div class="form-group">
+							<label for="CheckOutDate">Check-Out Date</label>
+							<input asp-for="CheckOutDate" id="CheckOutDate" type="date" class="form-control" />
+							<span asp-validation-for="CheckOutDate" class="text-danger"></span>
+						</div>
+
+
+						<!-- Total Price -->
+						<div class="form-group">
+							<label for="TotalPrice">Total Price</label>
+							<input asp-for="TotalPrice" class="form-control" id="TotalPrice" readonly />
+						</div>
+
+
+
+						<input type="hidden" asp-for="UsersId" value="@Model.UsersId" />
+						<input type="hidden" id="CheckInDate" name="CheckInDate" value="@Model.CheckInDate" />
+						<input type="hidden" id="CheckOutDate" name="CheckOutDate" value="@Model.CheckOutDate" />
+
+
+
+					</div>
+				</div>
+
+
+				<div class="form-actions">
+					<button type="reset" class="btn btn-secondary">Reset</button>
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</div>
+
+			</form>
+
+
+		</section>
+	</main>
+</div>
+
+

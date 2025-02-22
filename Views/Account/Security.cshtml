@@ -1,0 +1,347 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.ResetPasswordVM 
+
+@inject IConfiguration configuration
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="/css/loginNregister.css" type="text/css" />
+
+<style>
+
+    .img-account-profile {
+        height: 10rem;
+    }
+
+    .rounded-circle {
+        border-radius: 50% !important;
+    }
+
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+    }
+
+        .card .card-header {
+            font-weight: 500;
+        }
+
+    .card-header:first-child {
+        border-radius: 0.35rem 0.35rem 0 0;
+    }
+
+    .card-header {
+        padding: 1rem 1.35rem;
+        margin-bottom: 0;
+        background-color: rgba(33, 40, 50, 0.03);
+        border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+    }
+
+    .form-control, .dataTable-input {
+        display: block;
+        width: 100%;
+        padding: 0.875rem 1.125rem;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1;
+        color: #69707a;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #c5ccd6;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: 0.35rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .nav-borders .nav-link.active {
+        color: #0061f2;
+        border-bottom-color: #0061f2;
+    }
+
+    .nav-borders .nav-link {
+        color: #69707a;
+        border-bottom-width: 0.125rem;
+        border-bottom-style: solid;
+        border-bottom-color: transparent;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .btn-danger-soft {
+        color: #000;
+        background-color: #f1e0e3;
+        border-color: #f1e0e3;
+    }
+
+    .validation-summary ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .validation-summary li {
+        margin: 0;
+        padding: 0;
+        color: red;
+        font-weight: bold;
+    }
+
+    svg#togglePassword,
+    svg#toggleConPassword,
+    svg#toggleDonPassword {
+        position: absolute;
+        top: 18px;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+        font-size: 16px;
+    }
+
+    .validation-error {
+        color: red; /* Red text for error message */
+    }
+
+    .field-validation-error,
+    .validation-summary-errors {
+        color: red;
+    }
+
+    .input-validation-error {
+        border: 2px solid red !important;
+        outline: none;
+    }
+
+</style>
+
+
+<nav class="nav nav-borders">
+    <a class="nav-link " data-ajax="true" href="#" data-url="/Account/editProfile">Profile</a>
+    @* <a class="nav-link" href="#" data-ajax="true" data-url="/Account/_billing">Billing</a> *@
+    <a class="nav-link active ms-0" href="#" data-ajax="true" data-url="/Account/Security">Security</a>
+    @* <a class="nav-link" href="#" data-ajax="true" data-url="/Account/_notification">Notifications</a> *@
+</nav>
+
+<div class="container-xl px-4 mt-4">
+
+    <hr class="mt-0 mb-4">
+    <div class="row">
+        <div class="col-lg-8">
+
+            <div class="card mb-4">
+                <div class="card-header">Change Password</div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly"></div>
+                        <label class="small mb-1" for="currentPassword">Current Password</label>
+                        <div class="mb-3 form-group password-group">
+
+                            <input asp-for="currentPassword" class="form-control" id="password" type="password" placeholder="Enter current password">
+                            <svg id="togglePassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                 fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z" />
+                                <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829" />
+                                <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z" />
+                            </svg>
+                            <span asp-validation-for="currentPassword" class="validation-error"></span>
+                        </div>
+
+                        <label class="small mb-1" for="newPassword">New Password</label>
+                        <div class="mb-3 form-group password-group">
+
+                            <input asp-for="Password" class="form-control" id="confPass" type="password" placeholder="Enter new password">
+                            <svg id="toggleConPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                 fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z" />
+                                <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829" />
+                                <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z" />
+                            </svg>
+                            <span asp-validation-for="Password" class="validation-error"></span>
+                        </div>
+                        <label class="small mb-1" for="confirmPassword">Confirm Password</label>
+                        <div class="mb-3 form-group password-group">
+
+                            <input asp-for="Password2" class="form-control" id="donfPass" type="password" placeholder="Confirm new password">
+                            <svg id="toggleDonPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                 fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z" />
+                                <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829" />
+                                <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z" />
+                            </svg>
+                            <span asp-validation-for="Password2" class="validation-error"></span>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Save</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-lg-4">
+            <!-- Two factor authentication card-->
+            <div class="card mb-4">
+                <div class="card-header">Two-Factor Authentication</div>
+                <div class="card-body">
+                    <p>Add another level of security to your account by enabling two-factor authentication. We will send you a OTP to verify your login attempts on browsers through your phone number.</p>
+                    
+                        <div class="form-check">
+                            <input class="form-check-input" id="twoFactorOn" type="radio" name="twoFactor"
+                                   checked="" value="ON"
+                                   data-status="ON">
+                            <label class="form-check-label" for="twoFactorOn">On</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" id="twoFactorOff" type="radio" name="twoFactor"
+                                   value="OFF"
+                                   data-status="OFF">
+                            <label class="form-check-label" for="twoFactorOff">Off</label>
+                        </div>
+                       
+                   
+                </div>
+            </div>
+            <!-- Delete account card-->
+            <div class="card mb-4">
+
+                <div class="card-header">Delete Account</div>
+                <div class="card-body">
+                    <p>Deleting your account is a significant action and may impact your access to our services. However, you can recover your account later by clicking the "Recover Account" button on the login page and using your registered email address. If you're certain about deleting your account, please select the button below.</p>
+                    <button class="btn btn-danger-soft text-danger deleteButton" id="deleteButton">I understand, delete my account</button>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="text/javascript">
+     $(document).ready(function () {
+
+         var mfaStatus = "@ViewBag.MFAStatus";  
+
+        if (mfaStatus === "ON") {
+            $('#twoFactorOn').prop('checked', true);
+        } else if (mfaStatus === "OFF") {
+            $('#twoFactorOff').prop('checked', true);
+        }
+
+        $('.nav-link[data-ajax="true"]').on('click', function(e) {
+            e.preventDefault();
+            var url = $(this).data('url');
+
+            if (url) {
+                window.location.replace(url);
+            }
+        });
+
+
+        $("input[name='twoFactor']").change(function () {
+        const selectedStatus = $(this).attr("id") === "twoFactorOn" ? "ON" : "OFF";
+
+        $.ajax({
+            url: '/Account/UpdateMFAStatus',
+            type: 'POST',
+            data: { status: selectedStatus },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Success Update Status!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                    //alert(response.message);
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    //alert(response.message);
+                }
+            },
+            error: function (xhr) {
+                console.error('Error:', xhr.responseJSON.message); // Handle errors
+            }
+        });
+    });
+
+        $('.deleteButton').on('click', function () {
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Are you sure you want to delete your account? .`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes !',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send the delete request
+                $.ajax({
+                     url: '/Account/deleteAccount',
+                    type: 'GET',
+    success: function (response) {
+                     if (response.success) {
+                    Swal.fire({
+                        title: 'Success Delete!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '/Account/Logout';
+
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    })
+                }
+                 },
+                    error: function (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: ".",
+                            icon: 'error',
+                            confirmButtonText: 'Try Again'
+                        });
+                        $('.checkbox:checked').prop('checked', false);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Cancelled',
+                    text: 'The Delete Request Canceled.',
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+
+            }
+        });
+    });
+    });
+</script>
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '@TempData["ErrorMessage"]'
+        });
+    </script>
+}

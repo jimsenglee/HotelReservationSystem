@@ -1,0 +1,619 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model HotelRoomReservationSystem.Models.ViewModels.CreateReservationViewModel
+
+@section head {
+    <style>
+        button:disabled {
+            background-color: gray !important;
+            color: white !important;
+            cursor: not-allowed !important;
+        }
+
+        #validationMessage {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #alternativeDates {
+            margin-top: 10px;
+            color: blue;
+            font-weight: bold;
+        }
+
+        .kebab-options {
+            position: fixed; /* Change from absolute to fixed */
+            top: 0; /* These values will be set dynamically using JavaScript */
+            left: 0;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .slideshow-container {
+            position: relative;
+            max-width: 800px;
+            margin: auto;
+            overflow: hidden;
+            border-radius: 10px;
+            /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+        }
+
+        .slides {
+            display: none;
+            width: 100%;
+        }
+
+            .slides img {
+                width: 100%;
+                border-radius: 10px;
+            }
+
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 100%;
+        }
+
+        .prev {
+            left: 10px;
+        }
+
+        .next {
+            right: 10px;
+        }
+
+            .prev:hover, .next:hover {
+                background-color: rgba(0, 0, 0, 0.8);
+            }
+
+        .dots {
+            text-align: center;
+            margin-top: -1rem;
+        }
+
+        .dot {
+            height: 15px;
+            width: 15px;
+            margin: 0 5px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+            .dot.active {
+                background-color: #717171;
+            }
+
+        .active-slide {
+            opacity: 1;
+        }
+    </style>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/tmp.css" asp-append-version="true">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        const checkInDate = $('#CheckInDate');
+        const checkOutDate = $('#CheckOutDate');
+        const daysReservedField = $('#DaysReserved');
+        const roomTypeId = $('input[name="RoomTypeId"]').val();
+        const validationMessage = $('#validationMessage');
+        const alternativeDatesContainer = $('#alternativeDates');
+        const capacityField = $('#capacity');
+
+        $('button[type="submit"]#book-btn').prop('disabled', true);
+
+        // Set min and max attributes for Check-In date
+        const today = new Date();
+        const maxCheckIn = new Date(today);
+        maxCheckIn.setDate(maxCheckIn.getDate() + 90);
+        checkInDate.attr('min', today.toISOString().split('T')[0]);
+        checkInDate.attr('max', maxCheckIn.toISOString().split('T')[0]);
+
+        // Function to calculate days reserved
+        function calculateDaysReserved() {
+        const checkIn = new Date(checkInDate.val());
+        const checkOut = new Date(checkOutDate.val());
+        const diffTime = checkOut - checkIn;
+        const reservedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (!isNaN(reservedDays) && reservedDays > 0) {
+        daysReservedField.val(reservedDays);
+        } else {
+        daysReservedField.val('Invalid');
+        }
+        }
+
+        // Enable Check-Out field based on Check-In date
+        checkInDate.on('change', function () {
+        const checkIn = new Date(checkInDate.val());
+        if (isNaN(checkIn)) return;
+
+        const minCheckOut = new Date(checkIn);
+        minCheckOut.setDate(minCheckOut.getDate() + 1);
+        const maxCheckOut = new Date(checkIn);
+        maxCheckOut.setDate(maxCheckOut.getDate() + 10);
+
+        checkOutDate.attr('min', minCheckOut.toISOString().split('T')[0]);
+        checkOutDate.attr('max', maxCheckOut.toISOString().split('T')[0]);
+        checkOutDate.prop('disabled', false); // Enable Check-Out field
+
+        calculateDaysReserved();
+        });
+
+        checkOutDate.on('change', calculateDaysReserved);
+
+        function checkRoomAvailability() {
+        if (checkInDate.val() && checkOutDate.val()) {
+        console.log("Checking room availability...");
+
+        $.ajax({
+        url: '/Reservation/CheckRoomTypeAvailability',
+        type: 'GET',
+        data: {
+        roomTypeId: roomTypeId,
+        checkInDate: checkInDate.val(),
+        checkOutDate: checkOutDate.val()
+        },
+        success: function (response) {
+        console.log("Server response:", response);
+
+        validationMessage.empty();
+        alternativeDatesContainer.empty();
+
+        if (response == true || response.isAvailable == true) {
+        validationMessage.text(response.message).css('color', 'green');
+        $('button[type="submit"]#book-btn').prop('disabled', false);
+        } else {
+        validationMessage.text(response.message).css('color', 'red');
+        $('button[type="submit"]#book-btn').prop('disabled', true);
+
+        if (response.alternatives?.$values && response.alternatives.$values.length > 0) {
+
+        const altDatesContainer = $('#alternativeDates');
+        altDatesContainer.append('<p>Suggested alternative dates:</p>');
+
+        response.alternatives.$values.forEach(function (alt, index) {
+        console.log(`Alternative ${index + 1}: Check-In: ${alt.startDate}, Check-Out: ${alt.endDate}`);
+        const altDateText = `Check-In: ${alt.startDate} </br> Check-Out: ${alt.endDate}`;
+        altDatesContainer.append(`<p>${altDateText}</p>`);
+        });
+        }
+        }
+        },
+        error: function (xhr, status, error) {
+        console.error("AJAX error:", error);
+        validationMessage.text('An error occurred while checking room availability. Please try again later.').css('color', 'red');
+        $('button[type="submit"]#book-btn').prop('disabled', true);
+        }
+        });
+        }
+        }
+        // Validate capacity selection
+        capacityField.on('change', function () {
+        const capacityValue = $(this).val();
+        if (!capacityValue) {
+        validationMessage.text('Capacity is required.').css('color', 'red');
+        $('button[type="submit"]#book-btn').prop('disabled', true);
+        } else {
+        validationMessage.text('');
+        $('button[type="submit"]#book-btn').prop('disabled', false);
+        }
+        });
+
+        // Attach event listeners
+        checkInDate.on('change', checkRoomAvailability);
+        checkOutDate.on('change', checkRoomAvailability);
+        capacityField.on('change', checkRoomAvailability);
+
+        // Handle form submission
+        $('form#createReservation').on('submit', function (event) {
+        if (!checkInDate.val() || !checkOutDate.val()) {
+        validationMessage.text('Both Check-In and Check-Out dates are required.').css('color', 'red');
+        event.preventDefault();
+        }
+
+        if (!capacityField.val()) {
+        validationMessage.text('Capacity is required.').css('color', 'red');
+        event.preventDefault();
+        }
+        });
+
+        // Initial calculation for pre-filled dates
+        calculateDaysReserved();
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        const form = document.querySelector('#filterForm');
+        const buttons = form.querySelectorAll('.star-filter-btn');
+
+        buttons.forEach(button => {
+        button.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent form default submission
+
+        // Get the star rating value
+        const starRating = event.currentTarget.getAttribute('data-value');
+
+        // Add 'active' class to the clicked button
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // Perform AJAX request
+        fetch(`${form.action}?starRating=${starRating}`, {
+        method: 'GET',
+        headers: {
+        'X-Requested-With': 'XMLHttpRequest', // Signal an AJAX request
+        },
+        })
+        .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.text();
+        })
+        .then(data => {
+        // Update the feedback container
+        const feedbackContainer = document.querySelector('#feedback-container');
+        feedbackContainer.innerHTML = data;
+        })
+        .catch(error => {
+        console.error('Error:', error);
+        });
+        });
+        });
+        });
+    </script>
+}
+
+
+<!-- Page Preloder -->
+<div id="preloder">
+    <div class="loader"></div>
+</div>
+
+<!-- Breadcrumb Section Begin -->
+<div class="breadcrumb-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb-text">
+                    <h2>Our Rooms</h2>
+                    <div class="bt-option">
+                        <a asp-action="Index" asp-controller="Home">Home</a>
+                        <span>Rooms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb Section End -->
+<!-- Room Details Section Begin -->
+<section class="room-details-section spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="room-details-item">
+                    @* <img src="~/images/Rooms/room-details.jpg" alt=""> *@
+                    <div class="slideshow-container">
+                        @if (Model.RoomTypeImages != null && Model.RoomTypeImages.Count != 0)
+                        {
+                            int i = 1;
+                            foreach (var img in Model.RoomTypeImages)
+                            {
+                                <div class="slides">
+                                    <img src="/images/RoomType/@img.Name" alt="@img.Name" style="height:35rem">
+                                </div>
+
+                            }
+                            <button class="prev">&#10094;</button>
+                            <button class="next">&#10095;</button>
+
+                            <div class="dots">
+
+                                @foreach (var img in Model.RoomTypeImages)
+                                {
+                                    <span class="dot" onclick="currentSlide(@i++)"></span>
+                                }
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <div class="rd-text">
+                        <div class="rd-title">
+                            <h3>@(Model?.RoomType?.Name ?? "Room")</h3>
+                            @if (Model?.AvgRate != null && Model.AvgRate > 0)
+                            {
+                                <div class="rdt-right">
+                                    <div class="Stars" style="--rating: @(Model.AvgRate);" aria-label="Rating of this product is @(Model.AvgRate) out of 5."></div>
+                                </div>
+                            }
+                        </div>
+                        <h2>RM @(Model?.RoomType?.Price.ToString("F2") ?? "0.00")<span>/Pernight</span></h2>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td class="r-o">Size:</td>
+                                    <td>30 ft</td>
+                                </tr>
+                                <tr>
+                                    <td class="r-o">Capacity:</td>
+                                    <td>Max person @(Model?.RoomType?.Capacity ?? 0)</td>
+                                </tr>
+                                <tr>
+                                    <td class="r-o">Bed:</td>
+                                    <td>@(Model?.RoomType?.Name ?? "A Room Type")</td>
+                                </tr>
+                                <tr>
+                                    <td class="r-o">Services:</td>
+                                    <td>Wifi, Television, Bathroom,...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>
+                            @(Model?.Description ?? "This room have a good views.")
+                        </p>
+                    </div>
+                </div>
+                @* Review Part *@
+
+            </div>
+            <div class="col-lg-4">
+                <div class="room-booking">
+                    <h3>Your Reservation</h3>
+                    <div>
+                        @{
+                            string min = DateTime.Today.ToString("yyyy-MM-dd");
+                            string max = DateTime.Today.AddDays(90).ToString("yyyy-MM-dd");
+                        }
+                        <p style="font-weight: bold; color: #DFA974; font-size: 12px">
+                            - Check-In must be within 90 days range <br> (from @min to @max)<br>
+                            - Check-Out must be within 10 days range after Check-In<br>
+                            - Check-Out cannot be the same as Check-In<br>
+                        </p>
+                    </div>
+
+                    <form asp-action="CreateReservation" asp-controller="Reservation" method="post">
+                        <!-- Check-In Date -->
+                        <div class="check-date">
+                            <label for="CheckInDate">Check In:</label>
+                            <input asp-for="CheckInDate" type="date" class="form-control" id="CheckInDate" required />
+                            <i class="icon_calendar"></i>
+                            <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                        </div>
+
+                        <!-- Check-Out Date -->
+                        <div class="check-date">
+                            <label for="CheckOutDate">Check Out:</label>
+                            <input asp-for="CheckOutDate" type="date" class="form-control" id="CheckOutDate" required />
+                            <i class="icon_calendar"></i>
+                            <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                        </div>
+
+                        <!-- Room Capacity Dropdown -->
+                        <div class="select-option">
+                            <label for="capacity">Capacity:</label>
+                            <select asp-for="SelectedCapacity" class="form-control" id="capacity" required>
+                                @foreach (var option in Model.CapacityOptions)
+                                {
+                                    <option value="@option">@option</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Radys Reserved (readonly field) -->
+                        <div class="form-group">
+                            <label>Days Reserved</label>
+                            <input type="text" id="DaysReserved" class="form-control" readonly />
+                        </div>
+
+
+                        <input type="hidden" name="RoomTypeId" value="@Model.RoomTypeId" />
+                        <input type="hidden" name="RoomId" value="@Model.RoomId" />
+                        <input type="hidden" name="RoomPrice" value="@Model.RoomPrice" />
+                        <input type="hidden" name="UserEmail" value="@Model.UserEmail" />
+                        <input type="hidden" name="UserName" value="@Model.UserName" />
+
+
+                        <!-- Submit Button -->
+                        <div id="validationMessage"></div>
+                        <div id="alternativeDates"></div>
+
+                        <button type="submit" id="book-btn" class="btn btn-primary">Book Now</button>
+
+                    </form>
+                </div>
+            </div>
+
+            @if (Model.Feedback != null && Model.Feedback.Count != 0)
+            {
+                <div class="rd-reviews" style="width:100%">
+                    <h4>Reviews</h4>
+                    <div class="ratings-container">
+                        <div class="ratings-header">
+                            <h1 style="font-weight: bold;">@Model.AvgRate 🌟</h1>
+                            <p>@Model.FeedbackTotal review(s)</p>
+                        </div>
+
+
+                        @foreach (var rt in Model.RatingPercentages)
+                        {
+                            <div class="rating-bar">
+                                <span>@rt.Rating</span>
+                                <div class="bar">
+                                    <div class="bar-fill" style="--dynamic-width: @rt.Percentage;"></div>
+                                </div>
+                                <span class="rating-label">@rt.Percentage</span>
+                            </div>
+                        }
+
+
+                        <form data-ajax="true"
+                              data-ajax-update="#feedback-container"
+                              data-ajax-loading="#loader"
+                              id="filterForm" method="post">
+
+                            <div style="display:flex; gap:0.5rem; align-items:center; justify-content:center;">
+                                <button type="button" class="btn btn-outline-primary star-filter-btn active" style="width:6rem; height:3rem; display:flex; align-items:center; justify-content:center;" data-value="0">All<span style="color:gold;">★</span></button>
+
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <button type="button" class="btn btn-outline-primary star-filter-btn"
+                                            style="width:6rem; height:3rem; display:flex; align-items:center; justify-content:center;" data-value="@i">
+                                        @i<span style="color:gold;">★</span>
+                                    </button>
+                                }
+                            </div>
+                        </form>
+                    </div>
+
+                    <span id="feedback-container">
+                        @Html.Partial("_FeedbackList", Model.Feedback) <!-- Load initial data -->
+
+                    </span>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- Room Details Section End -->
+
+@* <script>
+                                     let slideIndex = 1;
+    showSlides(slideIndex);
+
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    function showSlides(n) {
+        let i;
+        const slides = document.querySelectorAll(".slides");
+        const dots = document.querySelectorAll(".dot");
+
+        if (n > slides.length) slideIndex = 1;
+        if (n < 1) slideIndex = slides.length;
+
+        slides.forEach(slide => slide.style.display = "none");
+        dots.forEach(dot => dot.className = dot.className.replace(" active", ""));
+
+        slides[slideIndex - 1].style.display = "block";
+        dots[slideIndex - 1].className += " active";
+    }
+
+    document.querySelector(".prev").addEventListener("click", () => plusSlides(-1));
+    document.querySelector(".next").addEventListener("click", () => plusSlides(1));
+</script> *@
+
+
+@* <script>
+    let slideIndex = 1;
+    let slideInterval;
+
+    function plusSlides(n) {
+        clearInterval(slideInterval);
+        showSlides(slideIndex += n);
+        autoSlide();
+    }
+
+    function currentSlide(n) {
+        clearInterval(slideInterval);
+        showSlides(slideIndex = n);
+        autoSlide();
+    }
+
+    function showSlides(n) {
+        let i;
+        const slides = document.querySelectorAll(".slides");
+        const dots = document.querySelectorAll(".dot");
+
+        if (n > slides.length) slideIndex = 1;
+        if (n < 1) slideIndex = slides.length;
+
+        slides.forEach(slide => slide.style.display = "none");
+        dots.forEach(dot => dot.className = dot.className.replace(" active", ""));
+
+        slides[slideIndex - 1].style.display = "block";
+        dots[slideIndex - 1].className += " active";
+    }
+
+    function autoSlide() {
+        slideInterval = setInterval(() => {
+            plusSlides(1);
+        }, 5000); // Change image every 5 seconds
+    }
+
+    document.querySelector(".prev").addEventListener("click", () => plusSlides(-1));
+    document.querySelector(".next").addEventListener("click", () => plusSlides(1));
+
+    showSlides(slideIndex);
+    autoSlide();
+</script> *@
+
+
+<script>
+    let slideIndex = 1;
+    let slideInterval;
+
+    function plusSlides(n) {
+        clearInterval(slideInterval);
+        showSlides(slideIndex += n);
+        autoSlide();
+    }
+
+    function currentSlide(n) {
+        clearInterval(slideInterval);
+        showSlides(slideIndex = n);
+        autoSlide();
+    }
+
+    function showSlides(n) {
+        let i;
+        const slides = document.querySelectorAll(".slides");
+        const dots = document.querySelectorAll(".dot");
+
+        if (n > slides.length) slideIndex = 1;
+        if (n < 1) slideIndex = slides.length;
+
+        slides.forEach(slide => {
+            slide.classList.remove("active-slide");
+            slide.style.display = "none";
+        });
+
+        dots.forEach(dot => dot.className = dot.className.replace(" active", ""));
+
+        slides[slideIndex - 1].style.display = "block";
+        slides[slideIndex - 1].classList.add("active-slide");
+        dots[slideIndex - 1].className += " active";
+    }
+
+    function autoSlide() {
+        slideInterval = setInterval(() => {
+            plusSlides(1);
+        }, 5000); // Change image every 5 seconds
+    }
+
+    document.querySelector(".prev").addEventListener("click", () => plusSlides(-1));
+    document.querySelector(".next").addEventListener("click", () => plusSlides(1));
+
+    showSlides(slideIndex);
+    autoSlide();
+</script>

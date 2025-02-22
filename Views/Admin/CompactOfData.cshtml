@@ -1,0 +1,398 @@
+﻿@{
+    ViewData["Title"] = "Compact Of Data";
+}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Include JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<!-- Add the XLSX library before your custom script that calls it -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Include ExcelJS -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<div class="container">
+    <br /><br />
+    <div class="bg-white text-dark shadow p-3 mb-5 bg-body-tertiary rounded">
+
+        <div class="row">
+            <!-- Chart Selection Section -->
+            <div class="col-md-4">
+                <h3>Chart Selection</h3>
+                <div class="mb-3">
+                    <label for="dataType" class="form-label">Data Type</label>
+                    <select class="form-select" id="dataType">
+                        <option value="">Select</option>
+                        <option value="reservation">Reservation</option>
+                        <option value="revenue">Revenue</option>
+                        <option value="user">User</option>
+                        <option value="membership">Members Last Check In Date</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="chartType" class="form-label">Chart Type</label>
+                    <select class="form-select" id="chartType">
+                        <option value="polarArea">Polar Area Chart</option>
+                        <option value="bar">Bar Chart</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="doughnut">Donut Chart</option>
+
+                    </select>
+                </div>
+            </div>
+
+            <!-- Data Range Section -->
+            <div class="col-md-4">
+                <h3>Data Range 1</h3>
+                <div class="mb-3">
+                    <label for="startDate1" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate1">
+                </div>
+                <div class="mb-3">
+                    <label for="endDate1" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate1">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <h3>Data Range 2</h3>
+                <div class="mb-3">
+                    <label for="startDate2" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate2">
+                </div>
+                <div class="mb-3">
+                    <label for="endDate2" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate2">
+                </div>
+            </div>
+
+            <!-- Action Buttons Section -->
+            <div class="col-md-4 d-flex flex-column justify-content-between">
+                <!-- Generate and Download Buttons -->
+                <div class="mb-3">
+                    <button class="btn btn-primary" id="generateChartsBtn">Generate Combined Chart</button>
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-secondary" id="downloadPdfBtn" style="display: none;">Download PDF</button>
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-success" id="exportExcelBtn" style="display: none;">Export to Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
+        <!-- Alert messages will be appended here -->
+    </div>
+
+
+    <br /><br /><br />
+    <div class="chart-container ">
+        <div id="chartArea" style="height: 400px;top:20px;"></div>
+    </div>
+
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        var chartGenerated = false;
+        var chartInstance = null;
+        var responseData = null;  // Declare a global variable to store response data
+
+        $('#generateChartsBtn').click(function () {
+            var chartType = $('#chartType').val();
+            var dataType = $('#dataType').val();
+            var startDate1 = $('#startDate1').val();
+            var endDate1 = $('#endDate1').val();
+            var startDate2 = $('#startDate2').val();
+            var endDate2 = $('#endDate2').val();
+
+            if (!chartType || !dataType || !startDate1 || !endDate1 || !startDate2 || !endDate2) {
+                showAlert("Please fill all fields before generating the chart.", false);
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/GenerateData',
+                method: 'POST',
+                data: {
+                    chartType: chartType,
+                    dataType: dataType,
+                    startDate1: startDate1,
+                    endDate1: endDate1,
+                    startDate2: startDate2,
+                    endDate2: endDate2
+                },
+                success: function (response) {
+                    console.log(response); // Check the response in the console
+
+                    if (response.success) {
+                        responseData = response;
+                        chartGenerated = true;
+                        $('#downloadPdfBtn').show();
+                        $('#exportExcelBtn').show(); // Show Export to Excel Button
+                        console.log("Hello1");
+                        renderCombinedChart(response.combinedDateRanges, response.totalData1, response.totalData2, chartType);
+                    } else {
+                        showAlert(response.message || "Invalid response data.", false);
+                    }
+                },
+                error: function () {
+                    showAlert("An error occurred while generating the charts.", false);
+                }
+            });
+        });
+
+        function renderCombinedChart(labels, totalData1, totalData2, chartType) {
+            var chartContainer = document.getElementById('chartArea'); // Get the div container
+
+            // Clear the div content before rendering the new chart
+            chartContainer.innerHTML = '';
+
+            // Create a canvas element dynamically
+            var canvas = document.createElement('canvas');
+            canvas.id = 'combinedChartCanvas'; // Assign an ID to the canvas
+            chartContainer.appendChild(canvas); // Add the canvas inside the div
+
+            var ctx = canvas.getContext('2d'); // Get the context for the chart
+
+            // Destroy the previous chart if it exists
+            if (window.myChart) {
+                window.myChart.destroy(); // Destroy the existing chart
+            }
+
+            console.log("Hello4");
+            // Create a new chart and store the reference in window.myChart
+            window.myChart = new Chart(ctx, {
+                type: chartType, // Choose chart type based on user selection
+                data: {
+                    labels: labels.$values, // Use the combined date ranges as labels
+                    datasets: [{
+                        data: [totalData1, totalData2], // Use totalData1 for Range 1
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.2)', // Blue color for the first data point
+                            'rgba(255, 99, 132, 0.2)'  // Red color for the second data point
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)', // Blue border for the first data point
+                            'rgba(255, 99, 132, 1)'  // Red border for the second data point
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true, // This ensures the chart resizes based on the div size
+                    maintainAspectRatio: false, // Allow resizing the chart within the div
+                    scales: {
+                            x: { title: { display: true, text: 'Dates' } },
+                            y: { title: { display: true, text: 'Amount' }, beginAtZero: true }
+                    },
+                    layout: {
+                     padding: 20 // Optional padding to keep the content away from edges
+                     },
+                    plugins: {
+                        legend: {
+                            display: false // Hide the legend
+                        }
+                    }
+                }
+            });
+        }
+
+    // Download PDF Button
+    $('#downloadPdfBtn').click(function () {
+        if (!chartGenerated) {
+            showAlert("You must generate the chart first before downloading the PDF.", false);
+            return;
+        }
+
+        // Ensure that responseData is set before using it
+        if (!responseData) {
+            showAlert("No data available for PDF download.", false);
+            return;
+        }
+
+        // Use the responseData to generate PDF
+        var { labels1, data1, labels2, data2 } = responseData;  // Destructure the responseData
+
+        // Log the destructured data
+        console.log("Data to be used for PDF generation:", labels1.$values, data1.$values, labels2.$values, data2.$values);
+
+        if (!labels1 || !data1 || !labels2 || !data2) {
+            showAlert("Missing data for generating PDF.", false);
+            return;
+        }
+
+        // Combine the data into a single table format
+        var combinedTableData = [];
+
+        // Combine labels and data from Range 1
+        for (var i = 0; i < labels1.$values.length; i++) {
+            combinedTableData.push([labels1.$values[i], data1.$values[i], '', '']);
+        }
+
+        // Combine labels and data from Range 2
+        for (var i = 0; i < labels2.$values.length; i++) {
+            if (i < labels1.$values.length) {
+                combinedTableData[i][2] = labels2.$values[i];
+                combinedTableData[i][3] = data2.$values[i];
+            } else {
+                combinedTableData.push([ '', '', labels2.$values[i], data2.$values[i]]);
+            }
+        }
+
+        // Prompt user for title and filename
+        var title = prompt("Enter the title for your PDF report:", "Data Report");
+        var filename = prompt("Enter the filename for your PDF (without extension):", "DataReport");
+
+        if (!title || !filename) {
+            showAlert("Title and filename are required to generate the PDF.", false);
+            return;
+        }
+
+        // Sanitize the title and filename for safe usage in the document and filename
+        var sanitizedTitle = title.replace(/[\/:*?"<>|]/g, '').trim();
+        var sanitizedFilename = filename.replace(/[\/:*?"<>|]/g, '').trim();
+
+        if (!sanitizedTitle || !sanitizedFilename) {
+            showAlert("Invalid title or filename provided.", false);
+            return;
+        }
+
+        // Initialize the PDF document
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Add title
+        doc.text(sanitizedTitle, 105, 20, { align: 'center' });
+
+        // Add chart image
+        var chartImage = window.myChart.toBase64Image();
+        doc.addImage(chartImage, 'PNG', 15, 30, 180, 90);
+
+        // Add table header and data
+        var headers = ['Date Range 1', 'Data 1', 'Date Range 2', 'Data 2'];
+        doc.autoTable({ startY: 120, head: [headers], body: combinedTableData });
+
+        // Save the PDF with the dynamic filename
+        doc.save(sanitizedFilename + '.pdf');
+    });
+
+    $('#exportExcelBtn').click(async function () {
+        if (!chartGenerated || !responseData) {
+            showAlert("No data available to export.", false);
+            return;
+        }
+
+        const { labels1, data1, labels2, data2 } = responseData;
+
+        // Prompt user for title and filename
+        const title = prompt("Enter the title for your Excel report:", "Data Report");
+        const filename = prompt("Enter the filename for your Excel export (without extension):", "DataWithChart");
+
+        if (!title || !filename) {
+            showAlert("Title and filename are required to export the data.", false);
+            return;
+        }
+
+        // Sanitize title and filename for safe usage
+        const sanitizedTitle = title.replace(/[\/:*?"<>|]/g, '').trim();
+        const sanitizedFilename = filename.replace(/[\/:*?"<>|]/g, '').trim();
+
+        if (!sanitizedTitle || !sanitizedFilename) {
+            showAlert("Invalid title or filename provided.", false);
+            return;
+        }
+
+        // Create a temporary canvas to add a white background
+        const tempCanvas = document.createElement('canvas');
+        const originalCanvas = window.myChart.canvas;
+        tempCanvas.width = originalCanvas.width;
+        tempCanvas.height = originalCanvas.height;
+        const ctx = tempCanvas.getContext('2d');
+
+        // Fill the temporary canvas with a white background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Draw the chart on top of the white background
+        ctx.drawImage(originalCanvas, 0, 0);
+
+        // Convert the canvas with the white background to a base64 image
+        const chartImage = tempCanvas.toDataURL('image/png');
+
+        // Calculate the aspect ratio
+        const aspectRatio = originalCanvas.width / originalCanvas.height;
+        const maxWidth = 1000; // Maximum width for the image in Excel
+        const maxHeight = 500; // Maximum height for the image in Excel
+        let imageWidth = maxWidth;
+        let imageHeight = maxHeight;
+
+        // Adjust the dimensions while maintaining the aspect ratio
+        if (aspectRatio > 1) {
+            // Landscape orientation
+            imageHeight = maxWidth / aspectRatio;
+        } else {
+            // Portrait orientation
+            imageWidth = maxHeight * aspectRatio;
+        }
+
+        // Create a new workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Chart Data');
+
+        // Add data table
+        worksheet.addRow(['Date Range 1', 'Data 1', 'Date Range 2', 'Data 2']);
+        for (let i = 0; i < Math.max(labels1.$values.length, labels2.$values.length); i++) {
+            worksheet.addRow([
+                labels1.$values[i] || '',
+                data1.$values[i] || '',
+                labels2.$values[i] || '',
+                data2.$values[i] || '',
+            ]);
+        }
+
+        // Add the responsive chart image to the Excel sheet
+        const imageId = workbook.addImage({
+            base64: chartImage,
+            extension: 'png',
+        });
+        worksheet.addImage(imageId, {
+            tl: { col: 0, row: labels1.$values.length + 3 }, // Position of the image
+            ext: { width: imageWidth, height: imageHeight }, // Responsive dimensions
+        });
+
+        // Save the workbook
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), sanitizedFilename + '.xlsx');
+    });
+
+
+
+
+
+
+
+    function showAlert(message, isSuccess) {
+        var alertType = isSuccess ? 'alert-success' : 'alert-danger';
+        var alertHTML = `
+            <div class="alert ${alertType} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        $('#alertContainer').html(alertHTML);
+    }
+    });
+
+</script>
+

@@ -1,0 +1,1953 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.RoomTypeUpdateVM
+
+@section head {
+    <style>
+        .form-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 20px;
+            gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                padding: 1rem;
+                box-sizing: border-box;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+            .form-group textarea {
+                resize: vertical;
+            }
+
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+            margin-bottom: 2rem;
+        }
+
+        .dropbox {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            background-color: #f9f9f9;
+            transition: background-color 0.3s;
+        }
+
+            .dropbox:hover {
+                background-color: #f1f1f1;
+            }
+
+        .plus-icon {
+            font-size: 36px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        button#selectImages {
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            button#selectImages:hover {
+                background-color: #0056b3;
+            }
+
+        .preview-container {
+            /*   display: flex;
+                                                        flex-wrap: wrap;
+                                                        margin-top: 20px;
+                                                        gap: 10px;
+                                                        align-items: center;
+                                                        justify-content: center; */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px; /* Adjusted for easier alignment */
+            align-items: flex-start;
+            justify-content: flex-start; /* Ensure consistent alignment */
+        }
+
+            .preview-container img {
+                width: 100px;
+                height: 100px;
+                object-fit: cover;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+        .image-container.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .image-container.dragging-over {
+            border: 2px dashed #007bff;
+            padding: 8px;
+            margin: 4px;
+            transition: all 0.2s ease;
+        }
+
+
+
+        /* Container styling for images */
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+            cursor: grab;
+        }
+
+            /* Styling the image */
+            .image-container img {
+                width: 100px;
+                height: 100px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+        .placeholder {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            margin: 10px;
+            background-color: rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+
+        /* Cancel button styling */
+        .cancel-button {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            width: 10px;
+            height: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+            .cancel-button:hover {
+                background-color: #ff1a1a;
+            }
+
+        .field-validation-error,
+        .validation-summary-errors {
+            color: red;
+        }
+        /* Modal Style */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            overflow: auto; /* Allow scrolling if necessary */
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+
+        /* Modal Content */
+        .modal-content {
+            margin: 1rem auto;
+            /* display: block; */
+            width: 80%;
+            max-width: 700px;
+            /* animation: zoomIn 0.5s; */
+            transition: transform 0.5s ease-in-out; /* Smooth zooming */
+        }
+
+        /* Caption Text */
+        # /* caption {
+                                                        text-align: center;
+                                                        color: #ccc;
+                                                        font-size: 1.2em;
+                                                        padding: 10px;
+                                                        } */
+        /* Close Button */
+        .close {
+            /*        position: absolute;
+                                                        top: 15px;
+                                                        right: 35px;
+                                                        color: #fff;
+                                                        font-size: 40px;
+                                                        font-weight: bold;
+                                                        transition: 0.3s; */
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            cursor: pointer;
+        }
+        /* Navigation buttons (Previous and Next) */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 30px;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            z-index: 10;
+        }
+
+        .prev-btn {
+            left: 10px;
+        }
+
+        .next-btn {
+            right: 10px;
+        }
+
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* ads
+
+
+
+
+                        */
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .image-container {
+            position: relative;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: grab;
+            background-color: white;
+        }
+
+            /* Hover effect for draggable containers */
+            .image-container:hover {
+                transform: scale(1.02);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                border-color: #4a90e2;
+            }
+
+            /* Style when actually dragging */
+            .image-container.dragging {
+                cursor: grabbing;
+                opacity: 0.7;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                border: 2px solid #4a90e2;
+            }
+
+            /* Style for the container being dragged over */
+            .image-container.drag-over {
+                border: 2px dashed #4a90e2;
+                transform: scale(1.05);
+                background-color: rgba(74, 144, 226, 0.1);
+            }
+
+                /* Add a subtle indicator that shows where the image will be dropped */
+                .image-container.drag-over::before {
+                    content: '';
+                    position: absolute;
+                    top: -10px;
+                    left: 0;
+                    right: 0;
+                    height: 2px;
+                    background-color: #4a90e2;
+                    border-radius: 2px;
+                }
+
+        .preview-image {
+            display: block;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+            .preview-image:hover {
+                filter: brightness(0.95);
+            }
+
+        .cancel-button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            padding: 0;
+            line-height: 1;
+            transition: all 0.2s ease;
+            opacity: 0.8;
+        }
+
+            .cancel-button:hover {
+                background: #cc0000;
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+        /* Add a grip handle to indicate draggability */
+        .image-container::after {
+            content: '⋮⋮';
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            color: rgba(0, 0, 0, 0.5);
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .image-container:hover::after {
+            opacity: 1;
+        }
+    </style>
+    @* <script src="~/js/dragAdrop.js" asp-append-version="true"></script> *@
+    <script>
+        $(document).ready(function () {
+        $('input.input-validation-error').on('change', function () {
+        $('span.field-validation-error').text("");
+        });
+        const endRoom = document.getElementById('EndRoom');
+        const startRoom = document.getElementById('StartRoom');
+        let debounceTimeout;
+
+        // Stop user to press enter in textbox
+        $("input:text").keypress(function (event) {
+        if (event.keyCode == 13) {
+        event.preventDefault();
+        return false;
+        }
+        });
+
+        // When StartRoom changes
+        $('#StartRoom').on('input', function () {
+        const startValue = startRoom.value.trim(); // Trim spaces
+        const endValue = endRoom.value.trim(); // Trim spaces
+
+        if (endValue !== "") {
+        // Validate both fields if EndRoom is not empty
+        debounceTimeout = setTimeout(() => {
+        var inputStartValid = $('#StartRoom').valid();
+        var inputEndValid = $('#EndRoom').valid();
+        if (inputStartValid && inputEndValid) {
+        uploadQuantity(startValue, endValue);
+        }
+        }, 100); // Delay of 500ms (adjust as needed)
+        } else {
+        // Only validate StartRoom
+        $('#StartRoom').valid();
+        }
+        });
+
+        // When EndRoom changes
+        $('#EndRoom').on('keyup blur change', function () {
+        const startValue = $('#StartRoom').val().trim();
+        const endValue = $('#EndRoom').val().trim();
+
+        if (startValue !== "") {
+        // Clear the previous timeout to debounce
+        clearTimeout(debounceTimeout);
+
+        // Set a delay before executing the AJAX request
+        debounceTimeout = setTimeout(() => {
+        const inputStartValid = $('#StartRoom').valid();
+        const inputEndValid = $('#EndRoom').valid();
+
+        if (inputStartValid && inputEndValid) {
+        uploadQuantity(startValue, endValue);
+        }
+        }, 100); // Delay of 500ms (adjust as needed)
+        } else {
+        $('#EndRoom').valid();
+        }
+        });
+
+        $('#Name').on('keyup', function () {
+        $('#Name').valid();
+        });
+
+        $('#Description').on('keyup', function () {
+        $('#Description').valid();
+        });
+
+        $('#Price').on('keyup', function () {
+        $('#Price').valid();
+        });
+        $('#RoomQuantity').on('keyup', function () {
+        $('#RoomQuantity').valid();
+        });
+        $('#RoomCapacity').on('keyup', function () {
+        $('#RoomCapacity').valid();
+        });
+        });
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+        // // Get the modal
+        // const modal = document.getElementById("imageModal");
+        // // Get the image element inside the modal
+        // const modalImage = document.getElementById("modalImage");
+        // // Get the caption element
+        // // const caption = document.getElementById("caption");
+        // // Get the close button
+        // const previewImages = document.querySelectorAll('.preview-image');
+        // const prevBtn = document.getElementById("prevBtn");
+        // const nextBtn = document.getElementById("nextBtn");
+        // const closeModal = document.getElementById("closeModal");
+
+        // // Store all image URLs in an array for easy navigation
+        // let imageUrls = [];
+        // previewImages.forEach((image) => {
+        // imageUrls.push(image.src);
+        // });
+
+        // // Function to show image in a modal with zoom animation
+        // function showImageModal(imageUrl) {
+        // const modal = document.getElementById("imageModal");
+        // const modalImage = document.getElementById("modalImage");
+
+        // // Set modal image and make it visible
+        // modalImage.src = imageUrl;
+        // modal.style.display = "flex";
+
+        // // Apply zoom-in animation
+        // applyZoomInAnimation(modalImage);
+        // }
+
+        // // Function to apply zoom animation
+        // function applyZoomInAnimation(element) {
+        // const keyframes = [
+        // { transform: 'scale(0.7)' },  // Start state
+        // { transform: 'scale(1)' }     // End state
+        // ];
+        // const animationOptions = {
+        // duration: 500,
+        // easing: 'ease-in-out',
+        // fill: 'forwards'
+        // };
+        // element.animate(keyframes, animationOptions);
+        // }
+
+        // // When any preview image is clicked, open the modal and show the image
+        // previewImages.forEach((image, index) => {
+        // image.addEventListener('click', function () {
+        // modalImage.src = this.src;  // Set the clicked image as the modal image source
+        // modal.style.display = "flex";  // Show the modal
+        // applyZoomInAnimation(modalImage);  // Apply zoom-in animation
+
+        // // Set the current index for image navigation
+        // currentImageIndex = index;
+        // });
+        // });
+
+
+        // // Close the modal
+        // closeModal.addEventListener('click', function () {
+        // modal.style.display = "none";  // Close the modal
+        // });
+
+        // // Handle navigation buttons (Previous and Next)
+        // let currentImageIndex = 0;
+
+        // prevBtn.addEventListener('click', function () {
+        // currentImageIndex = (currentImageIndex === 0) ? imageUrls.length - 1 : currentImageIndex - 1;
+        // modalImage.src = imageUrls[currentImageIndex];  // Set the previous image
+        // applyZoomInAnimation(modalImage);  // Apply zoom-in animation
+        // });
+
+        // nextBtn.addEventListener('click', function () {
+        // currentImageIndex = (currentImageIndex === imageUrls.length - 1) ? 0 : currentImageIndex + 1;
+        // modalImage.src = imageUrls[currentImageIndex];  // Set the next image
+        // applyZoomInAnimation(modalImage);  // Apply zoom-in animation
+        // });
+
+        // // When the user clicks anywhere outside the image, close the modal
+        // window.addEventListener('click', function(event) {
+        // if (event.target === modal) {
+        // modal.style.display = "none";  // Close the modal
+        // }
+        // });
+
+        // modal.style.display = "none";  // Close the modal
+
+        // previewContainer.addEventListener("click", function (event) {
+        // // Check if a cancel button was clicked
+        // if (event.target.classList.contains("cancel-button")) {
+        // const imageContainer = event.target.closest(".image-container");
+        // if (imageContainer) {
+        // // Remove the parent container of the image and the hidden input
+        // imageContainer.remove();
+        // }
+        // }
+        // });
+                // Initialize modal-related elements
+        const modal = document.getElementById("imageModal");
+        const modalImage = document.getElementById("modalImage");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const closeModal = document.getElementById("closeModal");
+
+        modal.style.display = "none";
+        // Function to reinitialize image modal functionality
+        function initializeImageModal() {
+            // Update the image URLs array
+            const previewImages = document.querySelectorAll('.preview-image');
+            imageUrls = Array.from(previewImages).map(image => image.src);
+
+            // Attach click event listeners to preview images
+            previewImages.forEach((image, index) => {
+                image.addEventListener('click', function () {
+                    modalImage.src = this.src;  // Set the clicked image as the modal image source
+                    modal.style.display = "flex";  // Show the modal
+                    applyZoomInAnimation(modalImage);  // Apply zoom-in animation
+
+                    // Set the current index for image navigation
+                    currentImageIndex = index;
+                });
+            });
+        }
+
+        // Function to apply zoom animation
+        function applyZoomInAnimation(element) {
+            const keyframes = [
+                { transform: 'scale(0.7)' },  // Start state
+                { transform: 'scale(1)' }     // End state
+            ];
+            const animationOptions = {
+                duration: 500,
+                easing: 'ease-in-out',
+                fill: 'forwards'
+            };
+            element.animate(keyframes, animationOptions);
+        }
+
+        // Close the modal
+        closeModal.addEventListener('click', function () {
+            modal.style.display = "none";  // Close the modal
+        });
+
+        // Handle navigation buttons (Previous and Next)
+        let currentImageIndex = 0;
+
+        prevBtn.addEventListener('click', function () {
+            currentImageIndex = (currentImageIndex === 0) ? imageUrls.length - 1 : currentImageIndex - 1;
+            modalImage.src = imageUrls[currentImageIndex];  // Set the previous image
+            applyZoomInAnimation(modalImage);  // Apply zoom-in animation
+        });
+
+        nextBtn.addEventListener('click', function () {
+            currentImageIndex = (currentImageIndex === imageUrls.length - 1) ? 0 : currentImageIndex + 1;
+            modalImage.src = imageUrls[currentImageIndex];  // Set the next image
+            applyZoomInAnimation(modalImage);  // Apply zoom-in animation
+        });
+
+        // When the user clicks anywhere outside the image, close the modal
+        window.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                modal.style.display = "none";  // Close the modal
+            }
+        });
+
+        // Call this function whenever images are added, removed, or rearranged
+        initializeImageModal();
+
+        // Example: Reinitialize modal when an image is removed
+        previewContainer.addEventListener("click", function (event) {
+            // Check if a cancel button was clicked
+            if (event.target.classList.contains("cancel-button")) {
+                const imageContainer = event.target.closest(".image-container");
+                if (imageContainer) {
+                    // Remove the parent container of the image and the hidden input
+                    imageContainer.remove();
+
+                    // Reinitialize the modal functionality
+                    initializeImageModal();
+                }
+            }
+        });
+
+        // Reinitialize when images are rearranged
+        previewContainer.addEventListener("dragend", function () {
+            // Reinitialize modal after rearranging images
+            initializeImageModal();
+        });
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+        //               function initializeDragAndDrop() {
+        //                   console.log("sajdjshd");
+        //     const container = document.getElementById('previewContainer');
+        //     const imageContainers = container.querySelectorAll('.image-container');
+
+        //     imageContainers.forEach(container => {
+        //         container.addEventListener('dragstart', handleDragStart);
+        //         container.addEventListener('dragover', handleDragOver);
+        //         container.addEventListener('drop', handleDrop);
+        //         container.addEventListener('dragenter', handleDragEnter);
+        //         container.addEventListener('dragleave', handleDragLeave);
+        //     });
+
+        //     let draggedElement = null;
+
+        //     function handleDragStart(e) {
+        //         draggedElement = this;
+        //         this.style.opacity = '0.4';
+        //         this.classList.add('dragging');
+        //     }
+
+        //     function handleDragOver(e) {
+        //         e.preventDefault();
+        //         return false;
+        //     }
+
+        //     function handleDragEnter(e) {
+        //         e.preventDefault();
+        //         this.classList.add('drag-over');
+        //     }
+
+        //     function handleDragLeave(e) {
+        //         this.classList.remove('drag-over');
+        //     }
+
+        //     function handleDrop(e) {
+        //         e.preventDefault();
+
+        //         if (draggedElement !== this) {
+        //             let items = [...container.querySelectorAll('.image-container')];
+        //             const fromIndex = items.indexOf(draggedElement);
+        //             const toIndex = items.indexOf(this);
+
+        //             if (fromIndex < toIndex) {
+        //                 this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        //             } else {
+        //                 this.parentNode.insertBefore(draggedElement, this);
+        //             }
+
+        //             updateImageOrder();
+
+        //             // Log the current order of images
+        //             logImageOrder();
+        //         }
+
+        //         this.classList.remove('drag-over');
+        //         draggedElement.style.opacity = '1';
+        //         draggedElement.classList.remove('dragging');
+        //         draggedElement = null;
+
+        //         return false;
+        //     }
+
+        //     function getImageFilename(imgElement) {
+        //         // Get the src attribute
+        //         const src = imgElement.getAttribute('src');
+        //         // Split the path and get the last part
+        //         const filename = src.split('/').pop();
+        //         return filename;
+        //     }
+
+        //     function logImageOrder() {
+        //         const images = container.querySelectorAll('.image-container img');
+        //         console.log("Current image order:");
+        //         const imageOrder = Array.from(images).map((img, index) => {
+        //             const filename = getImageFilename(img);
+        //             return `${index + 1}. ${filename}`;
+        //         });
+        //         console.log(imageOrder);
+        //     }
+
+        //     function updateImageOrder() {
+        //         // Remove existing hidden inputs
+        //         const existingInputs = container.querySelectorAll('input[name="ExistingPreviews"]');
+        //         existingInputs.forEach(input => input.remove());
+
+        //         // Create new hidden inputs in the current order
+        //         const images = container.querySelectorAll('.image-container img');
+        //         const imageOrder = [];
+
+        //         images.forEach((img, index) => {
+        //             const filename = getImageFilename(img);
+        //             imageOrder.push(filename);
+
+        //             const input = document.createElement('input');
+        //             input.type = 'hidden';
+        //             input.name = 'ExistingPreviews';
+        //             input.value = filename;
+        //             container.appendChild(input);
+        //         });
+
+        //         // You can send this order to your server if needed
+        //         // sendOrderToServer(imageOrder);
+        //     }
+
+        //     // Optional: Function to send order to server
+        //     function sendOrderToServer(imageOrder) {
+        //         fetch('/UpdateImageOrder', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             },
+        //             body: JSON.stringify({ order: imageOrder })
+        //         })
+        //         .then(response => response.json())
+        //         .then(data => console.log('Order updated:', data))
+        //         .catch(error => console.error('Error updating order:', error));
+        //     }
+
+        //     // Initial log of image order
+        //     logImageOrder();
+        // }
+
+        //       // Initial setup for drag and drop functionality
+        // function initializeImageHandling() {
+        //     const dropbox = document.getElementById("dropbox");
+        //     const fileInput = document.getElementById("Images");
+        //     const previewContainer = document.getElementById("previewContainer");
+        //     const selectImagesButton = document.getElementById("selectImages");
+
+        //     // Initialize sequence numbers for existing images
+        //     function initializeSequence() {
+        //         const images = previewContainer.querySelectorAll('.image-container');
+        //         images.forEach((container, index) => {
+        //             container.setAttribute('data-sequence', index + 1);
+        //             let sequenceDisplay = container.querySelector('.sequence-number');
+        //             if (!sequenceDisplay) {
+        //                 sequenceDisplay = document.createElement('div');
+        //                 sequenceDisplay.className = 'sequence-number';
+        //                 container.appendChild(sequenceDisplay);
+        //             }
+        //             sequenceDisplay.textContent = index + 1;
+        //         });
+        //     }
+
+        //     // Add drag and drop event listeners to all image containers
+        //     function initializeDragAndDrop() {
+        // let previewContainer = document.getElementById("previewContainer");
+
+        //         const imageContainers = previewContainer.querySelectorAll('.image-container');
+        //         imageContainers.forEach(container => {
+        //             container.addEventListener('dragstart', handleDragStart);
+        //             container.addEventListener('dragover', handleDragOver);
+        //             container.addEventListener('drop', handleDrop);
+        //             container.addEventListener('dragenter', handleDragEnter);
+        //             container.addEventListener('dragleave', handleDragLeave);
+        //         });
+        //     }
+
+        //     let draggedElement = null;
+
+        //     // Drag and drop handlers
+        //     // function handleDragStart(e) {
+        //     //     draggedElement = this;
+        //     //     this.style.opacity = '0.4';
+        //     //     this.classList.add('dragging');
+        //     // }
+
+        //             function handleDragStart(e) {
+        //     draggedElement = e.currentTarget; // Use `currentTarget` to ensure correct reference
+        //     this.style.opacity = '0.4';
+        //     this.classList.add('dragging');
+        // }
+
+        //     //     function handleDrop(e) {
+        //     // e.preventDefault();
+
+        //     // if (draggedElement && draggedElement !== this) {
+        //     //     const parent = this.parentNode;
+        //     //     if (parent) {
+        //     //         const items = [...previewContainer.querySelectorAll('.image-container')];
+        //     //         const fromIndex = items.indexOf(draggedElement);
+        //     //         const toIndex = items.indexOf(this);
+
+        //     //         if (fromIndex < toIndex) {
+        //     //             parent.insertBefore(draggedElement, this.nextSibling);
+        //     //         } else {
+        //     //             parent.insertBefore(draggedElement, this);
+        //     //         }
+
+        //     //         updateSequence();
+        //     //         updateImageOrder();
+        //     //     }
+        //     // }
+
+        //             function handleDrop(e) {
+        //     e.preventDefault();
+
+        //     if (draggedElement && draggedElement !== this) {
+        //         const parent = this.parentNode;
+        //         if (parent) {
+        //             const items = [...previewContainer.querySelectorAll('.image-container')];
+        //             const fromIndex = items.indexOf(draggedElement);
+        //             const toIndex = items.indexOf(this);
+
+        //             // Ensure draggedElement and this are valid nodes
+        //             if (fromIndex !== -1 && toIndex !== -1) {
+        //                 if (fromIndex < toIndex) {
+        //                     parent.insertBefore(draggedElement, this.nextSibling);
+        //                 } else {
+        //                     parent.insertBefore(draggedElement, this);
+        //                 }
+        //             }
+
+        //             updateSequence(); // Recalculate sequence numbers
+        //             updateImageOrder(); // Your custom function if needed
+        //         }
+        //     }
+
+        //     this.classList.remove('drag-over');
+        //     if (draggedElement) {
+        //         draggedElement.style.opacity = '1';
+        //         draggedElement.classList.remove('dragging');
+        //         draggedElement = null;
+        //     }
+        // }
+
+        // //     this.classList.remove('drag-over');
+        // //     draggedElement.style.opacity = '1';
+        // //     draggedElement.classList.remove('dragging');
+        // //     draggedElement = null;
+        // // }
+        //                 function isSelection() {
+        //     const selection = window.getSelection();
+
+        //     if (!selection || selection.rangeCount === 0) {
+        //         console.warn("No valid selection found.");
+        //         return null; // Return null for consistency
+        //     }
+
+        //     return selection.getRangeAt(0); // Safely return the range
+        // }
+
+        // function handleSelection() {
+        //     const range = isSelection();
+
+        //     if (!range) {
+        //         console.warn("No selection to handle.");
+        //         return; // Exit if no selection is available
+        //     }
+
+        //     console.log("Handling selection range:", range);
+        //     // Continue with logic to handle the range
+        // }
+
+        // // Attach event listeners for testing
+        // document.addEventListener("mouseup", handleSelection);
+        // document.addEventListener("keyup", handleSelection);
+
+
+        //     function handleDragOver(e) {
+        //         e.preventDefault();
+        //     }
+
+        //     function handleDragEnter(e) {
+        //         e.preventDefault();
+        //         this.classList.add('drag-over');
+        //     }
+
+        //     function handleDragLeave(e) {
+        //         this.classList.remove('drag-over');
+        //     }
+
+        //     // function handleDrop(e) {
+        //     //     e.preventDefault();
+
+        //     //     if (draggedElement !== this) {
+        //     //         const items = [...previewContainer.querySelectorAll('.image-container')];
+        //     //         const fromIndex = items.indexOf(draggedElement);
+        //     //         const toIndex = items.indexOf(this);
+
+        //     //         if (fromIndex < toIndex) {
+        //     //             this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        //     //         } else {
+        //     //             this.parentNode.insertBefore(draggedElement, this);
+        //     //         }
+
+        //     //         updateSequence();
+        //     //         updateImageOrder();
+        //     //     }
+
+        //     //     this.classList.remove('drag-over');
+        //     //     draggedElement.style.opacity = '1';
+        //     //     draggedElement.classList.remove('dragging');
+        //     //     draggedElement = null;
+        //     // }
+
+        //     // Modified handleFiles function to include sequence
+
+
+        //     // Function to update sequence numbers
+        //     function updateSequence() {
+        //         const images = previewContainer.querySelectorAll('.image-container');
+        //         images.forEach((container, index) => {
+        //             container.setAttribute('data-sequence', index + 1);
+        //             let sequenceDisplay = container.querySelector('.sequence-number');
+        //             if (!sequenceDisplay) {
+        //                 sequenceDisplay = document.createElement('div');
+        //                 sequenceDisplay.className = 'sequence-number';
+        //                 container.appendChild(sequenceDisplay);
+        //             }
+        //             sequenceDisplay.textContent = index + 1;
+        //         });
+        //     }
+
+        //     // Event listeners
+        //     dropbox.addEventListener("dragover", (e) => {
+        //         e.preventDefault();
+        //         dropbox.style.backgroundColor = "#e6e6e6";
+        //     });
+
+        //     dropbox.addEventListener("dragleave", () => {
+        //         dropbox.style.backgroundColor = "#f9f9f9";
+        //     });
+
+        //     dropbox.addEventListener("drop", (e) => {
+        //         e.preventDefault();
+        //         dropbox.style.backgroundColor = "#f9f9f9";
+        //         const files = Array.from(e.dataTransfer.files);
+        //         handleFiles(files);
+        //     });
+
+        //     selectImagesButton.addEventListener("click", () => {
+        //         fileInput.click();
+        //     });
+
+        //     fileInput.addEventListener("change", (e) => {
+        //         const files = Array.from(e.target.files);
+        //         handleFiles(files);
+        //     });
+
+        //     // Initialize sequence and drag-drop for existing images
+        //     initializeSequence();
+        //     initializeDragAndDrop();
+        // }
+
+        // // Add the required CSS
+        // const style = document.createElement('style');
+        // style.textContent = `
+        //     .image-container {
+        //         position: relative;
+        //         transition: opacity 0.3s ease;
+        //     }
+
+        //     .sequence-number {
+        //         position: absolute;
+        //         top: 5px;
+        //         left: 5px;
+        //         background-color: rgba(0, 0, 0, 0.7);
+        //         color: white;
+        //         border-radius: 50%;
+        //         width: 20px;
+        //         height: 20px;
+        //         display: flex;
+        //         align-items: center;
+        //         justify-content: center;
+        //         font-size: 12px;
+        //         font-weight: bold;
+        //         z-index: 1;
+        //     }
+
+        //     .dragging .sequence-number {
+        //         background-color: #4a90e2;
+        //     }
+
+        //     .fade-out {
+        //         opacity: 0;
+        //     }
+
+        //     .drag-over {
+        //         border: 2px dashed #4a90e2;
+        //     }
+        // `;
+        // document.head.appendChild(style);
+
+
+        //         let dropbox = document.getElementById("dropbox");
+        // let fileInput = document.getElementById("Images");
+        // let previewContainer = document.getElementById("previewContainer");
+        // let selectImagesButton = document.getElementById("selectImages");
+        // let imageUrls = [];
+
+        // Initialize drag-drop handlers for all image containers
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        // Handle file validation and previews
+        // const handleFiles = (files) => {
+        // const maxFiles = 5;
+        // const existingImages = previewContainer.querySelectorAll('.image-container');
+        // if (existingImages.length + files.length > maxFiles) {
+        // Swal.fire({
+        // icon: "error",
+        // title: "Limit Exceeded",
+        // text: `You can upload a maximum of ${maxFiles} images.`,
+        // });
+        // return;
+        // }
+
+        // files.forEach((file) => {
+        // // Validate file type
+        // if (!file.type.match("image.*")) {
+        // Swal.fire({
+        // icon: "error",
+        // title: "Invalid File",
+        // text: "Only image files are allowed.",
+        // });
+        // return;
+        // }
+
+        // // Validate FileReader support
+        // if (!window.FileReader) {
+        // console.error("FileReader is not supported in this browser.");
+        // return;
+        // }
+
+        // // Check file size (2MB limit)
+        // const maxFileSize = 2 * 1024 * 1024; // 2MB
+        // if (file.size > maxFileSize) {
+        // Swal.fire({
+        // icon: "error",
+        // title: "File Too Large",
+        // text: `${file.name} must be less than 2 MB.`,
+        // });
+        // return;
+        // }
+
+        // const reader = new FileReader();
+
+        // // FileReader event handlers
+        // reader.onload = (e) => {
+
+        // const imgContainer = document.createElement("div");
+        // imgContainer.classList.add("image-container");
+        // imgContainer.setAttribute("draggable", "true");
+
+        // // Create the image element
+        // const img = document.createElement("img");
+        // img.src = e.target.result;
+        // img.alt = "Room Image";
+        // img.classList.add("preview-image");
+        // img.style.width = "100px";
+        // img.style.height = "100px";
+        // img.style.cursor = "pointer";
+        // imgContainer.appendChild(img);
+        // // Add image URL to array and set click event for modal zoom
+        // imageUrls.push(e.target.result);
+        // img.addEventListener("click", () => showImageModal(e.target.result));
+
+        // // Create the cancel button
+        // const cancelButton = document.createElement("button");
+        // cancelButton.textContent = "✖";
+        // cancelButton.classList.add("cancel-button");
+        // cancelButton.addEventListener("click", () => {
+        // const index = imageUrls.indexOf(e.target.result);
+        // if (index !== -1) {
+        // imageUrls.splice(index, 1); // Remove from array
+        // }
+        // imgContainer.remove();
+        // if (!previewContainer.querySelector(".image-container")) {
+        // previewContainer.style.display = "none"; // Hide preview container if no images left
+        // }
+        // });
+
+        // cancelButton.addEventListener("click", () => {
+        // // Add a fade-out transition
+        // imgContainer.classList.add("fade-out");
+        // setTimeout(() => {
+        // imgContainer.remove();
+        // }, 300); // Matches CSS transition duration
+        // });
+        // imgContainer.appendChild(cancelButton);
+        // document.getElementById("previewContainer").appendChild(imgContainer);
+        // };
+
+        // reader.onerror = () => {
+        // console.error("Error reading file:", reader.error);
+        // };
+
+        // // Start reading the file
+        // reader.readAsDataURL(file);
+        // });
+        // };
+
+        // Trim input
+        $('[data-trim]').on('change', e => {
+        e.target.value = e.target.value.trim();
+        });
+
+        // Auto uppercase
+        $('[data-upper]').on('input', e => {
+        const a = e.target.selectionStart;
+        const b = e.target.selectionEnd;
+        e.target.value = e.target.value.toUpperCase();
+        e.target.setSelectionRange(a, b);
+        });
+
+        document.getElementById("submitBtn").addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent form submission
+        const isNameValid = $('#Name').valid();
+        const isDescriptionValid = $('#Description').valid();
+        const isPriceValid = $('#Price').valid();
+        const isRoomQuantityValid = $('#RoomQuantity').valid();
+        const isRoomCapacityValid = $('#RoomCapacity').valid();
+
+        // Combine results into a single flag
+        const isFormValid = isNameValid && isDescriptionValid &&
+        isPriceValid && isRoomQuantityValid &&
+        isRoomCapacityValid;
+
+        if (validateImages()) {
+        if (isFormValid) {
+        Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to submit the form?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, submit it!",
+        cancelButtonText: "No, cancel"
+        }).then((result) => {
+        if (result.isConfirmed) {
+
+        document.getElementById("RoomQuantity").disabled = false;
+        const form = document.querySelector("form");
+        const previewContainer = document.getElementById("previewContainer");
+        const images = previewContainer.getElementsByTagName("img");
+
+        const fileInput = document.getElementById("Images");
+        const fileList = new DataTransfer(); // Create a new DataTransfer object to manage files
+        // Convert base64 images in the preview container to files
+        // Array.from(images).forEach((img, index) => {
+        //     let fileName = `image_${index}`;
+
+        //     // Ensure there's no duplicate or invalid extension
+        //     const existingExtension = fileName.match(/\.(png|jpg|jpeg)$/i);
+        //     if (!existingExtension) {
+        //         fileName += ".png"; // Default to PNG if no valid extension is found
+        //     }
+
+        //     fetch(img.src)
+        //         .then(res => res.blob())
+        //         .then(blob => {
+        //             const validType = blob.type === "image/png" || blob.type === "image/jpeg";
+        //             if (!validType) {
+        //                 console.log(`Unsupported file type: ${blob.type}. Skipping file.`);
+        //                 return;
+        //             }
+
+        //             const file = new File([blob], fileName, { type: blob.type });
+        //             fileList.items.add(file);
+        //         })
+        //         .catch(err => {
+        //             console.error("Error processing image:", err);
+        //         });
+        // });
+
+                const imagePromises = Array.from(images).map((img, index) => {
+            let fileName = `image_${index}`;
+
+            // Ensure there's no duplicate or invalid extension
+            const existingExtension = fileName.match(/\.(png|jpg|jpeg)$/i);
+            if (!existingExtension) {
+                fileName += ".png"; // Default to PNG if no valid extension is found
+            }
+
+            return fetch(img.src)
+                .then(res => res.blob())
+                .then(blob => {
+                    const validType = blob.type === "image/png" || blob.type === "image/jpeg";
+                    if (!validType) {
+                        console.log(`Unsupported file type: ${blob.type}. Skipping file.`);
+                        return null; // Skip invalid file
+                    }
+
+                    return new File([blob], fileName, { type: blob.type });
+                })
+                .catch(err => {
+                    console.error("Error processing image:", err);
+                    return null; // Skip on error
+                });
+        });
+        Promise.all(imagePromises).then(files => {
+            // Add valid files to the file list
+            files.forEach(file => {
+                if (file) {
+                    fileList.items.add(file);
+                }
+            });
+                        fileInput.files = fileList.files;
+
+            // Submit the form
+            form.submit();
+        });
+        // Wait for all images to be processed
+        // setTimeout(() => {
+        // fileInput.files = fileList.files; // Assign the files to the file input element
+        // var id = document.getElementById("Id").value;
+        // // Submit the form
+        // form.submit();
+        // }, 500);
+
+
+
+        }
+        });
+        } else {
+        Swal.fire({
+        icon: "error",
+        title: "Invalid input.",
+        text: `Some fields are invalid.`,
+        });
+        }
+        }
+        });
+
+
+        // After form submission, check the preview container for existing images
+        // function checkExistingPreviews() {
+        //     const previewContainer = document.getElementById("previewContainer");
+        //     const existingPreviews = document.querySelectorAll('input[name="ExistingPreviews"]');
+
+        //     // Loop through existing previews (hidden inputs with URLs)
+        //     existingPreviews.forEach((input) => {
+        //         const previewUrl = input.value;
+
+        //         // Find the corresponding image container inside previewContainer
+        //         const imgContainer = document.querySelector(`div.image-container img[src="${previewUrl}"]`).parentNode;
+
+        //         if (imgContainer) {
+        //             // Create the cancel button
+        //             const cancelButton = document.createElement("button");
+        //             cancelButton.textContent = "✖";
+        //             cancelButton.classList.add("cancel-button");
+
+        //             // Cancel button logic to remove the image container and hidden input
+        //             cancelButton.addEventListener("click", () => {
+        //                 imgContainer.classList.add("fade-out");
+
+        //                 // Remove the hidden input corresponding to the image
+        //                 const hiddenInput = imgContainer.querySelector('input[name="ExistingPreviews"]');
+        //                 if (hiddenInput) {
+        //                     hiddenInput.remove(); // Remove the hidden input
+        //                 }
+
+        //                 setTimeout(() => {
+        //                     imgContainer.remove(); // Remove the image container after fade-out
+        //                 }, 300); // Matches CSS transition duration
+        //             });
+
+        //             imgContainer.appendChild(cancelButton); // Append the cancel button to the image container
+        //         }
+        //     });
+        // }
+
+        // Call this function to check existing previews when the page loads or after form submission
+        // checkExistingPreviews();
+
+       
+        });
+
+
+
+        //         function initializeDragAndDrop() {
+        //     const container = document.getElementById('previewContainer');
+        //     const imageContainers = container.querySelectorAll('.image-container');
+
+        //     imageContainers.forEach(container => {
+        //         container.addEventListener('dragstart', handleDragStart);
+        //         container.addEventListener('dragover', handleDragOver);
+        //         container.addEventListener('drop', handleDrop);
+        //         container.addEventListener('dragenter', handleDragEnter);
+        //         container.addEventListener('dragleave', handleDragLeave);
+        //     });
+
+        //     let draggedElement = null;
+
+        //     function handleDragStart(e) {
+        //         draggedElement = this;
+        //         this.style.opacity = '0.4';
+
+        //         // Add a class to show this is being dragged
+        //         this.classList.add('dragging');
+        //     }
+
+        //     function handleDragOver(e) {
+        //         e.preventDefault();
+        //         return false;
+        //     }
+
+        //     function handleDragEnter(e) {
+        //         e.preventDefault();
+        //         this.classList.add('drag-over');
+        //     }
+
+        //     function handleDragLeave(e) {
+        //         this.classList.remove('drag-over');
+        //     }
+
+        //     // function handleDrop(e) {
+        //     //     e.preventDefault();
+
+        //     //     if (draggedElement !== this) {
+        //     //         // Get all items to find indices for swapping
+        //     //         let items = [...container.querySelectorAll('.image-container')];
+        //     //         const fromIndex = items.indexOf(draggedElement);
+        //     //         const toIndex = items.indexOf(this);
+
+        //     //         // Swap elements
+        //     //         if (fromIndex < toIndex) {
+        //     //             this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        //     //         } else {
+        //     //             this.parentNode.insertBefore(draggedElement, this);
+        //     //         }
+
+        //     //         // Update hidden inputs order
+        //     //         updateImageOrder();
+        //     //     }
+
+        //     //     // Clear styles
+        //     //     this.classList.remove('drag-over');
+        //     //     draggedElement.style.opacity = '1';
+        //     //     draggedElement.classList.remove('dragging');
+        //     //     draggedElement = null;
+
+        //     //     return false;
+        //     // }
+
+        //             function handleDrop(e) {
+        //     e.preventDefault();
+
+        //     // Ensure draggedElement and drop target are valid
+        //     if (!draggedElement || !this.classList.contains('image-container')) {
+        //         return false;
+        //     }
+
+        //     // Get all items to find indices for swapping
+        //     const items = [...container.querySelectorAll('.image-container')];
+        //     const fromIndex = items.indexOf(draggedElement);
+        //     const toIndex = items.indexOf(this);
+
+        //     if (fromIndex < 0 || toIndex < 0) {
+        //         console.error('Invalid indices for dragged or target element.');
+        //         return false;
+        //     }
+
+        //     // Swap elements based on their indices
+        //     if (fromIndex < toIndex) {
+        //         this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        //     } else {
+        //         this.parentNode.insertBefore(draggedElement, this);
+        //     }
+
+        //     // Update hidden inputs order
+        //     updateImageOrder();
+
+        //     // Clear styles
+        //     this.classList.remove('drag-over');
+        //     if (draggedElement) {
+        //         draggedElement.style.opacity = '1';
+        //         draggedElement.classList.remove('dragging');
+        //     }
+        //     draggedElement = null;
+        //     return false;
+        // }
+
+
+        //     function updateImageOrder() {
+        //         // Remove existing hidden inputs
+        //         const existingInputs = container.querySelectorAll('input[name="ExistingPreviews"]');
+        //         existingInputs.forEach(input => input.remove());
+
+        //         // Create new hidden inputs in the current order
+        //         const images = container.querySelectorAll('.image-container img');
+        //         images.forEach(img => {
+        //             const filename = img.src.split('/').pop();
+        //             const input = document.createElement('input');
+        //             input.type = 'hidden';
+        //             input.name = 'ExistingPreviews';
+        //             input.value = filename;
+        //             container.appendChild(input);
+        //         });
+        //     }
+        // }
+                function initializeDragAndDrop() {
+            const container = document.getElementById('previewContainer');
+
+
+            const attachCancelListener = (imgContainer) => {
+                const cancelButton = imgContainer.querySelector(".cancel-button");
+                if (cancelButton) {
+                    cancelButton.addEventListener("click", () => {
+                        imgContainer.classList.add("fade-out");
+                        setTimeout(() => {
+                            imgContainer.remove();
+
+                            // Recalculate sequence numbers after removal
+                            initializeSequence();
+                            updateImageOrder();
+                        }, 300);
+                    });
+                }
+            };
+
+            // Attach listeners for preloaded images
+            document.querySelectorAll('.image-container').forEach(container => {
+                attachCancelListener(container);
+            });
+            const imageContainers = container.querySelectorAll('.image-container');
+            const preloadedImages = document.querySelectorAll('.image-container');
+            preloadedImages.forEach(container => attachCancelListener(container));
+            // Initialize sequence numbers
+            function initializeSequence() {
+                const images = container.querySelectorAll('.image-container');
+                images.forEach((container, index) => {
+                    // Add sequence attribute
+                    container.setAttribute('data-sequence', index + 1);
+
+                    // Add visible sequence number
+                    let sequenceDisplay = container.querySelector('.sequence-number');
+                    if (!sequenceDisplay) {
+                        sequenceDisplay = document.createElement('div');
+                        sequenceDisplay.className = 'sequence-number';
+                        container.appendChild(sequenceDisplay);
+                    }
+                    sequenceDisplay.textContent = index + 1;
+                });
+            }
+
+            imageContainers.forEach(container => {
+                container.addEventListener('dragstart', handleDragStart);
+                container.addEventListener('dragover', handleDragOver);
+                container.addEventListener('drop', handleDrop);
+                container.addEventListener('dragenter', handleDragEnter);
+                container.addEventListener('dragleave', handleDragLeave);
+            });
+            const dropbox = document.getElementById("dropbox");
+            const fileInput = document.getElementById("Images");
+            // const previewContainer = document.getElementById("previewContainer");
+            const selectImagesButton = document.getElementById("selectImages");
+            // document.getElementById("RoomQuantity").disabled = true;
+            // Handle drag-and-drop functionality
+            dropbox.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropbox.style.backgroundColor = "#e6e6e6";
+            });
+
+            dropbox.addEventListener("dragleave", () => {
+                dropbox.style.backgroundColor = "#f9f9f9";
+            });
+
+            dropbox.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropbox.style.backgroundColor = "#f9f9f9";
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            });
+
+            // Open file dialog when clicking the "Select Images" button
+            selectImagesButton.addEventListener("click", () => {
+                fileInput.click();
+            });
+
+            // Handle file selection through the input
+            fileInput.addEventListener("change", (e) => {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+                validateImages();
+            });
+
+            const handleFiles = (files) => {
+                const maxFiles = 5;
+                const existingImages = previewContainer.querySelectorAll('.image-container');
+                if (existingImages.length + files.length > maxFiles) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Limit Exceeded",
+                        text: `You can upload a maximum of ${maxFiles} images.`,
+                    });
+                    return;
+                }
+
+                files.forEach((file) => {
+                    if (!file.type.match("image.*")) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid File",
+                            text: "Only image files are allowed.",
+                        });
+                        return;
+                    }
+
+                    if (!window.FileReader) {
+                        console.error("FileReader is not supported in this browser.");
+                        return;
+                    }
+
+                    const maxFileSize = 2 * 1024 * 1024;
+                    if (file.size > maxFileSize) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "File Too Large",
+                            text: `${file.name} must be less than 2 MB.`,
+                        });
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgContainer = document.createElement("div");
+                        imgContainer.classList.add("image-container");
+                        imgContainer.setAttribute("draggable", "true");
+
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.alt = "Room Image";
+                        img.classList.add("preview-image");
+                        img.style.width = "100px";
+                        img.style.height = "100px";
+                        img.style.cursor = "pointer";
+                        imgContainer.appendChild(img);
+
+                        const cancelButton = document.createElement("button");
+                        cancelButton.textContent = "✖";
+                        cancelButton.classList.add("cancel-button");
+                        cancelButton.addEventListener("click", () => {
+                            imgContainer.classList.add("fade-out");
+                            setTimeout(() => {
+                                imgContainer.remove();
+                                updateSequence();
+                                updateImageOrder();
+                            }, 300);
+                        });
+
+                        imgContainer.appendChild(cancelButton);
+                        previewContainer.appendChild(imgContainer);
+
+                        // Add drag-drop listeners to new container
+                        imgContainer.addEventListener('dragstart', handleDragStart);
+                        imgContainer.addEventListener('dragover', handleDragOver);
+                        imgContainer.addEventListener('drop', handleDrop);
+                        imgContainer.addEventListener('dragenter', handleDragEnter);
+                        imgContainer.addEventListener('dragleave', handleDragLeave);
+
+                        // Update sequence after adding new image
+                        initializeSequence();
+                        updateImageOrder();
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            };
+
+
+            let draggedElement = null;
+
+            function handleDragStart(e) {
+                draggedElement = this;
+                this.style.opacity = '0.4';
+                this.classList.add('dragging');
+
+                // Store the current sequence
+                e.dataTransfer.setData('text/plain', this.getAttribute('data-sequence'));
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                return false;
+            }
+
+            function handleDragEnter(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            }
+
+            function handleDragLeave(e) {
+                this.classList.remove('drag-over');
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+
+                if (draggedElement !== this) {
+                    let items = [...container.querySelectorAll('.image-container')];
+                    const fromIndex = items.indexOf(draggedElement);
+                    const toIndex = items.indexOf(this);
+
+                    if (fromIndex < toIndex) {
+                        this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                    } else {
+                        this.parentNode.insertBefore(draggedElement, this);
+                    }
+
+                    updateSequence();
+                    updateImageOrder();
+                }
+
+                this.classList.remove('drag-over');
+                draggedElement.style.opacity = '1';
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+
+                return false;
+            }
+
+            function updateSequence() {
+                const images = container.querySelectorAll('.image-container');
+                images.forEach((container, index) => {
+                    container.setAttribute('data-sequence', index + 1);
+                    const sequenceDisplay = container.querySelector('.sequence-number');
+                    if (sequenceDisplay) {
+                        sequenceDisplay.textContent = index + 1;
+                    }
+                });
+            }
+
+            function getImageFilename(imgElement) {
+                const src = imgElement.getAttribute('src');
+                return src.split('/').pop();
+            }
+
+            function updateImageOrder() {
+                // Remove existing hidden inputs
+                const existingInputs = container.querySelectorAll('input[name="ExistingPreviews"]');
+                existingInputs.forEach(input => input.remove());
+
+                // Create new hidden inputs in the current order
+                const images = container.querySelectorAll('.image-container');
+                const imageOrder = [];
+
+                images.forEach((container, index) => {
+                    const img = container.querySelector('img');
+                    const filename = getImageFilename(img);
+                    const sequence = index + 1;
+
+                    // Create hidden input for filename
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ExistingPreviews';
+                    input.value = filename;
+                    container.appendChild(input);
+
+                    // Store the order information
+                    imageOrder.push({
+                        filename: filename,
+                        sequence: sequence
+                    });
+                });
+
+                // Log the current order for verification
+                console.log('Current Image Order:', imageOrder);
+
+                // Optionally send to server
+                // sendOrderToServer(imageOrder);
+            }
+
+            // Initialize sequence numbers on load
+            initializeSequence();
+
+
+        }
+
+        // Add the required CSS
+        const style = document.createElement('style');
+        style.textContent = `
+                    .image-container {
+                        position: relative;
+                    }
+
+                    .sequence-number {
+                        position: absolute;
+                        top: 5px;
+                        left: 5px;
+                        background-color: rgba(0, 0, 0, 0.7);
+                        color: white;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+
+                    .dragging .sequence-number {
+                        background-color: #4a90e2;
+                    }
+                `;
+        document.head.appendChild(style);
+
+        function validateImages() {
+            const inputElement = document.getElementById("Images");
+            const errMsg = document.getElementById("ImgErr");
+            const maxFiles = 5; // Maximum allowed files
+            const maxSize = 2 * 1024 * 1024; // Maximum file size (2 MB)
+            const allowedTypes = ["image/jpeg", "image/png", "image/gif"]; // Allowed file types
+            const files = inputElement.files;
+            let previewContainer = document.getElementById("previewContainer");
+            const imageContainers = previewContainer.getElementsByClassName("image-container");
+            // Clear any previous error messages
+            errMsg.innerHTML = "";
+
+            // Check if no files are selected
+            if (files.length === 0 && imageContainers.length === 0) {
+                errMsg.innerHTML = "Please select at least one image.";
+                return false;
+            } else
+
+                // Check file count
+                if ((files.length > maxFiles) && imageContainers.length > maxFiles) {
+                    errMsg.innerHTML = `You can upload a maximum of ${maxFiles} images.`;
+                    return false;
+                } else {
+
+                    // Validate each file
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+
+                        // Check file type
+                        if (!allowedTypes.includes(file.type)) {
+                            errMsg.innerHTML = `File type not allowed: ${file.name}`;
+                            return false;
+                        }
+
+                        // Check file size
+                        if (file.size > maxSize) {
+                            errMsg.innerHTML = `File size exceeds 2MB: ${file.name}`;
+                            return false;
+                        }
+                    }
+                }
+            return true;
+        }
+
+
+        // Initialize when the document is ready
+
+
+        document.addEventListener('DOMContentLoaded', initializeDragAndDrop);
+
+
+
+
+    </script>
+
+}
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column grow">
+        <section class="flex flex-column gap-2">
+            <form id="roomForm" class="form" asp-action="SubmitForm" asp-controller="RoomType" method="post" enctype="multipart/form-data">
+                <div class="form-container">
+                    <!-- Left Section -->
+                    <div class="form-section">
+                        <input type="hidden" asp-for="Id" value="@(Model? .Id ?? null)" /> <!-- Hidden input to pass Id -->
+
+                        <div class="form-group">
+                            <label asp-for="Name"></label>
+                            <input asp-for="Name" data-trim placeholder="Enter Name" />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description"></label>
+                            <textarea asp-for="Description" rows="4" placeholder="Enter Description..." style="resize:none" data-trim></textarea>
+                            <span asp-validation-for="Description"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Room Range: </label>
+                            <div style="color:#ccc">
+                                @if (ViewBag.RoomRange != null)
+                                {
+                                    var roomRangeList = ViewBag.RoomRange as List<string>;
+
+                                    for (int i = 0; i < roomRangeList.Count; i++)
+                                    {
+                                        <span style="color:black">
+                                            @roomRangeList[i]
+                                        </span>
+                                        @if (i < roomRangeList.Count - 1)
+                                        {
+                                            <span>, </span>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <p style="color:red;">Not have any rooms..</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Section -->
+
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label asp-for="Price"></label>
+                            @if (User.IsInRole("Manager"))
+                            {
+                                <input asp-for="Price" placeholder="Enter Price" value="@(Model?.Price == null || Model.Price == 0 ? 1.00 : Model.Price)" />
+                            }
+                            else if (User.IsInRole("Admin"))
+                            {
+                                <input asp-for="Price" placeholder="Enter Price" value="@(Model?.Price == null || Model.Price == 0 ? 1.00 : Model.Price)" disabled />
+                            }
+                            <span asp-validation-for="Price"></span>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label asp-for="RoomQuantity"></label>
+                            <input asp-for="RoomQuantity" placeholder="Enter Room Quantity" value="@(Model?.RoomQuantity == null || Model.RoomQuantity == 0 ? 1 : Model.RoomQuantity)" disabled>
+                            <span asp-validation-for="RoomQuantity"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="RoomCapacity"></label>
+                            @if (User.IsInRole("Manager"))
+                            {
+                                <input asp-for="RoomCapacity" value="@(Model?.RoomCapacity == null || Model.RoomCapacity == 0 ? 1 : Model.RoomCapacity)" />
+                            }
+                            else if (User.IsInRole("Admin"))
+                            {
+                                <input asp-for="RoomCapacity" value="@(Model?.RoomCapacity == null || Model.RoomCapacity == 0 ? 1 : Model.RoomCapacity)" disabled />
+                            }
+                            <span asp-validation-for="RoomCapacity"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload-container">
+                    <!-- Drag-and-Drop Area -->
+                    <div id="dropbox" class="dropbox">
+                        <span class="plus-icon">+</span>
+                        <p>Drag & drop images here, or</p>
+                        <button id="selectImages" type="button">Select Images</button>
+                        <input asp-for="Images" name="Images" type="file" multiple accept=".jpg,.jpeg,.png" hidden>
+                    </div>
+                    <span id="ImgErr" class="text-danger" style="color:red;"></span>
+                    <span asp-validation-for="Images"></span>
+                    <!-- Image Preview Area -->
+                    <div id="previewContainer" class="preview-container">
+                        @if (Model != null)
+                        {
+                            @if (Model.ImagePreviews != null && Model.ImagePreviews.Any())
+                            {
+                                foreach (var preview in Model.ImagePreviews)
+                                {
+                                    <input type="hidden" name="ExistingPreviews" value="@preview" />
+                                    <div class="image-container" draggable="true">
+                                        <img src="/images/RoomType/@preview" alt="Room Image" class="preview-image" style="width: 100px; height: 100px; cursor: pointer;" />
+                                        <button class="cancel-button" fdprocessedid="grzk8h">✖</button>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+
+                    @* <div id="previewContainer" class="preview-container">
+                        @if (Model != null)
+                        {
+                            @if (Model.ImagePreviews != null && Model.ImagePreviews.Any())
+                            {
+                                foreach (var preview in Model.ImagePreviews)
+                                {
+                                    <input type="hidden" name="ExistingPreviews" value="@preview" />
+                                    <div class="image-container" draggable="true" data-id="@preview">
+                                        <img src="/images/RoomType/@preview" alt="Room Image" class="preview-image" />
+                                        <button class="cancel-button" fdprocessedid="grzk8h">✖</button>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div> *@
+
+                </div>
+
+                <!-- Modal for larger image view -->
+                <div id="imageModal" class="modal">
+                    <span id="closeModal" class="close">&times;</span>
+                    @*                     <img id="modalImage" class="modal-content" />
+                    <div id="caption"></div> *@
+                    <span id="prevBtn" class="nav-btn prev-btn">&#10094;</span>
+                    <img id="modalImage" class="modal-content" src="" alt="Zoomed Image">
+                    <span id="nextBtn" class="nav-btn next-btn">&#10095;</span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="submit-btn" style="display:flex;flex-direction:row-reverse;">
+                    <button id="submitBtn">Submit</button>
+                </div>
+            </form>
+        </section>
+
+    </main>
+</div>

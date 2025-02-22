@@ -1,0 +1,160 @@
+﻿
+<section class="overview row mb-4">
+    <!-- Left Side: Cards -->
+    <div class="col-md-6 mb-3">
+        <div class="row">
+
+            <!-- Revenue Card -->
+            <div class="col-md-6 mb-3">
+                <div class="card text-center shadow-sm p-3" data-bs-toggle="modal" data-bs-target="#revenueModal" data-content="@Model.TotalRevenue">
+                    <p class="text-secondary small">Revenue</p>
+                    <p class="h4 text-primary fw-bold">@Model.TotalRevenue</p>
+                </div>
+            </div>
+
+            <!-- Total Hours Card -->
+            <div class="col-md-6 mb-3">
+                <div class="card text-center shadow-sm p-3" data-bs-toggle="modal" data-bs-target="#totalHoursModal" data-content="@Model.TotalReservation">
+                    <p class="text-secondary small">Reservation</p>
+                    <p class="h4 text-primary fw-bold">@Model.TotalReservation</p>
+                </div>
+            </div>
+
+            <!-- Recently check-in -->
+            <div class="col-md-12 mb-3">
+                <div class="card text-right shadow-sm p-3" style="height: 130px; overflow-y: auto;" data-bs-toggle="modal" data-bs-target="#checkinModal" data-content="TotalSales">
+                    <p class="text-secondary small">Top Selling Rooms</p>
+                    <div class="feedback-list">
+                        @if (Model.categoryList != null && Model.topSellingCategory != null && Model.categoryList.Count == Model.topSellingCategory.Count)
+                        {
+                            for (int i = 0; i < Model.categoryList.Count; i++)
+                            {
+                                <div class="feedback-item border-bottom mb-2">
+                                    <p class="fw-bold mb-0 small">
+                                        Category Name: <span class="text-primary me-5">@Model.categoryList[i]</span> <br />
+                                        Number of Bookings: <span class="text-primary">@Model.topSellingCategory[i]</span>
+                                    </p>
+                                </div>
+                                <br />
+                            }
+                        }
+                        else
+                        {
+                            <p class="small text-muted">No data available</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Right Side: Recently Feedback -->
+    <div class="col-md-6 row-md-6">
+        <div class="card shadow-sm p-3" style="height: 253px; overflow-y: auto;" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+            <p class="text-secondary small">Recently Feedback</p>
+            <div class="feedback-list">
+              @if (Model.feedbacks != null )
+               {
+                 for (int i = 0; i < Model.feedbacks.Count; i++)
+                    {
+                <div class="feedback-item border-bottom pb-2 mb-2">
+                            <p class="fw-bold mb-1">Username: <span class="text-primary">@Model.feedbacks[i].Users.Name</span></p>
+                    <p class="mb-1">"@Model.feedbacks[i].Description"</p>
+                            <p class="small text-muted">"@Model.feedbacks[i].DateCreated"</p>
+                </div>
+                            
+                 }
+              }
+              else
+              {
+                    <p class="small text-muted">No data available</p>
+              }
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Modal Structures -->
+<!-- Revenue Modal -->
+<div class="modal fade" id="revenueModal" tabindex="-1" aria-labelledby="revenueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="revenueModalLabel">Hourly Revenue Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Revenue for the Last 24 Hours: <span id="revenueContent">24-hour data</span></p>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Hours Modal -->
+<div class="modal fade" id="totalHoursModal" tabindex="-1" aria-labelledby="totalHoursModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="totalHoursModalLabel">Hourly Reservation Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Reservation for the Last 24 Hours: <span id="revenueContent">24-hour data</span></p>
+                <canvas id="reservationChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Check-In Modal -->
+<div class="modal fade" id="checkinModal" tabindex="-1" aria-labelledby="checkinModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="checkinModalLabel">Top Selling Rooms</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Top Selling Rooms</p>
+                    <canvas id="topSellsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">Recent Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (Model.feedbacks != null)
+                {
+                    for (int i = 0; i < Model.feedbacks.Count; i++)
+                    {
+                        <div class="feedback-item border-bottom pb-2 mb-2">
+                            <p class="fw-bold mb-1">Username: <span class="text-primary">@Model.feedbacks[i].Users.Name</span></p>
+                            <p class="mb-1">"@Model.feedbacks[i].Description"</p>
+                            <p class="small text-muted">"@Model.feedbacks[i].DateCreated"</p>
+                        </div>
+
+                    }
+                }
+                else
+                {
+                    <p class="small text-muted">No data available</p>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

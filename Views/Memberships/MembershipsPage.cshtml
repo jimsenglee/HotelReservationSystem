@@ -1,0 +1,265 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels
+@model Tuple<MembersVM, List<RewardsVM>>
+<script src="https://kit.fontawesome.com/9d9abff864.js" crossorigin="anonymous"></script>
+<style>
+    #checkin-container {
+        max-width: 1400px;
+        margin: auto;
+        text-align: center;
+        padding: 10px;
+    }
+
+    #streak-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    .streak-day {
+        position: relative;
+        padding: 5px;
+        color: white;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    #checkin-button {
+        padding: 5px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.7em;
+        cursor: pointer;
+        margin-top: 20px;
+        grid-column: span 7; /* Ensures the button spans all columns */
+        justify-self: center; /* Centers the button */
+    }
+
+    .progress-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .progress-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: #d0d7e2;
+        z-index: 1;
+    }
+
+    .progress-point {
+        position: relative;
+        width: 15px;
+        height: 15px;
+        background-color: #fff;
+        border: 3px solid #4a90e2;
+        border-radius: 50%;
+        z-index: 2;
+        display: inline-block;
+    }
+
+        .progress-point.completed {
+            background-color: #4a90e2;
+        }
+
+        .progress-point:hover {
+            transform: scale(1.2);
+            transition: transform 0.2s ease;
+        }
+
+    .level-info {
+        margin-top: 5px;
+        font-size: 12px;
+        text-align: center;
+        color: #4a4a4a;
+    }
+
+        .level-info span {
+            font-weight: bold;
+            color: #4a90e2;
+        }
+</style>
+
+<div id="checkin-container">
+
+    <div style="display: flex; justify-content: space-between;">
+        <!-- Left Section: Streak Grid -->
+        <div id="streak-grid" style="flex: 1; padding-right: 20px;">
+            @for (int i = 1; i <= 7; i++)
+            {
+                bool earned = i <= Model.Item1.Streak;
+                int reward = i == 7 ? 5 : i;
+
+                <div class="streak-day" style="background-color: @(earned ? "#4caf50" : "#e0e0e0");">
+                    <span>+@reward</span>
+                    <p style="font-size: 0.8em;color:white">@(earned ? (i == Model.Item1.Streak ? "Today" : $"Day {i}") : $"Day {i}")</p>
+                </div>
+            }
+
+            <!-- Check-In Button Centered Under Streak Grid -->
+            <button id="checkin-button">
+                Claim
+            </button>
+        </div>
+
+        <!-- Right Section: Member Info -->
+        <div class="member-container" style="flex: 1; padding-left: 20px;">
+            <p><strong>Membership Level:</strong> @Model.Item1.Level</p>
+            @if (Model.Item1 != null)
+            {
+                <div class="progress-container">
+                    <div class="progress-line"></div>
+                    <div class="progress-point @(Model.Item1.Loyalty <= 1000 ? "completed" : "")" title="Basic"></div>
+                    <div class="progress-point @(Model.Item1.Loyalty > 1000 ? "completed" : "")" title="Platinum"></div>
+                    <div class="progress-point @(Model.Item1.Loyalty >= 2500 ? "completed" : "")" title="VIP"></div>
+                </div>
+
+                @Html.Raw(Helper.GetLevelInfo(Model.Item1.Loyalty))
+                <p><strong>Points:</strong> <span id="current-points">@Model.Item1.Points</span></p>
+            }
+        </div>
+    </div>
+
+    <div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
+        <!-- Alert messages will be appended here -->
+    </div>
+
+</div>
+
+<div class="container mt-5">
+    <button id="reload-rewards" class="page-btn"><i class="fa-solid fa-rotate-right"></i></button><br /><br />
+    <div id="rewards-container">
+        @* @Html.Partial("../Rewards/_RewardsPage", Model.Item2)<!-- Initial partial view --> *@
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#checkin-button').on('click', function () {
+            // Disable the button to prevent multiple clicks
+            $(this).prop('disabled', true);
+
+            // Send AJAX request to check-in
+            $.ajax({
+                url: '@Url.Action("CheckIn", "Memberships")',
+                type: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        // Update the points and streak display
+                        displayAlert('success', response.message);
+                        $('#current-points').text(response.totalCoins); // Update points
+                        $('#streak-grid').find('.streak-day').each(function (index) {
+                            if (index < response.streakCount) {
+                                $(this).css('background-color', '#4caf50');
+                            } else {
+                                $(this).css('background-color', '#e0e0e0');
+                            }
+                        });
+                    } else {
+                        displayAlert('danger', response.message);
+                    }
+                    $('#checkin-button').prop('disabled', false); // Enable the button again
+                },
+                error: function () {
+                    displayAlert('danger', 'An error occurred while processing your check-in. Please try again.');
+                    $('#checkin-button').prop('disabled', false); // Enable the button again
+                }
+            });
+        });
+    });
+
+    function claimReward(rewardId, pointsRequired) {
+        // Disable the button to prevent multiple clicks
+        const button = $(event.target);  // Get the clicked button
+        button.prop("disabled", true);    // Disable the button
+
+        // Proceed with AJAX request
+        $.ajax({
+            url: '/Memberships/ClaimReward',
+            method: 'POST',
+            data: {
+                rewardId: rewardId,
+                memberId: '@Model.Item1.Id',
+                pointsRequired: pointsRequired
+            },
+            success: function (response) {
+                const alertType = response.success ? 'success' : 'danger';
+                displayAlert(alertType, response.message);
+
+                // If the claim was successful, update the points and UI
+                if (response.success) {
+                    const updatedPoints = response.updatedPoints;
+
+                    // Update the displayed points on the webpage
+                    $('#current-points').text(updatedPoints);
+                }
+
+                // Re-enable the button after the response is processed
+                button.prop("disabled", false);
+            },
+            error: function (xhr, status, error) {
+                displayAlert('danger', `An error occurred: ${xhr.responseText || error}`);
+                // Re-enable the button in case of an error as well
+                button.prop("disabled", false);
+            }
+        });
+    }
+
+    function displayAlert(type, message) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show border text-${type}" role="alert">
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        $('#alertContainer').append(alertHtml);
+
+        // Auto-remove the alert after 2 seconds
+        setTimeout(() => {
+            $('#alertContainer .alert').first().fadeOut(300, function () {
+                $(this).remove();
+            });
+        }, 1000);
+    }
+
+
+
+    $(document).ready(function () {
+        // Call the function that handles the reload rewards AJAX on page load
+        reloadRewards(); // Directly call the function to reload rewards
+
+        // Reload rewards logic (as a function that can be reused)
+        function reloadRewards() {
+            console.log('@Url.Action("_RewardsPage", "Rewards")'); // Log URL for debugging
+            $.ajax({
+                url: '@Url.Action("_RewardsPage", "Rewards")', // Call _RewardsPage action in Rewards controller
+                type: 'GET', // Or POST depending on your action
+                success: function (partialView) {
+                    $('#rewards-container').html(partialView); // Update the container with the new partial view
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error: ' + status + ': ' + error);
+                    alert('Failed to reload rewards. Please try again.');
+                }
+            });
+        }
+
+        // Reload rewards and claim logic when clicking the button or claim button
+        $('#reload-rewards, .claim-btn').on('click', function () {
+            reloadRewards(); // Call the function on button click as well
+        });
+    });
+</script>

@@ -1,0 +1,164 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.UpdateRewardsVM
+<style>
+    .form-container {
+        display: flex;
+        gap: 20px;
+    }
+
+    .form-section {
+        flex: 1;
+        padding: 20px;
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+    input {
+        outline: none;
+    }
+
+    .field-validation-error,
+    .validation-summary-errors {
+        color: red;
+    }
+
+    .input-validation-error {
+        border: 2px solid red !important;
+        outline: none;
+    }
+</style>
+
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column grow">
+        <section class="flex flex-column gap-2">
+
+            <form class="form" asp-action="UpdatedReward" asp-controller="Rewards" method="post" enctype="multipart/form-data">
+                <div class="form-container">
+                    <!-- Left Section -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label asp-for="Id"></label>
+                            <input id="rewardId" asp-for="Id" data-upper data-trim readonly placeholder="Enter Reward Id" />
+                            <span asp-validation-for="Id"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Name"></label>
+                            <input id="rewardName" asp-for="Name" data-upper data-trim placeholder="Enter Reward Name" readonly oninput="generateRewardCode()" />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Description"></label>
+                            <textarea asp-for="Description" rows="4" placeholder="Enter Description..." style="resize:none" data-trim></textarea>
+                            <span asp-validation-for="Description"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="RewardCode">
+                                Reward Code
+                                <a href="javascript:void(0);" id="regenerateRewardCodeLink" onclick="generateRewardCode()" class="btn btn-link"><i class="fa-solid fa-rotate-right"></i></a>
+                            </label>
+                            <input id="rewardCode" asp-for="RewardCode" readonly placeholder="Reward Code will auto-generate" />
+                            <span asp-validation-for="RewardCode"></span>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Section -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label asp-for="DiscountRate"></label>
+                            <input asp-for="DiscountRate" placeholder="Enter DiscountRate" />
+                            <span asp-validation-for="DiscountRate"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="PointsRequired"></label>
+                            <input asp-for="PointsRequired" min="0" placeholder="Enter Points Required" />
+                            <span asp-validation-for="PointsRequired"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Quantity"></label>
+                            <input asp-for="Quantity"  placeholder="Enter Reward Quantity" />
+                            <span asp-validation-for="Quantity"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ValidFrom"></label>
+                                    <input asp-for="ValidFrom" type="date" placeholder="Select Valid From Date" readonly/>
+                                    <span asp-validation-for="ValidFrom"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ValidUntil">Valid Until (Optional)</label>
+                                    <input asp-for="ValidUntil" type="date" placeholder="Select Valid Until Date (optional)" readonly />
+                                    <span asp-validation-for="ValidUntil"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Status"></label>
+                            <select asp-for="Status" data-trim>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                            <span asp-validation-for="Status"></span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="submit-btn" style="margin-top: 10px;">
+                    <button id="submitBtn">Submit</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    function generateRewardCode() {
+        const rewardName = document.getElementById('rewardName').value.trim();
+        if (rewardName) {
+            const randomPart = rewardName[Math.floor(Math.random() * rewardName.length)].toUpperCase(); // Pick a random character
+            const randomNumber = Math.floor(Math.random() * 1000); // Add a random number
+            document.getElementById('rewardCode').value = r andomPart + randomNumber;
+        } else {
+            document.getElementById('rewardCode').value = ''; // Clear if Name is empty
+        }
+    }
+
+    window.onload = generateRewardCode;
+</script>

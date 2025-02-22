@@ -1,0 +1,44 @@
+﻿ @model HotelRoomReservationSystem.Models.ViewModels.mfaVM
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+        async defer>
+</script>
+
+<link rel="stylesheet" href="/css/loginNregister.css" type="text/css" />
+
+<div id="container">
+    <div class="left-section">
+        <div class="illustration">
+            <!-- <img src="loginViews.jpg" alt="Illustration" style="object-fit: cover;"> -->
+        </div>
+    </div>
+    <div class="right-section">
+        <div class="form-container">
+            <h1>MFA Section</h1>
+            <p>Please enter your otp through your phone Messages</p>
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary">
+                </div>
+                <div class="form-group">
+                    <input asp-for="oneTimePassword" type="text" placeholder="OTP" required>
+                    <span asp-validation-for="oneTimePassword" class="validation-error"></span>
+                </div>
+
+                <button type="submit" class="signup-btn">Submit</button>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>

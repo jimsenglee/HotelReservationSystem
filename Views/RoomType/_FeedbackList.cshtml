@@ -1,0 +1,85 @@
+﻿@model IEnumerable<HotelRoomReservationSystem.Models.ViewModels.FeedbackWithUser>
+
+@if (Model != null)
+{
+    if(!(Model.Count() < 1)){
+
+    foreach (var fb in Model)
+    {
+        <div class="review-item" style="display: flex;flex-direction: row;flex-wrap: nowrap;align-items: center;">
+            <div class="ri-pic">
+                <img src="~/images/user_photo/@(fb.User?.Portrait ?? "default.jpg")" alt="User Portrait" style="width:80px;">
+            </div>
+            <div class="ri-text" style="width:100%;">
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex; flex-direction: column;">
+                        <span>@fb.Feedback.DateCreated.ToString("MMMM dd, yyyy")</span>
+                        <h5>@(fb.User?.Name ?? "Unknown User")</h5>
+                        <div style="display:flex;">
+                            <span style="color:black; font-weight:bold;">Room Name:</span>
+                            <span> @fb.RoomName</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items: center;">
+                        <fieldset class="ratingDisplay">
+                            @foreach (var star in new[] { 5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5 })
+                            {
+                                <input type="radio" id="star-@star-@fb.Feedback.Id"
+                                       name="rating-@fb.Feedback.Id"
+                                       value="@star"
+                                @(Math.Abs(fb.Feedback.Rating - star) < 0.1 ? "checked" : "") />
+                                <label class="@(star % 1 == 0 ? "full" : "half")"
+                                       for="star-@star-@fb.Feedback.Id"
+                                       title="@GetStarTitle(star)"></label>
+                            }
+                        </fieldset>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(fb.Feedback.Description))
+                {
+                    <p>Comment: @fb.Feedback.Description</p>
+                }
+
+                @if (fb.Images != null && fb.Images.Any())
+                {
+                    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                        @foreach (var img in fb.Images)
+                        {
+                            <img src="~/images/Feedback/@img.Name" alt="Feedback Image" width="300px" height="300px" />
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    } else{
+        <h1 style="display: flex;justify-content: center;">
+            Not result found.
+        </h1>
+    }
+}
+else if(Model.Count() < 1)
+{
+    <p>ashadahdsjkhdsjahdkdas</p>
+    <h1>Not have results found.</h1>
+}
+@functions {
+    private string GetStarTitle(double rating)
+    {
+        return rating switch
+        {
+            5 => "Awesome - 5 stars",
+            4.5 => "Pretty good - 4.5 stars",
+            4 => "Pretty good - 4 stars",
+            3.5 => "Meh - 3.5 stars",
+            3 => "Meh - 3 stars",
+            2.5 => "Kinda bad - 2.5 stars",
+            2 => "Kinda bad - 2 stars",
+            1.5 => "Meh - 1.5 stars",
+            1 => "Sucks big time - 1 star",
+            0.5 => "Sucks big time - 0.5 stars",
+            _ => string.Empty
+        };
+    }
+}

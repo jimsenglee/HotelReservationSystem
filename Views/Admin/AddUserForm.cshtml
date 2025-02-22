@@ -1,0 +1,596 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.AddUsersVM
+@inject IConfiguration configuration
+@{
+   
+    var userId = Context.Session.GetString("UserId");
+    var siteKey = configuration["RecaptchaSettings:SiteKey"];
+}
+
+<script type="text/javascript">
+    var onloadCallback = function() {
+      grecaptcha.render('html_element', {
+          'sitekey' : '@siteKey'
+        });
+    };
+
+    function onSubmit(event){
+        var token = grecaptcha.getResponse();
+        document.getElementById("recaptchaTokenInputId").value = token;
+
+      console.log("Token Received: ", token);
+
+    }
+
+        window.onload = function () {
+        document.getElementById("recaptchaTokenInputId").value = "";
+    };
+
+
+</script>
+
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+        async defer>
+</script>
+<style>
+    .form-container {
+        display: flex;
+        gap: 20px;
+    }
+
+    .form-section {
+        flex: 1;
+        padding: 20px;
+        gap: 1rem;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        /* //justify-content: center; */
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+    .upload-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 500px;
+        margin: auto;
+        margin-bottom: 2rem;
+    }
+
+    .dropbox {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+        position: relative;
+        background-color: #f9f9f9;
+        transition: background-color 0.3s;
+    }
+
+        .dropbox:hover {
+            background-color: #f1f1f1;
+        }
+
+    .plus-icon {
+        font-size: 36px;
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    button#selectImages {
+        margin-top: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        button#selectImages:hover {
+            background-color: #0056b3;
+        }
+
+    .preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .preview-container img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+    /* Container styling for images */
+    .image-container {
+        position: relative;
+        display: inline-block;
+        margin: 10px;
+    }
+
+        /* Styling the image */
+        .image-container img {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+    /* Cancel button styling */
+    .cancel-button {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 12px;
+        width: 10px;
+        height: 10px;
+        padding: 1rem;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+        .cancel-button:hover {
+            background-color: #ff1a1a;
+        }
+
+    .field-validation-error,
+    .validation-summary-errors {
+        color: red;
+    }
+
+    .input-validation-error {
+        border: 2px solid red !important;
+        outline: none;
+    }
+
+    svg#togglePassword,
+    svg#toggleConPassword {
+        position: absolute;
+        top: 65%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+        font-size: 16px;
+    }
+
+       svg:hover {
+            fill: #000;
+        }
+
+    .hidden-field {
+        position: absolute;
+        left: -9999px;
+    }
+</style>
+
+<script>
+     $(document).ready(function () {
+        $('input.input-validation-error').on('change', function () {
+            $('span.field-validation-error').text("");
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const dropbox = document.getElementById("dropbox");
+        const fileInput = document.getElementById("Images");
+        const previewContainer = document.getElementById("previewContainer");
+        const selectImagesButton = document.getElementById("selectImages");
+        // Handle drag-and-drop functionality
+        dropbox.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropbox.style.backgroundColor = "#e6e6e6";
+        });
+
+        dropbox.addEventListener("dragleave", () => {
+            dropbox.style.backgroundColor = "#f9f9f9";
+        });
+
+        dropbox.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropbox.style.backgroundColor = "#f9f9f9";
+            const files = Array.from(e.dataTransfer.files);
+            handleFiles(files);
+        });
+
+        // Open file dialog when clicking the "Select Images" button
+        selectImagesButton.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        // Handle file selection through the input
+        fileInput.addEventListener("change", (e) => {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+            validateImages();
+        });
+        // Handle file validation and previews
+        const handleFiles = (files) => {
+                const maxFiles = 5;
+         const existingImages = previewContainer.querySelectorAll('.image-container');
+                if (existingImages.length + files.length > maxFiles) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Limit Exceeded",
+                        text: `You can upload a maximum of ${maxFiles} images.`,
+                    });
+                    return;
+                }
+
+            files.forEach((file) => {
+                // Validate file type
+                if (!file.type.match("image.*")) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid File",
+                        text: "Only image files are allowed.",
+                    });
+                    return;
+                }
+
+                // Validate FileReader support
+                if (!window.FileReader) {
+                    console.error("FileReader is not supported in this browser.");
+                    return;
+                }
+
+                // Check file size (2MB limit)
+                const maxFileSize = 2 * 1024 * 1024; // 2MB
+                if (file.size > maxFileSize) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "File Too Large",
+                        text: `${file.name} must be less than 2 MB.`,
+                    });
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                // FileReader event handlers
+                reader.onload = (e) => {
+
+                    const imgContainer = document.createElement("div");
+                    imgContainer.classList.add("image-container");
+
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    imgContainer.appendChild(img);
+
+                    // Create the cancel button
+                    const cancelButton = document.createElement("button");
+                    cancelButton.textContent = "✖";
+                    cancelButton.classList.add("cancel-button");
+                    cancelButton.addEventListener("click", () => {
+                        imgContainer.remove();
+                    });
+
+                    cancelButton.addEventListener("click", () => {
+                        // Add a fade-out transition
+                        imgContainer.classList.add("fade-out");
+                        setTimeout(() => {
+                            imgContainer.remove();
+                        }, 300); // Matches CSS transition duration
+                    });
+                    imgContainer.appendChild(cancelButton);
+                    document.getElementById("previewContainer").appendChild(imgContainer);
+                };
+
+                reader.onerror = () => {
+                    console.error("Error reading file:", reader.error);
+                };
+
+                // Start reading the file
+                reader.readAsDataURL(file);
+            });
+        };
+        // Trim input
+
+        $('[data-trim]').on('change', e => {
+            e.target.value = e.target.value.trim();
+        });
+
+        // Auto uppercase
+        $('[data-upper]').on('input', e => {
+            const a = e.target.selectionStart;
+            const b = e.target.selectionEnd;
+            e.target.value = e.target.value.toUpperCase();
+            e.target.setSelectionRange(a, b);
+        });
+
+        document.getElementById("submitBtn").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            validateImages();
+            document.getElementById("Price").disabled = false;
+
+            const form = document.querySelector("form");
+            const previewContainer = document.getElementById("previewContainer");
+            const images = previewContainer.getElementsByTagName("img");
+
+            const fileInput = document.getElementById("Images");
+            const fileList = new DataTransfer(); // Create a new DataTransfer object to manage files
+
+            // Convert base64 images in the preview container to files
+            Array.from(images).forEach((img, index) => {
+                fetch(img.src)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const file = new File([blob], `image_${index}.png`, { type: blob.type });
+                        fileList.items.add(file); // Add the file to the DataTransfer object
+                    })
+                    .catch((err) => {
+                        console.error("Error processing image:", err);
+                    });
+            });
+
+            // Wait for all images to be processed
+            setTimeout(() => {
+                fileInput.files = fileList.files; // Assign the files to the file input element
+
+                // Submit the form
+                form.submit();
+            }, 500);
+
+        });
+
+    // After form submission, check the preview container for existing images
+        function checkExistingPreviews() {
+        const previewContainer = document.getElementById("previewContainer");
+        const existingPreviews = document.querySelectorAll('input[name="ExistingPreviews"]');
+
+        // Loop through existing previews (hidden inputs with URLs)
+        existingPreviews.forEach((input) => {
+            const previewUrl = input.value;
+
+            // Find the corresponding image container inside previewContainer
+            const imgContainer = document.querySelector(`div.image-container img[src="${previewUrl}"]`).parentNode;
+
+            if (imgContainer) {
+                // Create the cancel button
+                const cancelButton = document.createElement("button");
+                cancelButton.textContent = "✖";
+                cancelButton.classList.add("cancel-button");
+
+                // Cancel button logic to remove the image container and hidden input
+                cancelButton.addEventListener("click", () => {
+                    imgContainer.classList.add("fade-out");
+
+                    // Remove the hidden input corresponding to the image
+                    const hiddenInput = imgContainer.querySelector('input[name="ExistingPreviews"]');
+                    if (hiddenInput) {
+                        hiddenInput.remove(); // Remove the hidden input
+                    }
+
+                    setTimeout(() => {
+                        imgContainer.remove(); // Remove the image container after fade-out
+                    }, 300); // Matches CSS transition duration
+                });
+
+                imgContainer.appendChild(cancelButton); // Append the cancel button to the image container
+            }
+        });
+    }
+
+
+
+    // Call this function to check existing previews when the page loads or after form submission
+    checkExistingPreviews();
+
+        function validateImages() {
+            const inputElement = document.getElementById("Images");
+            const errMsg = document.getElementById("ImgErr");
+            const maxFiles = 5; // Maximum allowed files
+            const maxSize = 2 * 1024 * 1024; // Maximum file size (2 MB)
+            const allowedTypes = ["image/jpeg", "image/png", "image/gif"]; // Allowed file types
+            const files = inputElement.files;
+            const previewContainer = document.getElementById("previewContainer");
+            const imageContainers = previewContainer.getElementsByClassName("image-container");
+            // Clear any previous error messages
+            errMsg.innerHTML = "";
+
+            // Check if no files are selected
+            if (files.length === 0 && imageContainers.length === 0) {
+                errMsg.innerHTML = "Please select at least one image.";
+                return false;
+            } else
+
+                // Check file count
+                if ((files.length > maxFiles) && imageContainers.length > maxFiles) {
+                    errMsg.innerHTML = `You can upload a maximum of ${maxFiles} images.`;
+                    return false;
+                } else {
+
+                    // Validate each file
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+
+                        // Check file type
+                        if (!allowedTypes.includes(file.type)) {
+                            errMsg.innerHTML = `File type not allowed: ${file.name}`;
+                            return false;
+                        }
+
+                        // Check file size
+                        if (file.size > maxSize) {
+                            errMsg.innerHTML = `File size exceeds 2MB: ${file.name}`;
+                            return false;
+                        }
+                    }
+                }
+
+            return true;
+        }
+
+    const categoryInput = document.getElementById("RoomTypeName");
+          const priceInput = document.getElementById("Price");
+          const roomCapacityInput = document.getElementById("RoomCapacity");
+
+          categoryInput.addEventListener("input", function () {
+              const enteredCategory = categoryInput.value.trim();
+              const categoryOptions = Array.from(document.querySelectorAll("#categoryList option")).map(opt => opt.value);
+
+              // if (categoryOptions.map(c => c.toLowerCase()).includes(enteredCategory.toLowerCase())) {
+              fetch(`/Rooms/GetCategoryDetails?RoomTypeName=${encodeURIComponent(enteredCategory)}`)
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data) {
+                          // If category exists in the database, disable the fields
+                          priceInput.value = data.price.toFixed(2);
+                          roomCapacityInput.value = data.capacity;
+                          $("form").validate().element("#Price");
+                          $("form").validate().element("#RoomQuantity");
+                          priceInput.disabled = true;
+                          roomCapacityInput.disabled = true;
+                      } else {
+                          // If category doesn't exist in the database, enable the fields
+                          priceInput.value = "";
+                          roomCapacityInput.value = "1";
+                          priceInput.disabled = false;
+                          roomCapacityInput.disabled = false;
+                      }
+                  });
+          });
+      });
+</script>
+<div class="body-content flex flex-column">
+    <main class="flex flex-column grow">
+        <section class="flex flex-column gap-2">
+            <form id="roomForm" class="form" asp-action="AddUserForm" asp-controller="Admin" method="post" onsubmit="onSubmit(event)">
+                <div class="form-container">
+                    <!-- Left Section -->
+                    <div class="form-section">
+                         <!-- Hidden input to pass Id -->
+
+                        <div class="form-group">
+                            <label asp-for="FirstName"></label>
+                            <input asp-for="FirstName" data-trim placeholder="Enter First Name" />
+                            <span asp-validation-for="FirstName"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="LastName"></label>
+                            <input asp-for="LastName" data-trim placeholder="Enter Last Name" />
+                            <span asp-validation-for="LastName"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="BirthDay"></label>
+                            <input asp-for="BirthDay" type="date" placeholder="BirthDay">
+                            <span asp-validation-for="BirthDay" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Email"></label>
+                            <input asp-for="Email" type="text" placeholder="Email">
+                            <span asp-validation-for="Email" class="validation-error"></span>
+                        </div>
+                        
+
+                    </div>
+
+                    <!-- Right Section -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label asp-for="PhoneNum"></label>
+                            <input asp-for="PhoneNum" type="text" placeholder="Phone Number">
+                            <span asp-validation-for="PhoneNum" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Password"></label>
+                            <input asp-for="Password" id="password" type="password" placeholder="Password">
+                            <svg id="togglePassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                 fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z" />
+                                <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829" />
+                                <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z" />
+                            </svg>
+                            <span asp-validation-for="Password" class="validation-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Password2"></label>
+                            <input asp-for="Password2" id="confPass" type="password" placeholder="Confirm Password">
+                            <svg id="toggleConPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                 fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16">
+                                <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z" />
+                                <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829" />
+                                <path d="M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z" />
+                            </svg>
+                            <span asp-validation-for="Password2" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="roles">Select User Type</label>
+                            <select asp-for="roles" class="form-control">
+                                @foreach (var role in ViewBag.RolesList)
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                            <span asp-validation-for="roles" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <div id="html_element"></div>
+                            <input id="recaptchaTokenInputId" class="hidden-field" asp-for="RecaptchaToken" />
+                            <span asp-validation-for="RecaptchaToken" class="validation-error"></span>
+
+                        </div>
+
+
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="submit-btn" style="display:flex;flex-direction:row-reverse;">
+                    <button id="submitBtn">Submit</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>

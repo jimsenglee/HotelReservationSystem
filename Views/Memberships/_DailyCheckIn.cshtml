@@ -1,0 +1,66 @@
+﻿
+
+<div id="checkin-container" style="max-width: 800px; margin: auto; text-align: center; padding: 20px;">
+    <h1 style="color: #333;">Daily Check-In</h1>
+    <h2 id="total-coins" style="margin-bottom: 20px; color: #555;">Total Coins: @Model.TotalCoins</h2>
+
+    <div id="streak-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 30px;">
+        @for (int i = 1; i <= 7; i++)
+        {
+            bool earned = i <= Model.StreakCount;
+            int reward = i == 7 ? 5 : i;
+
+            <div class="streak-day" style="position: relative; padding: 20px; background-color: @(earned ? "#4caf50" : "#e0e0e0");
+                        color: white; border-radius: 8px; text-align: center; font-weight: bold;">
+                <span>+@reward</span>
+                <p style="font-size: 0.8em;">@(earned ? (i == Model.StreakCount ? "Today" : $"Day {i}") : $"Day {i}")</p>
+            </div>
+        }
+    </div>
+
+    <button id="checkin-button" style="padding: 10px 20px; background-color: #ff5733; color: white;
+                                       border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer;">
+        Check In
+    </button>
+
+    <div id="message" style="margin-top: 20px; font-weight: bold;"></div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#checkin-button").click(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: '/DailyCheckin/CheckIn',
+                method: 'POST',
+                success: function (response) {
+                    if (response.success) {
+                        // Update total coins
+                        $("#total-coins").text("Total Coins: " + response.totalCoins);
+
+                        // Update streak grid
+                        const streakCount = response.streakCount;
+                        $(".streak-day").each(function (index) {
+                            const day = index + 1;
+                            if (day <= streakCount) {
+                                $(this).css("background-color", "#4caf50");
+                            } else {
+                                $(this).css("background-color", "#e0e0e0");
+                            }
+                        });
+
+                        // Display success message
+                        $("#message").css("color", "green").text(response.message);
+                    } else {
+                        // Display error message
+                        $("#message").css("color", "red").text(response.message);
+                    }
+                },
+                error: function () {
+                    $("#message").css("color", "red").text("An error occurred. Please try again.");
+                }
+            });
+        });
+    });
+</script>

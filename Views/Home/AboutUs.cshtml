@@ -1,0 +1,261 @@
+﻿@{
+    var manager = Model.Manager;
+    var admins = Model.Admins;
+}
+<!-- Page Preloder -->
+<div id="preloder">
+    <div class="loader"></div>
+</div>
+
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=|Roboto+Sans:400,700|Playfair+Display:400,700">
+<link rel="stylesheet" href="/css/bootstrapss.min.css">
+<link rel="stylesheet" href="/css/animate.css" type="text/css">
+<link rel="stylesheet" href="/css/owl.carousels.min.css" type="text/css">
+<link rel="stylesheet" href="/css/aos.css" type="text/css">
+<link rel="stylesheet" href="/css/bootstrap-datepicker.css" type="text/css">
+<link rel="stylesheet" href="/css/jquery.timepicker.css" type="text/css">
+<link rel="stylesheet" href="/css/fancybox.min.css" type="text/css">
+<link rel="stylesheet" href="/fonts/ionicons/css/ionicons.min.css" type="text/css">
+<link rel="stylesheet" href="/fonts/fontawesome/css/font-awesome.min.css" type="text/css">
+<link rel="stylesheet" href="/fonts/ionicons/css/ionicons.min.css">
+<link rel="stylesheet" href="/fonts/fontawesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="/css/styless.css">
+
+<section class="site-hero inner-page overlay" style="background-image: url(/images/hero_4.jpg)" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="row site-hero-inner justify-content-center align-items-center">
+            <div class="col-md-10 text-center" data-aos="fade">
+                <h1 class="heading mb-3">About Us</h1>
+                <ul class="custom-breadcrumbs mb-4">
+                    <li><a href="/Home/Index">Home</a></li>
+                    <li>&bullet;</li>
+                    <li>About</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <a class="mouse smoothscroll" href="#next">
+        <div class="mouse-icon">
+            <span class="mouse-wheel"></span>
+        </div>
+    </a>
+</section>
+<!-- END section -->
+
+<section class="py-5 bg-light" id="next">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-12 col-lg-7 ml-auto order-lg-2 position-relative mb-5" data-aos="fade-up">
+                <figure class="img-absolute">
+                    <img src="/images/food-1.jpg" alt="Free Website Template by Templateux" class="img-fluid">
+                </figure>
+                <img src="/images/img_1.jpg" alt="Image" class="img-fluid rounded">
+            </div>
+            <div class="col-md-12 col-lg-4 order-lg-1" data-aos="fade-up">
+                <h2 class="heading">Welcome!</h2>
+                <p class="mb-4" style="text-align: justify;">
+                    Welcome to Top Top Hotel, where comfort, convenience, and exceptional service come together to create an unforgettable experience.
+                   <br />Our hotel reservation system is designed with you in mind, making it easier than ever to secure your stay with us.
+                </p>
+                
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<div class="container section">
+
+    <div class="row justify-content-center text-center mb-5">
+        <div class="col-md-7 mb-5">
+            <h2 class="heading" data-aos="fade-up">Leadership</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="block-2">
+                <div class="flipper">
+                    <div class="front" style="background-image: url(/images//user_photo/@admins[0].Portrait);">
+                        <div class="box">
+                            <h2>@admins[0].Name</h2>
+                            <p>Hotel Admin</p>
+                        </div>
+                    </div>
+                    <div class="back">
+                        <!-- back content -->
+                        <blockquote>
+                            <p style="text-align: justify;">@admins[0].Name plays a key role in managing our reservations system and ensuring that every guest has a smooth and stress-free booking experience. With an emphasis on clear communication and personalized attention, @admins[0].Name ensures that all requests are met with care and efficiency. Whether it’s a special room request or last-minute change, @admins[0].Name is always ready to assist.</p>
+                        </blockquote>
+                        <div class="author d-flex">
+                            <div class="image mr-3 align-self-center">
+                                <img src="/images/user_photo/@admins[0].Portrait" alt="">
+                            </div>
+                            <div class="name align-self-center">@admins[0].Name <span class="position">Hotel Admin</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- .flip-container -->
+        </div>
+
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="block-2">
+                <!-- .hover -->
+                <div class="flipper">
+                    <div class="front" style="background-image: url(/images/user_photo/@manager.Portrait);">
+                        <div class="box">
+                            <h2>@manager.Name</h2>
+                            <p>Hotel Manager</p>
+                        </div>
+                    </div>
+                    <div class="back">
+                        <!-- back content -->
+                        <blockquote>
+                            <p style="text-align: justify;">As the Hotel Manager at Top Top Hotel, @manager.Name brings years of experience and a passion for hospitality to the role. With a keen eye for detail and a commitment to exceptional service, @manager.Name ensures that all aspects of the hotel run smoothly. From overseeing daily operations to maintaining the highest standards of guest satisfaction, @manager.Name is dedicated to making every stay memorable.</p>
+                        </blockquote>
+                        <div class="author d-flex">
+                            <div class="image mr-3 align-self-center">
+                                <img src="/images/user_photo/@manager.Portrait" alt="">
+                            </div>
+                            <div class="name align-self-center">@manager.Name <span class="position">Hotel Manager</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- .flip-container -->
+        </div>
+
+        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="block-2">
+                <div class="flipper">
+                    <div class="front" style="background-image: url(/images/user_photo/@admins[1].Portrait);">
+                        <div class="box">
+                            <h2>@admins[1].Name</h2>
+                            <p>Hotel Admin</p>
+                        </div>
+                    </div>
+                    <div class="back">
+                        <!-- back content -->
+                        <blockquote>
+                            <p style="text-align: justify;">Behind the scenes, @admins[1].Name is responsible for the day-to-day operations of the hotel, managing everything from maintenance to guest services. With a sharp eye for organization and a proactive approach, @admins[1].Name ensures that everything is in place to provide guests with the best possible experience during their stay.</p>
+                        </blockquote>
+                        <div class="author d-flex">
+                            <div class="image mr-3 align-self-center">
+                                <img src="/images/user_photo/@admins[1].Portrait" alt="">
+                            </div>
+                            <div class="name align-self-center">@admins[1].Name <span class="position">Hotel Admin</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- .flip-container -->
+        </div>
+    </div>
+</div>
+<!-- END .block-2 -->
+
+<section class="section slider-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-md-7">
+                <h2 class="heading" data-aos="fade-up">Photos</h2>
+                <p data-aos="fade-up" data-aos-delay="100">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="home-slider major-caousel owl-carousel mb-5" data-aos="fade-up" data-aos-delay="200">
+                    <div class="slider-item">
+                        <a href="/images/slider-1.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-1.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-2.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-2.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-3.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-3.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-4.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-4.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-5.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-5.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-6.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-6.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-7.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-7.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                </div>
+                <!-- END slider -->
+            </div>
+
+        </div>
+    </div>
+</section>
+<!-- END section -->
+
+<div class="section">
+    <div class="container">
+
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-md-7 mb-5">
+                <h2 class="heading" data-aos="fade">History</h2>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="timeline-item" date-is='2019' data-aos="fade">
+                    <h3>A Symbol of Malaysian Hospitality</h3>
+                    <p style="text-align: justify;">Over the decades, the hotel has become a proud ambassador of Malaysian hospitality. Hosting international events and welcoming guests from all over the world, it reflects the nation’s diversity and warmth. Today, the hotel continues to evolve, incorporating sustainable practices and modern amenities while preserving the rich traditions that make Malaysia a unique destination.</p>
+                    
+                </div>
+
+                <div class="timeline-item" date-is='2011' data-aos="fade">
+                    <h3>Expanding Across the Peninsula</h3>
+                    <p style="text-align: justify;">
+                        Following the success of its flagship property, the hotel expanded its footprint across Malaysia, opening branches in Penang, Johor Bahru, and Kota Kinabalu. Each location was carefully chosen to showcase the natural beauty and cultural heritage of the region. From the serene beaches of Langkawi to the lively streets of George Town, the hotel became synonymous with luxury and local charm.
+                    </p>
+                </div>
+
+                <div class="timeline-item" date-is='2008' data-aos="fade">
+                    <h3>The Beginnings in Kuala Lumpur</h3>
+                    <p style="text-align: justify;">
+                        Nestled in the heart of Kuala Lumpur, the hotel’s journey began in the early 1980s with a vision to provide a unique blend of modern comfort and Malaysian warmth. Strategically located near the bustling streets of Bukit Bintang, the first branch quickly became a favorite among business travelers and tourists alike. The hotel’s commitment to authentic hospitality, coupled with Malaysia’s vibrant culture, set the stage for a legacy of excellence.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+<section class="section bg-image overlay" style="background-image: url('/images/hero_4.jpg');">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12 col-md-6 text-center mb-4 mb-md-0 text-md-left" data-aos="fade-up">
+                <h2 class="text-white font-weight-bold">A Best Place To Stay. Reserve Now!</h2>
+            </div>
+            <div class="col-12 col-md-6 text-center text-md-right" data-aos="fade-up" data-aos-delay="200">
+                <a href="/Rooms" class="btn btn-outline-white-primary py-3 text-white px-5">Reserve Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/jquery-migrate-3.0.1.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/owl.carousels.min.js"></script>
+<script src="/js/jquery.stellar.min.js"></script>
+<script src="/js/jquery.fancybox.min.js"></script>
+<script src="/js/aos.js"></script>
+<script src="/js/bootstrap-datepicker.js"></script>
+<script src="/js/jquery.timepicker.min.js"></script>
+
+<script src="/js/mains.js"></script>

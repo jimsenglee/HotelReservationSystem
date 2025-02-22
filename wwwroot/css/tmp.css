@@ -1,0 +1,193 @@
+﻿@import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+:root {
+    --star-size: 2.2rem;
+    --star-color: #ededed;
+    --star-background: #fc0;
+}
+/****** Style Star Rating Widget *****/
+.rating {
+    border: none;
+    float: left;
+}
+
+    .rating > input {
+        display: none;
+    }
+
+    .rating > label:before {
+        margin: 5px;
+        font-size: 1.25em;
+        font-family: FontAwesome;
+        display: inline-block;
+        content: "\f005";
+    }
+
+    .rating > .half:before {
+        content: "\f089";
+        position: absolute;
+    }
+
+    .rating > label {
+        color: #ddd;
+        float: right;
+    }
+
+    /* Show gold star when clicked */
+    .rating > input:checked ~ label {
+        color: #FFD700;
+    }
+
+    /* Hover current star when not selected */
+    .rating:not(:checked) > label:hover {
+        color: #FFD700;
+    }
+
+        /* Hover previous stars in list */
+        .rating:not(:checked) > label:hover ~ label {
+            color: #FFD700;
+        }
+
+    /* Hover and click styles for enabled inputs */
+    .rating > input:not(:disabled):checked + label:hover,
+    .rating > input:not(:disabled):checked ~ label:hover,
+    .rating > label:hover ~ input:not(:disabled):checked ~ label,
+    .rating > input:not(:disabled):checked ~ label:hover ~ label {
+        color: #FFED85; /* Highlight stars during hover */
+    }
+
+    /* Disabled input (fixed display) - no hover or click */
+    .rating > input:disabled ~ label {
+        color: #FFD700; /* Maintain gold color for disabled stars */
+        pointer-events: none; /* Prevent hover or click interactions */
+    }
+
+        /* Prevent hover effect on disabled stars */
+        .rating > input:disabled ~ label:hover {
+            color: #FFD700; /* Keep disabled color consistent */
+        }
+
+        /* Ensure no hover effect or interaction for disabled labels */
+        .rating > input:disabled + label:hover,
+        .rating > input:disabled ~ label:hover {
+            pointer-events: none; /* Disables hover on the label */
+        }
+
+    /* Prevent any interaction (clicking or hovering) on disabled stars */
+    .rating > input:disabled {
+        pointer-events: none; /* Disable interaction with the input itself */
+    }
+
+    .Stars {
+  --percent: calc(var(--rating) / 5 * 100%);
+  display: inline-block;
+  font-size: var(--star-size);
+  font-family: Times;
+  line-height: 1;
+}
+.Stars::before {
+  content: "★★★★★";
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, var(--star-background) var(--percent), var(--star-color) var(--percent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+
+.ratingDisplay {
+    border: none;
+    float: left;
+}
+
+    .ratingDisplay > input {
+        display: none;
+    }
+
+    .ratingDisplay > label:before {
+        margin: 5px;
+        font-size: 1.25em;
+        font-family: FontAwesome;
+        display: inline-block;
+        content: "\f005";
+    }
+
+    .ratingDisplay > .half:before {
+        content: "\f089";
+        position: absolute;
+    }
+
+    .ratingDisplay > label {
+        color: #ddd;
+        float: right;
+    }
+
+    /* Show gold star when clicked */
+    .ratingDisplay > input:checked ~ label {
+        color: #FFD700;
+    }
+
+
+
+
+.ratings-container {
+    max-width: 70%;
+    margin: auto;
+    margin-bottom: 4rem;
+}
+
+.ratings-header {
+    text-align: center;
+}
+
+    .ratings-header h1 {
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .ratings-header p {
+        font-size: 0.9rem;
+        color: #bbb;
+    }
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+    .rating-bar span {
+        width: 20px;
+        text-align: center;
+    }
+
+.bar {
+    background-color: #333;
+    height: 8px;
+    width: 100%;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    background-color: #007aff;
+    height: 100%;
+    width: var(--dynamic-width, 0);
+    transition: width 0.3s ease;
+}
+
+.rating-label {
+    margin-left: 10px;
+    font-size: 0.9rem;
+}
+
+.star-rating {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .star-rating span {
+        margin-right: 5px;
+    }

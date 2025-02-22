@@ -1,0 +1,210 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<FeedbackDetailsVM>
+
+@{
+    ViewBag.Title = "Top Top Hotel Admin";
+}
+
+@{
+    ViewData["Title"] = "Feedback";
+    string[] fields = ["No", "User Name", "Description", "Rating", "Room Type Name", "Room Number", "Image"];
+}
+
+@Html.Hidden("sort", "", new { form = "searchForm" })
+@Html.Hidden("dir", "", new { form = "searchForm" })
+@Html.Hidden("page", Model.PageNumber, new { form = "searchForm" })
+@Html.Hidden("pageSize", ViewBag.PageSize, new { form = "searchForm" })
+@Html.Hidden("searchBar", ViewBag.Name, new { form = "searchForm" })
+@Html.Hidden("status", ViewBag.Status, new { form = "searchForm" })
+
+@if (Model?.Any() == true)
+{
+    <table class="data-table">
+        <thead>
+            <tr class="no-hover">
+                @foreach (var searchForm in fields)
+                {
+                    string d = "asc";
+                    string c = "";
+
+                    if (searchForm == ViewBag.Sort)
+                    {
+                        d = ViewBag.Dir == "des" ? "asc" : "des";
+                        c = ViewBag.Dir;
+                    }
+
+                    <th class="sortable">
+                        <a href="?searchBar=@ViewBag.Name&sort=@searchForm&dir=@d&pageSize=@ViewBag.PageSize&page=@Model.PageNumber"
+                           data-ajax="true"
+                           data-ajax-update="#target"
+                           data-ajax-loading="#loader"
+                           class=" @c"
+                           id="sort-link">
+                            @searchForm
+                        </a>
+                    </th>
+
+
+                }
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var (fm, index) in Model.Select((feedback, index) => (feedback, index)))
+            {
+                <tr class="data-row"
+                    data-roomId="@fm.FeedbackId">
+                    <td>@(index + 1)</td>
+                    <td>@(fm.UserId)</td>
+                    <td>@fm.Description</td>
+
+                    <td>
+                        <fieldset class="ratingDisplay">
+                            <input type="radio" id="star5-@index" name="rating-@index" value="5" @(fm.Rate == 5 ? "checked" : "") disabled />
+                            <label class="full" for="star5-@index" title="Awesome - 5 stars"></label>
+                            <input type="radio" id="star4half-@index" name="rating-@index" value="4 and a half" @(fm.Rate == 4.5 ? "checked" : "") disabled />
+                            <label class="half" for="star4half-@index" title="Pretty good - 4.5 stars"></label>
+                            <input type="radio" id="star4-@index" name="rating-@index" value="4" @(fm.Rate == 4 ? "checked" : "") disabled />
+                            <label class="full" for="star4-@index" title="Pretty good - 4 stars"></label>
+                            <input type="radio" id="star3half-@index" name="rating-@index" value="3 and a half" @(fm.Rate == 3.5 ? "checked" : "") disabled />
+                            <label class="half" for="star3half-@index" title="Meh - 3.5 stars"></label>
+                            <input type="radio" id="star3-@index" name="rating-@index" value="3" @(fm.Rate == 3 ? "checked" : "") disabled />
+                            <label class="full" for="star3-@index" title="Meh - 3 stars"></label>
+                            <input type="radio" id="star2half-@index" name="rating-@index" value="2 and a half" @(fm.Rate == 2.5 ? "checked" : "") disabled />
+                            <label class="half" for="star2half-@index" title="Kinda bad - 2.5 stars"></label>
+                            <input type="radio" id="star2-@index" name="rating-@index" value="2" @(fm.Rate == 2 ? "checked" : "") disabled />
+                            <label class="full" for="star2-@index" title="Kinda bad - 2 stars"></label>
+                            <input type="radio" id="star1half-@index" name="rating-@index" value="1 and a half" @(fm.Rate == 1.5 ? "checked" : "") disabled />
+                            <label class="half" for="star1half-@index" title="Meh - 1.5 stars"></label>
+                            <input type="radio" id="star1-@index" name="rating-@index" value="1" @(fm.Rate == 1 ? "checked" : "") disabled />
+                            <label class="full" for="star1-@index" title="Sucks big time - 1 star"></label>
+                            <input type="radio" id="starhalf-@index" name="rating-@index" value="half" @(fm.Rate == 0.5 ? "checked" : "") disabled />
+                            <label class="half" for="starhalf" title="Sucks big time - 0.5 stars"></label>
+                        </fieldset>
+                    </td>
+
+                    <td>@(fm.RoomTypeName)</td>
+                    <td>@(fm.RoomName)</td>
+                    <td>
+                        @if (fm.Images.Any())
+                        {
+                            @foreach (var image in fm.Images)
+                            {
+                                <img src="~/images/Feedback/@image.Name" alt="Room Image" style="width:50px; height:50px;" />
+                            }
+                        }
+                        else
+                        {
+                            <span>No Images</span>
+                        }
+                    </td>
+
+                </tr>
+
+            }
+        </tbody>
+    </table>
+
+}
+else
+{
+    <h1 style="color:black; display:flex;justify-content:center;">No rooms available.</h1>
+}
+
+@{
+    int currentPage = Model.PageNumber;
+    int totalPages = Model.PageCount;
+    string previousPageUrl = currentPage > 1
+        ? $"?searchBar={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={currentPage - 1}&pageSize={ViewBag.PageSize}&status={ViewBag.Status}"
+        : null;
+    string nextPageUrl = currentPage < totalPages
+        ? $"?searchBar={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={currentPage + 1}&pageSize={ViewBag.PageSize}&status={ViewBag.Status}"
+        : null;
+
+    var ajaxOptions = new AjaxOptions
+            {
+                HttpMethod = "get",
+                UpdateTargetId = "target",
+                LoadingElementId = "loader"
+            };
+}
+@if (totalPages != 0)
+{
+    <section class="flex items-center justify-between" style="margin-top:3rem">
+        <!-- Displaying current range of items -->
+        <small class="muted">
+            @((currentPage - 1) * Model.PageSize + 1) -
+            @(Math.Min(currentPage * Model.PageSize, Model.TotalItemCount)) /
+            @Model.TotalItemCount items
+        </small>
+
+        <div class="flex gap-2 items-center">
+            <div class="flex gap-05 items-center">
+                <form data-ajax="true"
+                      data-ajax-update="#target"
+                      data-ajax-loading="#loader"
+                      class="flex items-center gap-05">
+                    <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+                    <input class="input number small"
+                           type="number"
+                           name="page"
+                           min="1"
+                           max="@totalPages"
+                           value="@currentPage"
+                           onchange="$(this.form).submit();"
+                           required />
+                    <small class="muted">/</small>
+                    <small class="muted">@totalPages pages</small>
+                </form>
+            </div>
+
+            <div class="flex gap-05 items-center">
+                <!-- Previous button -->
+                @if (!string.IsNullOrEmpty(previousPageUrl))
+                {
+                    <a href="@previousPageUrl"
+                       data-ajax="true"
+                       data-ajax-update="#target"
+                       data-ajax-loading="#loader"
+                       class="button icon link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#247783" viewBox="0 0 256 256">
+                            <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+                        </svg>
+                    </a>
+                }
+                else
+                {
+                    <button class="button icon link" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#d3d3d3" viewBox="0 0 256 256">
+                            <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+                        </svg>
+                    </button>
+                }
+
+                <!-- Next button -->
+                @if (!string.IsNullOrEmpty(nextPageUrl))
+                {
+                    <a href="@nextPageUrl"
+                       data-ajax="true"
+                       data-ajax-update="#target"
+                       data-ajax-loading="#loader"
+                       class="button icon link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#247783" viewBox="0 0 256 256">
+                            <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+                        </svg>
+                    </a>
+                }
+                else
+                {
+                    <button class="button icon link" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#d3d3d3" viewBox="0 0 256 256">
+                            <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+                        </svg>
+                    </button>
+                }
+            </div>
+        </div>
+    </section>
+}

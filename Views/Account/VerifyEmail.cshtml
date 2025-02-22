@@ -1,0 +1,149 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Email Verification";
+    string message = ViewBag.Message as string;
+    
+    bool isSuccess = ViewBag.IsSuccess ?? false;
+    string emailHelp = "If you haven't received the email, please check your spam or junk folder. If not, please click the below button.";
+    bool hasToken = ViewBag.UserId != null;
+}
+
+<link rel="stylesheet" href="/css/loginNregister.css" type="text/css" />
+
+<div id="container">
+    <div class="left-section">
+        <div class="illustration">
+            <!-- <img src="loginViews.jpg" alt="Illustration" style="object-fit: cover;"> -->
+        </div>
+    </div>
+    <div class="right-section">
+        <div class="form-container">
+            @if (!hasToken)
+            {
+                <!-- Case 1: No token provided (email sent message) -->
+                <h2>Verification Email Sent</h2>
+                <p>@message</p>
+                <p>@emailHelp</p>
+                <a href="#"
+                   class="btn btn-warning"
+                   data-action="resend-verification"
+                   data-temp-token="@ViewBag.tempUserToken">
+                    Resend Verification Email
+                </a>
+            }
+            else if (isSuccess)
+            {
+                <h2>Email Verified Successfully</h2>
+                <p>@ViewBag.Message</p>
+                <a href="/Account/Login" class="btn btn-primary">Go to Login Page</a>
+            }
+            else if (@ViewBag.Message != null && @ViewBag.Message.ToString() == "Your email has already been verified. No further action is required.")
+            {
+                <h2>Activation Already Successful</h2>
+                <p>@ViewBag.Message</p>
+                
+            }
+            else
+            {
+                <h2>Email Verification Failed</h2>
+                <p>@ViewBag.Message</p>
+                <a href="#"
+                   class="btn btn-warning"
+                   data-action="resend-for-failed"
+                   data-user-id="@ViewBag.UserId"
+                   data-token="@ViewBag.token"
+                   data-querystring="">
+                    Resend Verification Email
+                </a>
+                
+            }
+        </div>
+
+    </div>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+     document.addEventListener('DOMContentLoaded', function () {
+        // Function to get query string parameter
+        function getUrlQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Extract the Token from the URL
+        const querystringToken = getUrlQueryParam('Token');
+
+        // Populate data-querystring attribute for buttons
+        document.querySelectorAll('[data-action="resend-for-failed"]').forEach(button => {
+            if (querystringToken) {
+                button.setAttribute('data-querystring', querystringToken);
+            }
+        });
+
+        // Event listener for button actions
+        document.body.addEventListener('click', function (event) {
+            const target = event.target;
+
+            if (target.matches('[data-action="resend-verification"]')) {
+                event.preventDefault();
+                const tempToken = target.getAttribute('data-temp-token');
+                handleResendVerification(tempToken);
+            }
+
+            if (target.matches('[data-action="resend-for-failed"]')) {
+                event.preventDefault();
+                const userId = target.getAttribute('data-user-id');
+                const token = target.getAttribute('data-token');
+                const fallbackToken = target.getAttribute('data-querystring');
+                handleResendForFailed(userId, token, fallbackToken);
+            }
+        });
+    });
+
+    function handleResendVerification(tempToken) {
+        if (!tempToken || tempToken === "null") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Token is missing. Unable to proceed with verification.',
+            });
+            return;
+        }
+
+        window.location.href = `/Account/ResendVerification?tempToken=${encodeURIComponent(tempToken)}`;
+    }
+
+    function handleResendForFailed(userId, token, fallbackToken) {
+        if (!userId || userId === "null") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'UserId is missing. Unable to resend verification email.',
+            });
+            return;
+        }
+
+        // Use fallbackToken if token is null
+        token = token && token !== "null" ? token : fallbackToken;
+
+        if (!token || token === "null") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Token is missing. Unable to resend verification email.',
+            });
+            return;
+        }
+
+        // Redirect to the target URL
+        window.location.href = `/Account/ResendForFailed?userId=${encodeURIComponent(userId)}&Token=${encodeURIComponent(token)}`;
+    }
+
+</script>

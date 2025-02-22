@@ -1,0 +1,52 @@
+﻿ @model HotelRoomReservationSystem.Models.ViewModels.forgotPasswordVM
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="/css/loginNregister.css" type="text/css" />
+
+<div id="container">
+    <div class="left-section">
+        <div class="illustration">
+            <!-- <img src="loginViews.jpg" alt="Illustration" style="object-fit: cover;"> -->
+        </div>
+    </div>
+    <div class="right-section">
+        <div class="form-container">
+            <h1>Account Recovery</h1>
+            <p>Please enter your email</p>
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="validation-summary">
+                </div>
+                <div class="form-group">
+                    <input asp-for="Email" type="text" placeholder="Email" required>
+                    <span asp-validation-for="Email" class="validation-error"></span>
+                </div>
+
+                <button type="submit" class="signup-btn">Submit</button>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.unobtrusive-ajax.min.js"></script>
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>
+<script src="/js/app.js" asp-append-version="true"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
+@if (TempData["RecoveryMessage"] != null)
+{
+    <script>
+               Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '@Html.Raw(TempData["RecoveryMessage"])',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = '/'; 
+        });
+    </script>
+}

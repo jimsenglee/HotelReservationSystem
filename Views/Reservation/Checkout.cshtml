@@ -1,0 +1,166 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.CheckoutViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    .center-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
+
+    /* Reservation form styling */
+    .reservation-form {
+        background-color: #fff;
+        width: 50%;
+        max-width: 600px; /* Limit the maximum width */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px; /* Ensure the form doesn't touch the footer */
+    }
+
+    .reservation-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2e3b4e;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .custom-form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
+        color: #2e3b4e;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #ff7e5f;
+        }
+
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+    }
+
+        .button-group button {
+            width: 48%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+    .btn-cancel {
+        background-color: #f44336;
+        color: white;
+    }
+
+        .btn-cancel:hover {
+            background-color: #d32f2f;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .btn-confirm {
+        background-color: #4caf50;
+        color: white;
+    }
+
+        .btn-confirm:hover {
+            background-color: #388e3c;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .price-tag {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background-color: #4caf50;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+</style>
+
+<h3 class="reservation-title">Reservation Confirmation</h3>
+<div class="center-wrapper">
+
+    <form asp-action="ConfirmReservation" asp-controller="Reservation" method="post" class="reservation-form">
+        <div class="form-group custom-form-group">
+            <label for="UserName" class="form-label">Full Name:</label>
+            <input type="text" class="form-control" id="UserName" value="@Model.UserName" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="UserId" class="form-label">User ID:</label>
+            <input type="text" class="form-control" id="UserId" value="@Model.UsersId" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="RoomId" class="form-label">Room ID:</label>
+            <input type="text" class="form-control" id="RoomId" value="@Model.RoomId" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="RoomType" class="form-label">Room Type:</label>
+            <input type="text" class="form-control" id="RoomType" value="@Model.RoomType" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="selectedCapacity" class="form-label">Selected Capacity:</label>
+            <input type="text" class="form-control" id="selectedCapacity" value="@Model.SelectedCapacity" readonly />
+        </div>
+
+
+        <div class="form-group custom-form-group">
+            <label for="RoomPrice" class="form-label">Room Price:</label>
+            <input type="text" class="form-control" id="RoomPrice" value="RM @Model.RoomPrice" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="CheckInDate" class="form-label">Check-In Date:</label>
+            <input type="text" class="form-control" id="CheckInDate" value="@Model.CheckInDate.ToString("yyyy-MM-dd")" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="CheckOutDate" class="form-label">Check-Out Date:</label>
+            <input type="text" class="form-control" id="CheckOutDate" value="@Model.CheckOutDate.ToString("yyyy-MM-dd")" readonly />
+        </div>
+
+        <div class="form-group custom-form-group">
+            <label for="TotalPrice" class="form-label">Total Price:</label>
+            <input type="text" class="form-control" id="TotalPrice" value="RM @Model.TotalPrice" readonly />
+        </div>
+
+
+        <div class="button-group">
+            <button type="submit" name="action" value="Cancel" class="btn btn-cancel">Cancel</button>
+            <button type="submit" name="action" value="Confirm" class="btn btn-confirm">Confirm Reservation</button>
+        </div>
+    </form>
+</div>
+
