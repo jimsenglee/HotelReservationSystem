@@ -166,18 +166,13 @@ This project was developed as a comprehensive hotel management solution. For any
 
 ## 📧 Contact
 
-**Developer**: Jim Seng Lee  
 **Email**: gimsheng.lee@gmail.com  
 **GitHub**: [@jimsenglee](https://github.com/jimsenglee)
 
 ## �️ Database File
 
-If you need the database file (DB.mdf) to run this project, please send me an email at gimsheng.lee@gmail.com and I'll provide it to you.
+If you need the database file to run this project, please send me an email at gimsheng.lee@gmail.com and I'll provide it to you.
 
 ## �📄 License
 
 This project is developed for educational and portfolio purposes.
-
----
-
-*This Hotel Room Reservation System demonstrates full-stack web development capabilities with modern technologies and comprehensive business logic implementation.*
