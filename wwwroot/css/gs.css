@@ -1,0 +1,7 @@
+﻿.table th a.asc::after {
+    content: '▴';
+}
+
+.table th a.des::after {
+    content: '▾';
+}

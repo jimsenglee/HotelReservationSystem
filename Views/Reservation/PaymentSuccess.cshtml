@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Payment Success";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="payment-success-container">
+    <h2>Payment Successful</h2>
+    <p>Your payment was successful! Thank you for your reservation.</p>
+
+    <div>
+        <h3>Reservation Details:</h3>
+        <ul>
+            <li><strong>Reservation ID:</strong> @ViewBag.ReservationId</li>
+            <li><strong>Total Amount:</strong> @ViewBag.TotalAmount</li>
+        </ul>
+    </div>
+
+    <p>If you have any issues, please contact our support team.</p>
+
+    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Go to Home</a>
+</div>

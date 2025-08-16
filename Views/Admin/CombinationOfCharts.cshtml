@@ -1,0 +1,344 @@
+﻿@{
+    ViewData["Title"] = "CombinationOfCharts";
+}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<div class="container">
+    <br /><br />
+    <div class="bg-white text-dark shadow p-3 mb-5 bg-body-tertiary rounded">
+
+    <div class="row">
+        <!-- Chart Selection Section -->
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="dataType1" class="form-label">Data Type 1</label>
+                <select class="form-select" id="dataType1">
+                    <option value="">Select</option>
+                    <option value="reservation">Reservation</option>
+                    <option value="revenue">Revenue</option>
+                    <option value="user">User</option>
+                    <option value="membership">Members Last Check In Date</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="chartType1" class="form-label">Chart Type 1</label>
+                <select class="form-select" id="chartType1">
+                    <option value="">Select</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                    <option value="doughnut">Donut Chart</option>
+                    <option value="radar">Radar Chart</option>
+                    <option value="polarArea">Polar Area Chart</option>
+                    <option value="bubble">Bubble Chart</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="startDate">
+            </div>
+
+        </div>
+
+        <!-- Data Selection Section -->
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="dataType2" class="form-label">Data Type 2 (Optional)</label>
+                <select class="form-select" id="dataType2">
+                    <option value="">Select</option>
+                    <option value="reservation">Reservation</option>
+                    <option value="revenue">Revenue</option>
+                    <option value="user">User</option>
+                    <option value="membership">Members Last Check In Date</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="chartType2" class="form-label">Chart Type 2 (Optional)</label>
+                <select class="form-select" id="chartType2">
+                    <option value="">Select</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                    <option value="doughnut">Donut Chart</option>
+                    <option value="radar">Radar Chart</option>
+                    <option value="polarArea">Polar Area Chart</option>
+                    <option value="bubble">Bubble Chart</option>
+                </select>
+            </div>
+
+            <!-- Date Range Selection -->
+
+            <div class="mb-3">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="endDate">
+            </div>
+
+            <!-- Generate and Download Buttons -->
+            <div class="mb-3">
+                <button class="btn btn-primary" id="generateChartsBtn">Generate Combined Chart</button>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-secondary" id="downloadPdfBtn" style="display: none;">Download PDF</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;">
+        <!-- Alert messages will be appended here -->
+    </div>
+
+    <br />
+    <!-- Chart Display Section -->
+    <div class="chart-container">
+        <div id="chartArea">
+            <!-- Chart will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var chartGenerated = false; // Track if the chart is generated
+
+        $('#generateChartsBtn').click(function () {
+            // Collect form data
+            var chartType1 = $('#chartType1').val();
+            var chartType2 = $('#chartType2').val();
+            var dataType1 = $('#dataType1').val();
+            var dataType2 = $('#dataType2').val();
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            // Send data to controller using AJAX
+            $.ajax({
+                url: '/admin/generateCharts',
+                method: 'POST',
+                data: {
+                    chartType1: chartType1,
+                    chartType2: chartType2,
+                    dataType1: dataType1,
+                    dataType2: dataType2,
+                    startDate: startDate,
+                    endDate: endDate
+                },
+                success: function (response) {
+                    if (response.success) {
+                        chartGenerated = true; // Mark chart as generated
+                        $('#downloadPdfBtn').show(); // Show the download PDF button
+                        renderCombinedChart(response.labels, response.data1, response.data2, chartType1, chartType2, dataType1, dataType2);
+                        
+                    } else {
+                        showAlert(response.message, false);
+                    }
+                },
+                error: function () {
+                    showAlert("An error occurred while generating the charts.", false);
+                }
+            });
+        });
+
+        // Function to render the combined chart
+    function renderCombinedChart(labels, data1, data2, chartType1, chartType2, dataType1, dataType2) {
+        
+        if (labels && labels.$values) {
+        labels = labels.$values; // Extract the array
+        } else if (!Array.isArray(labels)) {
+        console.error("Invalid labels format. Expected an array or object with $values.");
+        return;
+        }
+        
+        
+        
+        // Clear the chart area and create a new canvas for the chart
+        $('#chartArea').html('<canvas id="combinedChartCanvas"></canvas>');
+        var ctx = $('#combinedChartCanvas').get(0).getContext('2d');
+
+        // Default values for chart types if not provided
+        chartType1 = chartType1 || 'bar';
+        chartType2 = chartType2 || 'line';
+
+        var datasets = [
+            {
+                label: dataType1.charAt(0).toUpperCase() + dataType1.slice(1), // Capitalize dataType1
+                data: data1.$values,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                type: chartType1
+            }
+        ];
+
+        // If second dataType exists, create a dataset for it
+        if (dataType2) {
+            datasets.push({
+                label: dataType2.charAt(0).toUpperCase() + dataType2.slice(1), // Capitalize dataType2
+                data: data2.$values,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                type: chartType2,
+                yAxisID: 'y-axis-2'  // This ensures the second dataset uses a secondary y-axis
+            });
+        }
+
+        new Chart(ctx, {
+            type: 'bar',  // Default chart type is bar
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',  // Position legend at the top for clarity
+                        labels: {
+                            font: {
+                                size: 14  // Make the legend font larger for readability
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        top: 20,
+                        bottom: 20
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Dates'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12  // Adjust font size for x-axis labels
+                            }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: dataType1 ? dataType1.charAt(0).toUpperCase() + dataType1.slice(1) : ''
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 12  // Adjust font size for y-axis labels
+                            }
+                        }
+                    },
+                    'y-axis-2': {
+                        position: 'right',  // Place the secondary y-axis on the right
+                        title: {
+                            display: true,
+                            text: dataType2 ? dataType2.charAt(0).toUpperCase() + dataType2.slice(1) : ''
+                        },
+                        ticks: {
+                            font: {
+                                size: 12  // Adjust font size for secondary y-axis labels
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+    $('#downloadPdfBtn').click(function () {
+        if (!chartGenerated) {
+            showAlert("You must generate the chart first before downloading the PDF.", false);
+            return;
+        }
+
+        var chart = Chart.getChart('combinedChartCanvas');
+        if (!chart) {
+            showAlert("No chart available to download!", false);
+            return;
+        }
+
+        // Ensure labels and datasets access $values
+        var labels = chart.data.labels.$values || chart.data.labels;
+        var tableData = [];
+        labels.forEach((label, i) => {
+            var row = [label];
+            chart.data.datasets.forEach((dataset) => {
+                var data = dataset.data.$values || dataset.data;
+                row.push(data[i]);
+            });
+            tableData.push(row);
+        });
+
+        var headers = ['Date'];
+        chart.data.datasets.forEach((dataset) => headers.push(dataset.label));
+
+        // Prompt user for title and filename
+        var title = prompt("Enter the title for your PDF report:", "Combined Chart Report");
+        var filename = prompt("Enter the filename for your PDF download (without extension):", "ChartReport");
+
+        if (!title || !filename) {
+            showAlert("Title and filename are required to download the PDF.", false);
+            return;
+        }
+
+        // Sanitize title and filename for safe usage
+        var sanitizedTitle = title.replace(/[\/:*?"<>|]/g, '').trim();
+        var sanitizedFilename = filename.replace(/[\/:*?"<>|]/g, '').trim();
+
+        if (!sanitizedTitle || !sanitizedFilename) {
+            showAlert("Invalid title or filename provided.", false);
+            return;
+        }
+
+        // Capture the selected data types for the title
+        var dataType1 = $('#dataType1').val();
+        var dataType2 = $('#dataType2').val();
+        if (dataType1 && dataType2) {
+            sanitizedTitle = `${dataType1.charAt(0).toUpperCase() + dataType1.slice(1)} & ${dataType2.charAt(0).toUpperCase() + dataType2.slice(1)} Report`;
+        } else if (dataType1) {
+            sanitizedTitle = `${dataType1.charAt(0).toUpperCase() + dataType1.slice(1)} Report`;
+        } else if (dataType2) {
+            sanitizedTitle = `${dataType2.charAt(0).toUpperCase() + dataType2.slice(1)} Report`;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text(sanitizedTitle, 105, 20, { align: 'center' });
+        var chartImage = chart.toBase64Image();
+        doc.addImage(chartImage, 'PNG', 15, 30, 180, 90);
+
+        doc.autoTable({ startY: 130, head: [headers], body: tableData });
+        doc.save(sanitizedFilename + '.pdf');
+    });
+
+
+
+        function showAlert(message, isSuccess) {
+            var alertType = isSuccess ? 'alert-success' : 'alert-danger';
+            var alertHTML = `
+                <div class="alert ${alertType} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>`;
+            $('#alertContainer').html(alertHTML);
+        }
+    });
+</script>

@@ -1,0 +1,223 @@
+﻿ @model HotelRoomReservationSystem.Models.ViewModels.HomePageVM
+
+@section head {
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=|Roboto+Sans:400,700|Playfair+Display:400,700">
+    <link rel="stylesheet" href="/css/bootstrapss.min.css">
+    <link rel="stylesheet" href="/css/animate.css" type="text/css">
+    <link rel="stylesheet" href="/css/owl.carousels.min.css" type="text/css">
+    <link rel="stylesheet" href="/css/aos.css" type="text/css">
+    <link rel="stylesheet" href="/css/bootstrap-datepicker.css" type="text/css">
+    <link rel="stylesheet" href="/css/jquery.timepicker.css" type="text/css">
+    <link rel="stylesheet" href="/css/fancybox.min.css" type="text/css">
+    <link rel="stylesheet" href="/fonts/ionicons/css/ionicons.min.css" type="text/css">
+    <link rel="stylesheet" href="/fonts/fontawesome/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="/fonts/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="/fonts/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/styless.css">
+    <script>
+         $(document).on('click', '.roomType-card', function (e) {
+            e.preventDefault();
+
+                // Get the roomType ID
+                        const roomTypeId = $(this).data('roomtypeid');
+            // Perform AJAX POST request
+            $.ajax({
+                    url: '/RoomType/StoreRoomTypeId',
+                type: 'POST',
+                    data: { id: roomTypeId },
+                success: function (response) {
+                    // Redirect to the new page
+                    if (response.redirectUrl) {
+                        window.location.href = response.redirectUrl;
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    </script>
+}
+<section class="site-hero overlay" style="background-image: url(/images/hero_4.jpg)" data-stellar-background-ratio="0.5">
+    <div class="container">
+        <div class="row site-hero-inner justify-content-center align-items-center">
+            <div class="col-md-10 text-center" data-aos="fade-up">
+                <span class="custom-caption text-uppercase text-white d-block  mb-3">Welcome To 5 <span class="fa fa-star text-primary"></span>   Hotel</span>
+                <h1 class="heading">A Best Place To Stay</h1>
+            </div>
+        </div>
+    </div>
+
+    <a class="mouse smoothscroll" href="#next">
+        <div class="mouse-icon">
+            <span class="mouse-wheel"></span>
+        </div>
+    </a>
+</section>
+<!-- END section -->
+
+<section class="section bg-light pb-0">
+    <div class="container">
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-12 col-lg-7 ml-auto order-lg-2 position-relative mb-5" data-aos="fade-up">
+                <figure class="img-absolute">
+                    <img src="/images/food-1.jpg" alt="Image" class="img-fluid">
+                </figure>
+                <img src="/images/img_1.jpg" alt="Image" class="img-fluid rounded">
+            </div>
+            <div class="col-md-12 col-lg-4 order-lg-1" data-aos="fade-up">
+                <h2 class="heading">Welcome!</h2>
+                <p class="mb-4">
+                    Welcome to Top Top Hotel! 🌟
+                    We are delighted to have you as our guest. Whether you're here to relax, explore, or attend to business, we aim to make your stay comfortable and unforgettable.
+                </p>
+                <p><a href="/AboutUs" class="btn btn-primary text-white py-2 mr-3">Learn More</a> <span class="mr-3 font-family-serif"></p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-md-7">
+                <h2 class="heading" data-aos="fade-up">Rooms &amp; Suites</h2>
+                <p data-aos="fade-up" data-aos-delay="100">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+            </div>
+        </div>
+        <div class="row">
+            @foreach (var c in Model.TypeList)
+            {
+                if (!string.IsNullOrEmpty(c?.RtName) && c?.Price != null)
+                {
+                    <div class="col-md-6 col-lg-4 roomType-card"
+                         data-roomTypeId="@c?.RtId"
+                    data-aos="fade-up">
+                        <a href="javascript:void(0);" class="room">
+                            <figure class="img-wrap">
+                                <img src="/images/RoomType/@c?.Images" alt="Free website template" class="img-fluid mb-3" style="width:349.99px;height:249.99px;">
+                            </figure>
+                            <div class="p-3 text-center room-info">
+                                <h2>@c.RtName</h2>
+                                <span class="text-uppercase letter-spacing-1">RM @(c?.Price.ToString("F2") ?? "0.00") / per night</span>
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+
+<section class="section slider-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-md-7">
+                <h2 class="heading" data-aos="fade-up">Photos</h2>
+                <p data-aos="fade-up" data-aos-delay="100">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="home-slider major-caousel owl-carousel mb-5" data-aos="fade-up" data-aos-delay="200">
+                    <div class="slider-item">
+                        <a href="/images/slider-1.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-1.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-2.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-2.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-3.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-3.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-4.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-4.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-5.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-5.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-6.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-6.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                    <div class="slider-item">
+                        <a href="/images/slider-7.jpg" data-fancybox="/images" data-caption="Caption for this image"><img src="/images/slider-7.jpg" alt="Image placeholder" class="img-fluid"></a>
+                    </div>
+                </div>
+                <!-- END slider -->
+            </div>
+
+        </div>
+    </div>
+</section>
+<!-- END section -->
+<!-- END section -->
+@if (Model.FeedbackList.Count != 0)
+{
+    <section class="section testimonial-section">
+        <div class="container">
+            <div class="row justify-content-center text-center mb-5">
+                <div class="col-md-7">
+                    <h2 class="heading" data-aos="fade-up">People Says</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="js-carousel-2 owl-carousel mb-5" data-aos="fade-up" data-aos-delay="200">
+                    @foreach (var feedback in Model.FeedbackList)
+                    {
+                        <div class="testimonial text-center slider-item">
+                            <div class="author-image mb-3">
+                                <img src="/images/user_photo/@feedback.Users.Portrait" alt="Image placeholder" class="rounded-circle mx-auto">
+                            </div>
+                            <blockquote>
+                                <p>&ldquo;@feedback.Description&rdquo;</p>
+                            </blockquote>
+                            <p><em>&mdash; @feedback.Users.Name</em></p>
+                        </div>
+                    }
+
+
+
+                </div>
+                <!-- END slider -->
+            </div>
+
+        </div>
+    </section>
+}
+
+
+
+<section class="section bg-image overlay" style="background-image: url('/images/hero_4.jpg');">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12 col-md-6 text-center mb-4 mb-md-0 text-md-left" data-aos="fade-up">
+                <h2 class="text-white font-weight-bold">A Best Place To Stay. Reserve Now!</h2>
+            </div>
+            <div class="col-12 col-md-6 text-center text-md-right" data-aos="fade-up" data-aos-delay="200">
+                <a href="/Rooms" class="btn btn-outline-white-primary py-3 text-white px-5">Reserve Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/jquery-migrate-3.0.1.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/owl.carousels.min.js"></script>
+<script src="/js/jquery.stellar.min.js"></script>
+<script src="/js/jquery.fancybox.min.js"></script>
+<script src="/js/aos.js"></script>
+<script src="/js/bootstrap-datepicker.js"></script>
+<script src="/js/jquery.timepicker.min.js"></script>
+
+<script src="/js/mains.js"></script>
+
+

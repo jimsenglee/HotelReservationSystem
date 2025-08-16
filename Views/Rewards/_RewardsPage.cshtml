@@ -1,0 +1,239 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels
+@model List<RewardsVM>
+<style>
+    .voucher-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .voucher {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        margin-bottom: 10px;
+        height: 100px;
+    }
+
+    .voucher-left {
+        background: #007bff; /* Primary blue color */
+        color: #fff;
+        text-align: center;
+        padding: 10px 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100px;
+        width: 100px;
+    }
+
+    .discount {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-top: 5px;
+    }
+
+    .voucher-right {
+        flex: 1;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .details {
+        max-width: 70%;
+    }
+
+        .details p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+    .claim-btn {
+        background-color: #007bff; /* Primary blue color */
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+        .claim-btn:hover {
+            background-color: #0056b3; /* Darker blue for hover effect */
+        }
+
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        margin: 20px 0;
+    }
+
+    .page-btn {
+        padding: 5px 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: #f0f0f0;
+        color: #333;
+        cursor: pointer;
+    }
+
+        .page-btn.active {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .page-btn:disabled {
+            background-color: #e0e0e0;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background-color: #0056b3;
+            color: #fff;
+        }
+
+    .pagination span {
+        padding: 10px 15px;
+        color: #666;
+    }
+</style>
+
+<!-- Sorting Controls -->
+<div class="sorting-controls">
+    <select id="sortBy" onchange="loadPage(1)">
+        <option value="DiscountRate">Discount Rate</option>
+        <option value="PointsRequired">Points Required</option>
+        <option value="Name">Name</option>
+    </select>
+
+    <button id="toggleSortOrder" onclick="toggleSortOrder()" class="page-btn">
+        Sort @(ViewData["SortOrder"] == "asc" ? "Ascending" : "Descending")
+    </button>
+</div>
+<br />
+
+@if (Model != null && Model.Any())
+{
+    <div class="voucher-container">
+        @foreach (var reward in Model.Select((r, index) => new { r, index }))
+        {
+            <div class="voucher">
+                <div class="voucher-left">
+                    <div class="label">Discount</div>
+                    <div class="discount">@reward.r.DiscountRate.ToString("F0")%</div>
+                </div>
+                <div class="voucher-right">
+                    <div class="details">
+                        <p>@reward.r.Name</p>
+                        <p>@reward.r.Description</p>
+                        <p>Points Required: @reward.r.PointsRequired</p>
+                    </div>
+                    <button class="claim-btn" onclick="claimReward('@reward.r.Id', @reward.r.PointsRequired)">Claim</button>
+                </div>
+            </div>
+        }
+    </div>
+
+
+    @if (ViewData["TotalItems"] != null && (int)ViewData["TotalItems"] >= 5)
+    {
+        <div class="pagination">
+            @if (ViewData["TotalPages"] != null && (int)ViewData["TotalPages"] > 1)
+            {
+                int currentPage = (int)ViewData["CurrentPage"];
+                int totalPages = (int)ViewData["TotalPages"];
+
+                // Previous button
+                <button class="page-btn" onclick="loadPage(@(currentPage - 1))" @(currentPage == 1 ? "disabled" : "")>←</button>
+
+                // Page numbers
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    if (i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1))
+                    {
+                        <button class="page-btn @(i == currentPage ? "active" : "")" onclick="loadPage(@i)">@i</button>
+                    }
+                    else if (i == currentPage - 2 || i == currentPage + 2)
+                    {
+                        <span>...</span>
+                    }
+                }
+
+                // Next button
+                <button class="page-btn" onclick="loadPage(@(currentPage + 1))" @(currentPage == totalPages ? "disabled" : "")>→</button>
+            }
+        </div>
+    }
+
+
+}
+else
+{
+    <p>No rewards available.</p>
+}
+
+
+<script>
+    // Set the selected value based on the value in ViewData["SortBy"]
+    $(document).ready(function () {
+        var sortBy = '@ViewData["SortBy"]'; // Get the sort value from ViewData
+        var sortOrder = '@ViewData["SortOrder"]'; // Get the sort order from ViewData
+
+        $('#sortBy').val(sortBy); // Set the selected option based on the value
+        $('#toggleSortOrder').text('Sort ' + (sortOrder === 'asc' ? 'Ascending' : 'Descending')); // Set the button text based on the sort order
+    });
+
+    function loadPage(page, sortBy = '', sortOrder = '') {
+        if (!sortBy) {
+            sortBy = $('#sortBy').val(); // Get the selected value of the dropdown
+        }
+        if (!sortOrder) {
+            sortOrder = '@ViewData["SortOrder"]'; // Get current sort order (asc or desc)
+        }
+
+        $.ajax({
+            url: '@Url.Action("_RewardsPage", "Rewards")',
+            type: 'GET',
+            data: { page: page, pageSize: 5, sortBy: sortBy, sortOrder: sortOrder },
+            success: function (partialView) {
+                $('#rewards-container').html(partialView);  // Update the container with the new partial view
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX error: ' + status + ': ' + error);
+                alert('Failed to load rewards. Please try again.');
+            }
+        });
+    }
+
+    function toggleSortOrder() {
+        var sortBy = $('#sortBy').val(); // Get the current sort by option
+        var currentOrder = '@ViewData["SortOrder"]'; // Get current sort order (asc or desc)
+        var newOrder = currentOrder === 'asc' ? 'desc' : 'asc'; // Toggle the sort order
+
+        // Update the button text
+        $('#toggleSortOrder').text('Sort ' + (newOrder === 'asc' ? 'Ascending' : 'Descending'));
+
+        // Reload the page with the new sort order
+        loadPage(1, sortBy, newOrder);
+    }
+</script>
+

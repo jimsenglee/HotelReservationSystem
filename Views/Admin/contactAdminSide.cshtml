@@ -1,0 +1,611 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<ContactMessagesVM>
+
+<style>
+    .details-card {
+        position: absolute;
+        display: none;
+        width: 350px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 20px;
+    }
+
+        .details-card.visible {
+            display: block;
+        }
+
+        .details-card .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .details-card input,
+        .details-card button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+            .details-card button.submit-button {
+                background-color: #007bff;
+                color: #fff;
+                border: none;
+                cursor: pointer;
+            }
+
+                .details-card button.submit-button:hover {
+                    background-color: #0056b3;
+                }
+
+    /* Container to position the select box */
+    #custom-container {
+        width: 18rem;
+        position: relative;
+    }
+
+    /* Styling the select element */
+    .custom-select {
+        width: 100%;
+        padding: 10px 10px;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #333;
+        font-size: 16px;
+        appearance: none; /* Remove default dropdown arrow */
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        /* Hover and focus effects */
+        .custom-select:hover,
+        .custom-select:focus {
+            border-color: var(--color-primary-6);
+            box-shadow: 0 4px 10px rgba(29, 95, 105, 0.3);
+            transform: scale(1.05);
+        }
+
+    /* Adding a custom dropdown arrow */
+    #custom-container::after {
+        content: '▼';
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none; /* Prevent arrow from being clicked */
+        font-size: 14px;
+        color: var(--color-primary-6);
+        transition: all 0.3s ease;
+    }
+
+    /* Change the arrow color on hover */
+    #custom-container:hover::after {
+        color: var(--color-primary-6);
+    }
+
+    /*  .undo-notification {
+                    position: fixed;
+                    bottom: 10px;
+                    right: 10px;
+                    background-color: #f8d7da;
+                    color: #721c24;
+                    padding: 10px;
+                    border: 1px solid #f5c6cb;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                    width: auto;
+                    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+                }
+
+                    .undo-notification .undo-button {
+                        background-color: #f5c6cb;
+                        border: none;
+                        color: #721c24;
+                        cursor: pointer;
+                        padding: 5px 10px;
+                        border-radius: 3px;
+                        align-self: flex-start;
+                    }
+
+                .progress-bar-container {
+                    position: relative;
+                    background-color: #f5c6cb;
+                    border-radius: 3px;
+                    overflow: hidden;
+                    height: 5px;
+                    width: 100%;
+                }
+
+                .progress-bar {
+                    background-color: #721c24;
+                    height: 100%;
+                    width: 0%;
+                    transition: width 1.2s linear;
+                } */
+
+
+    .undo-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #f4f4f4;
+        border: 1px solid #ccc;
+        padding: 10px 20px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .undo-button {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .progress-bar-container {
+        position: relative;
+        height: 5px;
+        background: #ddd;
+        flex-grow: 1;
+        margin-left: 10px;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: #007bff;
+        animation: progress-bar-animation 5s linear forwards;
+    }
+
+    .dropdown-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .additional-options {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+        .additional-options li a {
+            padding: 8px 12px;
+            display: block;
+            color: black;
+            text-decoration: none;
+        }
+
+            .additional-options li a:hover {
+                background-color: #f1f1f1;
+            }
+
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .modal-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .close-btn {
+        align-self: flex-end;
+        cursor: pointer;
+        font-size: 20px;
+        color: black;
+    }
+
+    textarea {
+        width: 100%; 
+        height: 200px; 
+        resize: none; 
+        margin-bottom: 15px; 
+        padding: 10px; 
+        font-size: 14px; 
+        border: 1px solid #ccc; 
+        border-radius: 5px;
+		box-sizing: border-box; 
+    }
+
+    #submitReply {
+        align-self: flex-end;
+    }
+</style>
+<script>
+    // function initializeHandlers(){
+        $(document).ready(function () {
+
+       
+
+    
+
+    // Hide additional options when clicking outside
+    $(document).click(function (e) {
+        if (!$(e.target).closest('.dropdown-container').length) {
+            $('.additional-options').hide();
+        }
+    });
+                 
+
+    // Helper function to convert RGB to Hex for comparison
+    function rgbToHex(rgb) {
+        const rgbArray = rgb.match(/\d+/g).map(Number);
+        return (
+            '#' +
+            rgbArray
+                .map(x => x.toString(16).padStart(2, '0'))
+                .join('')
+        );
+    }
+
+          
+
+        $(document).on("click", "th.sortable", function (e) {
+        // Prevent infinite loop by checking if the event originated from the `a` tag
+        if (e.target.tagName !== "A") {
+            // Find the `a` tag inside the clicked `th` and trigger its native click event
+            $(this).find("a#sort-link")[0].click();
+        }
+    });
+
+        $(document).on("click", "tr.data-row", function (e) {
+        if (!$(e.target).is("input[type='checkbox']") && !$(e.target).is(".status-btn")) {
+            const userId = $(this).data("userid");
+            const status = $(this).data("status");
+            const msg = $(this).data("msg");
+            if(status == "CLOSE"){
+                Swal.fire({
+                    title: 'Error!',
+                    text: "This Message has been close file.",
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    $("#replyModal").fadeOut();
+                    $("#replyText").val("");
+                });
+            }else{
+                console.log(status);
+            $("#replyModal").data("messageid", userId);
+            $("#replyModal").data("message", msg);
+            console.log(userId);
+            $("#replyModal").fadeIn();
+            }
+        }
+        });
+
+        $(document).on("click", ".close-btn", function () {
+        $("#replyModal").fadeOut();
+    });
+
+
+        $(document).on("click", "#submitReply", function () {
+        const replyText = $("#replyText").val();
+        const messageId = $("#replyModal").data("messageid");
+        const messagess = $("#replyModal").data("message");
+
+        $.ajax({
+        url: `/Admin/SubmitReply`,
+        method: "POST",
+        data: {
+            messageId: messageId,
+            replyMessage: replyText
+        },
+        success: function (response) {
+            if (response.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: response.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    $("#replyModal").fadeOut();
+                    $("#replyText").val("");
+                    window.location.href = '/Admin/contactAdminSide';
+                    $('.checkbox:checked').prop('checked', false);
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: response.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function (xhr) {
+            Swal.fire({
+                title: 'Error!',
+                text: "An error occurred while submitting the reply.",
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+            console.error("Error submitting reply:", xhr.responseText);
+        }
+    });
+
+
+
+    });
+
+
+
+          
+
+
+        $('#selectAll').on('change', function () {
+            //Check the state of the "Select All" checkbox
+            const isChecked = $(this).is(':checked');
+            //Set all checkboxes with the same state
+            $('.data-row .checkbox').prop('checked', isChecked);
+        });
+
+            $('.data-row .checkbox').on('change', function () {
+        const allCheckboxes = $('.data-row .checkbox');
+        const allChecked = allCheckboxes.length === allCheckboxes.filter(':checked').length;
+        $('#selectAll').prop('checked', allChecked);
+    });
+
+        $('.trash-button').on('click', function () {
+        // Get selected room IDs
+        const selectedIds = $('.checkbox:checked').map(function () {
+            return $(this).data('userid');
+        }).get();
+       
+        if (selectedIds.length === 0) {
+             Swal.fire({
+                    title: 'Info',
+                    text: 'No items selected for deletion.',
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `${selectedIds.length} messages(s) marked for deletion.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete them!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send the delete request
+                $.ajax({
+                     url: '/Admin/MessageDelete',
+    type: 'POST',
+    data: JSON.stringify(selectedIds),
+    contentType: 'application/json',
+    success: function (response) {
+                     Swal.fire({
+                         title: 'Marked for Deletion!',
+                         text: response.message,
+                         icon: 'info',
+                         confirmButtonText: 'OK'
+                     }).then(() => {
+                        window.location.href = '/Admin/contactAdminSide';
+                         $('.checkbox:checked').prop('checked', false);
+                     });
+                 },
+                    error: function (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: "Only Manager can delete message.",
+                            icon: 'error',
+                            confirmButtonText: 'Try Again'
+                        });
+                        $('.checkbox:checked').prop('checked', false);
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Cancelled',
+                    text: 'No message were deleted.',
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+                $('.checkbox:checked').prop('checked', false);
+            }
+        });
+    });
+
+    function getHiddenFormValues() {
+        const sort = $('input[name="sort"]').val(); // Retrieve 'sort' value
+        const dir = $('input[name="dir"]').val(); // Retrieve 'dir' value
+        const page = $('input[name="page"]').val(); // Retrieve 'page' value
+        const pageSize = $('input[name="pageSize"]').val(); // Retrieve 'pageSize' value
+        const searchBar = $('input[name="searchBar"]').val(); // Retrieve 'searchBar' value
+
+        return {
+            sort: sort,
+            dir: dir,
+            page: page,
+            pageSize: pageSize,
+            searchBar: searchBar
+        };
+    }
+
+    function refreshList() {
+        const formValues = getHiddenFormValues(); // Get the hidden form values
+
+        // Use the retrieved hidden form values to refresh the table
+        $.ajax({
+            url: `Index?searchBar=${formValues.searchBar}&sort=${formValues.sort}&dir=${formValues.dir}&page=${formValues.page}&pageSize=${formValues.pageSize}`,
+            type: 'GET',
+            success: function (html) {
+                // Replace the content with the updated list
+                $('#target').html(html); // Replace #roomTableContainer with your container ID
+            },
+            error: function () {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to reload room data.',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        });
+    }
+    
+    // Cancel bulk actions
+    $('#cancelActionBtn').on('click', function () {
+        $('.checkbox').prop('checked', false); 
+        $('#bulkActions').addClass('hidden'); 
+        $('#labelItemsSelected').text('0 items selected');
+    });
+
+
+    });
+</script>
+<div class="body-content flex flex-column">
+    <main class="flex flex-column gap-3 grow">
+        <section class="flex gap-2 items-center justify-between">
+            <div id="bulkActions" class="bulk-actions hidden items-center" style="-webkit-user-select: none;-ms-user-select: none;user-select: none;">
+                <i class="icon trash-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                         viewBox="0 0 256 256">
+                        <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z">
+                        </path>
+                    </svg>
+                </i>
+                <small id="labelItemsSelected">0 items selected</small>
+                <i class="icon" id="cancelActionBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         viewBox="0 0 256 256">
+                        <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
+                        </path>
+                    </svg>
+                </i>
+
+                
+
+            </div>
+
+
+
+
+            <h1 id="title" class="leading-none">Messages</h1>
+
+            <!-- Search and Actions -->
+            <div class="flex gap-1 items-center">
+                <div style="display: flex; border: 1px solid #ccc; padding: 1%; align-items: center; justify-content: space-between;">
+                    <!-- Loader Image -->
+                    <img src="/images/loader.gif" id="loader"
+                         style="display: none; position: absolute; width: 24px; height: 24px; z-index: 999;">
+
+
+
+                    <form data-ajax="true"
+                          data-ajax-update="#target"
+                          data-ajax-loading="#loader"
+                          id="searchForm" style="display: flex; align-items: center; flex-grow: 1; width: 100%;">
+
+
+                        @Html.TextBox("searchBar", "", new { type = "search", autofocus = "", data_trim = "", @class = "search-bar", id = "searchBar", placeholder = "Search ID (M24******)", style = "outline: none;" })
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                             viewBox="0 0 256 256" id="searchIcon">
+                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                        </svg>
+
+                    </form>
+                </div>
+
+                
+            </div>
+
+        </section>
+
+        <form data-ajax="true"
+              data-ajax-update="#target"
+              data-ajax-loading="#loader"
+              id="searchForm">
+
+            <div style="display:flex; gap:1rem;">
+                <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                    <label for="pageSize" style="width:15rem;">Page Size:</label>
+
+
+                    @Html.DropDownList("pageSize", new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "5", Value = "5" },
+                    new SelectListItem { Text = "10", Value = "10" },
+                    new SelectListItem { Text = "15", Value = "15" },
+                    new SelectListItem { Text = "All", Value = "0" }
+                    }, new { id = "pageSize", @class = "form-control custom-select", onchange = "$(this.form).submit();" })  <!-- Form submission via AJAX -->
+                </div>
+                <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                    <label for="status" style="width:15rem;">Status :</label>
+
+
+                    @Html.DropDownList("status", new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "All", Value = "All" },
+                    new SelectListItem { Text = "Open", Value = "OPEN" },
+                    new SelectListItem { Text = "Close", Value = "CLOSE" },
+                    }, new { id = "status", @class = "form-control custom-select", onchange = "$(this.form).submit();" })
+                </div>
+                
+            </div>
+        </form>
+       
+        <section class="flex flex-column gap-2">
+
+
+            <div id="target">
+                <partial name="_ContactList">
+            </div>
+        </section>
+    </main>
+</div>
+
+
+@section foot {
+    <script>
+        let timer = null;
+
+        $('#searchBar').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 800);
+        });
+    </script>
+}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

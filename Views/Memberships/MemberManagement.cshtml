@@ -1,0 +1,311 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<MembersVM>
+
+<style>
+
+    /* Container to position the select box */
+    #custom-container {
+        width: 200px;
+        position: relative;
+    }
+
+    /* Styling the select element */
+    .custom-select {
+        width: 100%;
+        padding: 10px 15px;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #333;
+        font-size: 16px;
+        appearance: none; /* Remove default dropdown arrow */
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        /* Hover and focus effects */
+        .custom-select:hover,
+        .custom-select:focus {
+            border-color: var(--color-primary-6);
+            box-shadow: 0 4px 10px rgba(29, 95, 105, 0.3);
+            transform: scale(1.05);
+        }
+
+    /* Adding a custom dropdown arrow */
+    #custom-container::after {
+        content: '▼';
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none; /* Prevent arrow from being clicked */
+        font-size: 14px;
+        color: var(--color-primary-6);
+        transition: all 0.3s ease;
+    }
+
+    /* Change the arrow color on hover */
+    #custom-container:hover::after {
+        color: var(--color-primary-6);
+    }
+
+    .progress-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .progress-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: #d0d7e2;
+        z-index: 1;
+    }
+
+    .progress-point {
+        position: relative;
+        width: 15px;
+        height: 15px;
+        background-color: #fff;
+        border: 3px solid #4a90e2;
+        border-radius: 50%;
+        z-index: 2;
+        display: inline-block;
+    }
+
+        .progress-point.completed {
+            background-color: #4a90e2;
+        }
+
+        .progress-point:hover {
+            transform: scale(1.2);
+            transition: transform 0.2s ease;
+        }
+
+    .level-info {
+        margin-top: 5px;
+        font-size: 12px;
+        text-align: center;
+        color: #4a4a4a;
+    }
+
+        .level-info span {
+            font-weight: bold;
+            color: #4a90e2;
+        }
+
+
+</style>
+
+<script>
+    // function initializeHandlers(){
+    $(document).ready(function () {
+
+        $(document).on("click", "th.sortable", function (e) {
+        // Prevent infinite loop by checking if the event originated from the `a` tag
+        if (e.target.tagName !== "A") {
+            // Find the `a` tag inside the clicked `th` and trigger its native click event
+            $(this).find("a#sort-link")[0].click();
+        }
+    });
+
+    //         // Delete function for bulk actions
+    // $('#deleteActionBtn').on('click', function () {
+    //     const selectedIds = $('.data-row .checkbox:checked').map(function () {
+    //         return $(this).data('rewardid');
+    //     }).get();
+
+    //     if (!selectedIds.length) {
+    //         alert('No items selected for deletion.');
+    //         return;
+    //     }
+
+    //     // Show the modal with confirmation message
+    //     $('#exampleModal').modal('show');
+
+    //     // Store selected IDs globally for use in deletion
+    //     window.selectedIds = selectedIds;
+    // });
+
+    // // Confirm deletion and perform the AJAX request
+    // $('#confirmDeleteBtn').on('click', function () {
+    //     const selectedIds = window.selectedIds;
+
+    //     if (!selectedIds || selectedIds.length === 0) {
+    //         $('#exampleModal').modal('hide');  // Hide modal if no IDs to delete
+    //         return;
+    //     }
+
+    //     // Proceed with AJAX deletion
+    //     $.ajax({
+    //         url: '/Memberships/DeleteSelectedItems',
+    //         type: 'POST',
+    //         contentType: 'application/json',
+    //         data: JSON.stringify(selectedIds),
+    //         success: function (response) {
+    //             if (response.success) {
+    //                 // Remove rows from the table
+    //                 selectedIds.forEach(id => {
+    //                     $(`.data-row[data-rewardid="${id}"]`).remove();
+    //                 });
+
+    //                                 // Create and display an alert with the deleted items
+    //             let deletedItems = response.deletedItems || selectedIds;  // Assume deletedItems is returned with item names
+    //             let deletedNames = deletedItems.join(', '); // Join deleted items into a single string
+    //             const alertMessage = `Deleted items: ${deletedNames}`;
+
+    //             // Display the alert
+    //             const alertHtml = `
+    //                 <div class="alert alert-success  alert-dismissible fade show border border-success text-success" role="alert">
+    //                     <i class="fa-solid fa-circle-check"></i> ${alertMessage}
+    //                 </div>
+    //             `;
+    //             $('#alertContainer').append(alertHtml);
+
+    //             // Automatically remove the alert after 3 seconds
+    //             setTimeout(function () {
+    //                 $('#alertContainer .alert').fadeOut('slow', function () {
+    //                     $(this).remove();
+    //                 });
+    //             }, 3000);
+
+    //             } else {
+    //                 alert(response.message);
+    //             }
+
+    //             // Hide the modal after the deletion
+    //             $('#exampleModal').modal('hide');
+    //         },
+    //         error: function () {
+    //             alert('An error occurred while deleting items.');
+    //             // Hide the modal if an error occurs
+    //             $('#exampleModal').modal('hide');
+    //         }
+    //     });
+    // });
+
+
+    // $(document).on('click', '.rounded', function () {
+    //     const button = $(this);
+    //     const memberId = button.closest('tr').find('input[name="Id"]').val();
+    //     const currentStatus = button.text().trim(); // Get the current status from the button text
+    //     const newStatus = currentStatus === "Active" ? "Inactive" : "Active"; // Determine the new status
+
+    //     if (!memberId) {
+    //         alert("Member ID not found.");
+    //         return;
+    //     }
+
+    //     // Optimistic UI Update: Change status immediately for better UX
+    //     button.text(newStatus);
+    //     button.toggleClass("Active Inactive");
+
+    //     $.ajax({
+    //         url: '@Url.Action("UpdateStatus", "Memberships")',
+    //         type: 'POST',
+    //         data: JSON.stringify({ id: memberId }),
+    //         contentType: 'application/json; charset=utf-8',
+    //         success: function (response) {
+    //             if (!response.success) {
+    //                 // Revert UI changes if the update fails
+    //                 button.text(currentStatus);
+    //                 button.toggleClass("Active Inactive");
+    //                 alert(response.message);
+    //             }
+    //         },
+    //         error: function () {
+    //             // Revert UI changes on error
+    //             button.text(currentStatus);
+    //             button.toggleClass("Active Inactive");
+    //             alert("An error occurred while updating the status.");
+    //         }
+    //     });
+    // });
+
+
+</script>
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column gap-3 grow">
+
+        <section class="flex gap-2 items-center justify-between">
+
+
+
+            <h1 id="title" class="leading-none">Members Management</h1>
+
+            <!--Search And Actions-->
+            <div class="flex gap-1 items-center">
+                <div style="display: flex; border: 1px solid #ccc; padding: 1%; align-items: center; justify-content: space-between;">
+                    <!-- Loader Image -->
+                    <img src="/images/loader.gif" id="loader"
+                         style="display: none; position: absolute; width: 24px; height: 24px; z-index: 999;">
+
+
+                    <form data-ajax="true"
+                          data-ajax-update="#target"
+                          data-ajax-loading="#loader"
+                          id="searchForm" style="display: flex; align-items: center; flex-grow: 1; width: 100%;">
+
+
+                        @Html.TextBox("searchBar", "", new { type = "search", autofocus = "", data_trim = "", @class = "search-bar", id = "searchBar", placeholder = "Search ID", style = "outline: none;" })
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                             viewBox="0 0 256 256" id="searchIcon">
+                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                        </svg>
+
+                    </form>
+                </div>
+            </div>
+        </section>
+
+
+        <form data-ajax="true"
+              data-ajax-update="#target"
+              data-ajax-loading="#loader"
+              id="searchForm">
+
+            <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                <label for="pageSize" style="width:15rem;">Page Size:</label>
+
+
+                @Html.DropDownList("pageSize", new List<SelectListItem>
+                {
+                new SelectListItem { Text = "5", Value = "5" },
+                new SelectListItem { Text = "10", Value = "10" },
+                new SelectListItem { Text = "15", Value = "15" }
+                }, new { id = "pageSize", @class = "form-control custom-select", onchange = "$(this.form).submit();" })  <!-- Form submission via AJAX -->
+            </div>
+
+        </form>
+
+        <section class="flex flex-column gap-2">
+
+            <div id="target">
+                <partial name="_MembersList">
+            </div>
+
+        </section>
+    </main>
+</div>
+
+@section foot {
+    <script>
+        let timer = null;
+
+        $('#searchBar').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 800);
+        });
+    </script>
+}

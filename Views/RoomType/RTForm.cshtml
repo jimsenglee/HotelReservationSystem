@@ -1,0 +1,1183 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.RoomTypeAddVM
+
+@section head {
+    <style>
+        .form-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 20px;
+            gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                padding: 1rem;
+                box-sizing: border-box;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+            .form-group textarea {
+                resize: vertical;
+            }
+
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+            margin-bottom: 2rem;
+        }
+
+        .dropbox {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            background-color: #f9f9f9;
+            transition: background-color 0.3s;
+        }
+
+            .dropbox:hover {
+                background-color: #f1f1f1;
+            }
+
+        .plus-icon {
+            font-size: 36px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        button#selectImages {
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            button#selectImages:hover {
+                background-color: #0056b3;
+            }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .preview-container img {
+                width: 100px;
+                height: 100px;
+                object-fit: cover;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+        /* Container styling for images */
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+        }
+
+            /* Styling the image */
+            .image-container img {
+                width: 100px;
+                height: 100px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+        /* Cancel button styling */
+        .cancel-button {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            width: 10px;
+            height: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+            .cancel-button:hover {
+                background-color: #ff1a1a;
+            }
+
+        .field-validation-error,
+        .validation-summary-errors {
+            color: red;
+        }
+
+        .input-validation-error {
+            border: 2px solid red !important;
+            outline: none;
+        }
+
+        .range-group {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        /*     .range-group input { */
+        /*         margin-right: 10px; */
+        /*         padding: 5px; */
+        /*     } */
+
+        /* .add-button { */
+        /*     margin-bottom: 15px; */
+        /*     padding: 5px 10px; */
+        /*     cursor: pointer; */
+        /* } */
+
+        /* .remove-button { */
+        /*     margin-left: 10px; */
+        /*     padding: 5px 10px; */
+        /*     cursor: pointer; */
+        /*     color: red; */
+        /* } */
+
+        /* .result { */
+        /*     margin-top: 20px; */
+        /*     font-size: 16px; */
+        /*     font-weight: bold; */
+        /* } */
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .image-container {
+            position: relative;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: grab;
+            background-color: white;
+        }
+
+            /* Hover effect for draggable containers */
+            .image-container:hover {
+                transform: scale(1.02);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                border-color: #4a90e2;
+            }
+
+            /* Style when actually dragging */
+            .image-container.dragging {
+                cursor: grabbing;
+                opacity: 0.7;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                border: 2px solid #4a90e2;
+            }
+
+            /* Style for the container being dragged over */
+            .image-container.drag-over {
+                border: 2px dashed #4a90e2;
+                transform: scale(1.05);
+                background-color: rgba(74, 144, 226, 0.1);
+            }
+
+                /* Add a subtle indicator that shows where the image will be dropped */
+                .image-container.drag-over::before {
+                    content: '';
+                    position: absolute;
+                    top: -10px;
+                    left: 0;
+                    right: 0;
+                    height: 2px;
+                    background-color: #4a90e2;
+                    border-radius: 2px;
+                }
+
+        .preview-image {
+            display: block;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+            .preview-image:hover {
+                filter: brightness(0.95);
+            }
+
+        .cancel-button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            padding: 0;
+            line-height: 1;
+            transition: all 0.2s ease;
+            opacity: 0.8;
+        }
+
+            .cancel-button:hover {
+                background: #cc0000;
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+        /* Add a grip handle to indicate draggability */
+        .image-container::after {
+            content: '⋮⋮';
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            color: rgba(0, 0, 0, 0.5);
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .image-container:hover::after {
+            opacity: 1;
+        }
+    </style>
+
+  <script>
+              $(document).ready(function () {
+            $('input.input-validation-error').on('change', function () {
+                $('span.field-validation-error').text("");
+            });
+            const endRoom = document.getElementById('EndRoom');
+            const startRoom = document.getElementById('StartRoom');
+                                        let debounceTimeout;
+
+            // When StartRoom changes
+            $('#StartRoom').on('input', function () {
+                const startValue = startRoom.value.trim(); // Trim spaces
+                const endValue = endRoom.value.trim(); // Trim spaces
+
+                if (endValue !== "") {
+                    // Validate both fields if EndRoom is not empty
+                debounceTimeout = setTimeout(() => {
+                    var inputStartValid = $('#StartRoom').valid();
+                    var inputEndValid = $('#EndRoom').valid();
+                    if (inputStartValid && inputEndValid) {
+                                                uploadQuantity(startValue, endValue);
+                    }
+                }, 100); // Delay of 500ms (adjust as needed)
+                } else {
+                    // Only validate StartRoom
+                    $('#StartRoom').valid();
+                }
+            });
+
+            // When EndRoom changes
+
+        $('#EndRoom').on('keyup blur change', function () {
+            const startValue = $('#StartRoom').val().trim();
+            const endValue = $('#EndRoom').val().trim();
+
+            if (startValue !== "") {
+                // Clear the previous timeout to debounce
+                clearTimeout(debounceTimeout);
+
+                // Set a delay before executing the AJAX request
+                debounceTimeout = setTimeout(() => {
+                    const inputStartValid = $('#StartRoom').valid();
+                    const inputEndValid = $('#EndRoom').valid();
+
+                    if (inputStartValid && inputEndValid) {
+                        uploadQuantity(startValue, endValue);
+                    }
+                }, 100); // Delay of 500ms (adjust as needed)
+            } else {
+                $('#EndRoom').valid();
+            }
+        });
+
+
+
+
+
+            $('#Name').on('keyup', function () {
+                $('#Name').valid();
+            });
+
+            $('#Description').on('keyup', function () {
+                $('#Description').valid();
+            });
+
+            $('#Price').on('keyup', function () {
+                $('#Price').valid();
+            });
+            $('#RoomQuantity').on('keyup', function () {
+                $('#RoomQuantity').valid();
+            });
+            $('#RoomCapacity').on('keyup', function () {
+                $('#RoomCapacity').valid();
+            });
+
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // const dropbox = document.getElementById("dropbox");
+            // const fileInput = document.getElementById("Images");
+            // const previewContainer = document.getElementById("previewContainer");
+            // const selectImagesButton = document.getElementById("selectImages");
+            //             document.getElementById("RoomQuantity").disabled = true;
+            // // Handle drag-and-drop functionality
+            // dropbox.addEventListener("dragover", (e) => {
+            //     e.preventDefault();
+            //     dropbox.style.backgroundColor = "#e6e6e6";
+            // });
+
+            // dropbox.addEventListener("dragleave", () => {
+            //     dropbox.style.backgroundColor = "#f9f9f9";
+            // });
+
+            // dropbox.addEventListener("drop", (e) => {
+            //     e.preventDefault();
+            //     dropbox.style.backgroundColor = "#f9f9f9";
+            //     const files = Array.from(e.dataTransfer.files);
+            //     handleFiles(files);
+            // });
+
+            // // Open file dialog when clicking the "Select Images" button
+            // selectImagesButton.addEventListener("click", () => {
+            //     fileInput.click();
+            // });
+
+            // // Handle file selection through the input
+            // fileInput.addEventListener("change", (e) => {
+            //     const files = Array.from(e.target.files);
+            //     handleFiles(files);
+            //     validateImages();
+            // });
+            // Handle file validation and previews
+            // const handleFiles = (files) => {
+            //     const maxFiles = 5;
+            //     const existingImages = previewContainer.querySelectorAll('.image-container');
+            //     if (existingImages.length + files.length > maxFiles) {
+            //         Swal.fire({
+            //             icon: "error",
+            //             title: "Limit Exceeded",
+            //             text: `You can upload a maximum of ${maxFiles} images.`,
+            //         });
+            //         return;
+            //     }
+
+            //     files.forEach((file) => {
+            //         // Validate file type
+            //         if (!file.type.match("image.*")) {
+            //             Swal.fire({
+            //                 icon: "error",
+            //                 title: "Invalid File",
+            //                 text: "Only image files are allowed.",
+            //             });
+            //             return;
+            //         }
+
+            //         // Validate FileReader support
+            //         if (!window.FileReader) {
+            //             console.error("FileReader is not supported in this browser.");
+            //             return;
+            //         }
+
+            //         // Check file size (2MB limit)
+            //         const maxFileSize = 2 * 1024 * 1024; // 2MB
+            //         if (file.size > maxFileSize) {
+            //             Swal.fire({
+            //                 icon: "error",
+            //                 title: "File Too Large",
+            //                 text: `${file.name} must be less than 2 MB.`,
+            //             });
+            //             return;
+            //         }
+
+            //         const reader = new FileReader();
+
+            //         // FileReader event handlers
+            //         reader.onload = (e) => {
+
+            //             const imgContainer = document.createElement("div");
+            //             imgContainer.classList.add("image-container");
+
+            //             const img = document.createElement("img");
+            //             img.src = e.target.result;
+            //             imgContainer.appendChild(img);
+
+            //             // Create the cancel button
+            //             const cancelButton = document.createElement("button");
+            //             cancelButton.textContent = "✖";
+            //             cancelButton.classList.add("cancel-button");
+            //             cancelButton.addEventListener("click", () => {
+            //                 imgContainer.remove();
+            //             });
+
+            //             cancelButton.addEventListener("click", () => {
+            //                 // Add a fade-out transition
+            //                 imgContainer.classList.add("fade-out");
+            //                 setTimeout(() => {
+            //                     imgContainer.remove();
+            //                 }, 300); // Matches CSS transition duration
+            //             });
+            //             imgContainer.appendChild(cancelButton);
+            //             document.getElementById("previewContainer").appendChild(imgContainer);
+            //         };
+
+            //         reader.onerror = () => {
+            //             console.error("Error reading file:", reader.error);
+            //         };
+
+            //         // Start reading the file
+            //         reader.readAsDataURL(file);
+            //     });
+            // };
+
+            // Trim input
+            $('[data-trim]').on('change', e => {
+                e.target.value = e.target.value.trim();
+            });
+
+            // Auto uppercase
+            $('[data-upper]').on('input', e => {
+                const a = e.target.selectionStart;
+                const b = e.target.selectionEnd;
+                e.target.value = e.target.value.toUpperCase();
+                e.target.setSelectionRange(a, b);
+            });
+
+            document.getElementById("submitBtn").addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent form submission
+                const isNameValid = $('#Name').valid();
+                const isDescriptionValid = $('#Description').valid();
+                const isPriceValid = $('#Price').valid();
+                const isRoomQuantityValid = $('#RoomQuantity').valid();
+                const isRoomCapacityValid = $('#RoomCapacity').valid();
+                // Combine results into a single flag
+                const isFormValid = isNameValid && isDescriptionValid &&
+                   isPriceValid && isRoomQuantityValid &&
+                    isRoomCapacityValid;
+                if (validateImages()) {
+
+                    if (isFormValid) {
+
+                        document.getElementById("RoomQuantity").disabled = false;
+
+                        const form = document.querySelector("form");
+                        const previewContainer = document.getElementById("previewContainer");
+                        const images = previewContainer.getElementsByTagName("img");
+
+                        const fileInput = document.getElementById("Images");
+                        const fileList = new DataTransfer(); // Create a new DataTransfer object to manage files
+
+                        // Convert base64 images in the preview container to files
+                        Array.from(images).forEach((img, index) => {
+                            fetch(img.src)
+                                .then(res => res.blob())
+                                .then(blob => {
+                                    const file = new File([blob], `image_${index}.png`, { type: blob.type });
+                                    fileList.items.add(file); // Add the file to the DataTransfer object
+                                })
+                                .catch((err) => {
+                                    console.error("Error processing image:", err);
+                                });
+                        });
+
+                        // Wait for all images to be processed
+                        setTimeout(() => {
+                            fileInput.files = fileList.files; // Assign the files to the file input element
+
+                            // Submit the form
+                            form.submit();
+                        }, 500);
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid input.",
+                            text: `Some fields are invalid.`,
+                        });
+                    }
+                }
+            });
+
+            // After form submission, check the preview container for existing images
+            function checkExistingPreviews() {
+                const previewContainer = document.getElementById("previewContainer");
+                const existingPreviews = document.querySelectorAll('input[name="ExistingPreviews"]');
+
+                // Loop through existing previews (hidden inputs with URLs)
+                existingPreviews.forEach((input) => {
+                    const previewUrl = input.value;
+
+                    // Find the corresponding image container inside previewContainer
+                    const imgContainer = document.querySelector(`div.image-container img[src="${previewUrl}"]`).parentNode;
+
+                    if (imgContainer) {
+                        // Create the cancel button
+                        const cancelButton = document.createElement("button");
+                        cancelButton.textContent = "✖";
+                        cancelButton.classList.add("cancel-button");
+
+                        // Cancel button logic to remove the image container and hidden input
+                        cancelButton.addEventListener("click", () => {
+                            imgContainer.classList.add("fade-out");
+
+                            // Remove the hidden input corresponding to the image
+                            const hiddenInput = imgContainer.querySelector('input[name="ExistingPreviews"]');
+                            if (hiddenInput) {
+                                hiddenInput.remove(); // Remove the hidden input
+                            }
+
+                            setTimeout(() => {
+                                imgContainer.remove(); // Remove the image container after fade-out
+                            }, 300); // Matches CSS transition duration
+                        });
+
+                        imgContainer.appendChild(cancelButton); // Append the cancel button to the image container
+                    }
+                });
+            }
+
+
+
+            // Call this function to check existing previews when the page loads or after form submission
+            checkExistingPreviews();
+
+            // function validateImages() {
+            //     const inputElement = document.getElementById("Images");
+            //     const errMsg = document.getElementById("ImgErr");
+            //     const maxFiles = 5; // Maximum allowed files
+            //     const maxSize = 2 * 1024 * 1024; // Maximum file size (2 MB)
+            //     const allowedTypes = ["image/jpeg", "image/png", "image/gif"]; // Allowed file types
+            //     const files = inputElement.files;
+            //     const previewContainer = document.getElementById("previewContainer");
+            //     const imageContainers = previewContainer.getElementsByClassName("image-container");
+            //     // Clear any previous error messages
+            //     errMsg.innerHTML = "";
+
+            //     // Check if no files are selected
+            //     if (files.length === 0 && imageContainers.length === 0) {
+            //         errMsg.innerHTML = "Please select at least one image.";
+            //         return false;
+            //     } else
+
+            //         // Check file count
+            //         if ((files.length > maxFiles) && imageContainers.length > maxFiles) {
+            //             errMsg.innerHTML = `You can upload a maximum of ${maxFiles} images.`;
+            //             return false;
+            //         } else {
+
+            //             // Validate each file
+            //             for (let i = 0; i < files.length; i++) {
+            //                 const file = files[i];
+
+            //                 // Check file type
+            //                 if (!allowedTypes.includes(file.type)) {
+            //                     errMsg.innerHTML = `File type not allowed: ${file.name}`;
+            //                     return false;
+            //                 }
+
+            //                 // Check file size
+            //                 if (file.size > maxSize) {
+            //                     errMsg.innerHTML = `File size exceeds 2MB: ${file.name}`;
+            //                     return false;
+            //                 }
+            //             }
+            //         }
+            //     return true;
+            // }
+
+        });
+
+        function calculateTotal() {
+            const startInputs = document.getElementById('StartRoom').value;
+            const endInputs = document.getElementById('EndRoom').value;
+            let totalCount = 0;
+
+            if (startInputs && endInputs && isValidRoom(startInputs) && isValidRoom(endInputs)) {
+                const startNumber = parseInt(startInputs.slice(1));
+                const endNumber = parseInt(endInputs.slice(1));
+                const startLetter = startInputs.charAt(0);
+                const endLetter = endInputs.charAt(0);
+                if (startLetter === endLetter && startNumber <= endNumber) {
+                    totalCount += (endNumber - startNumber + 1);
+                }
+            }
+
+            const inputRoomQuanity = document.getElementById('RoomQuantity');
+            inputRoomQuanity.value = totalCount;
+        }
+        function isValidRoom(room) {
+            const regex = /^[A-Z][0-9]{3}$/; // Format: Letter + 3 digits
+            return regex.test(room);
+        }
+
+                function uploadQuantity(startValue, endValue) {
+            const roomQuantity = document.getElementById("RoomQuantity");
+
+            $.ajax({
+                url: 'CheckDuplicateRoom',
+                data: { startRoom: startValue, endRoom: endValue },
+                success: function (response) {
+                    if (!response.success) {
+                        // Display the error message and set roomQuantity
+                        $('span[data-valmsg-for="EndRoom"]').text(response.message).show();
+                        roomQuantity.value = response.validRoomCount ? response.validRoomCount : 0;
+                        $('#RoomQuantity').valid();
+                    } else {
+                        // Clear the error and set roomQuantity
+                        $('span[data-valmsg-for="EndRoom"]').text('').hide();
+                        roomQuantity.value = response.validRoomCount ? response.validRoomCount : 0;
+                        $('#RoomQuantity').valid();
+                    }
+                },
+                error: function () {
+                    // Handle server error
+                    $('span[data-valmsg-for="EndRoom"]').text('Server error occurred. Please try again later.').show();
+                }
+            });
+        }
+
+
+                       function initializeDragAndDrop() {
+            const container = document.getElementById('previewContainer');
+
+
+            const attachCancelListener = (imgContainer) => {
+                const cancelButton = imgContainer.querySelector(".cancel-button");
+                if (cancelButton) {
+                    cancelButton.addEventListener("click", () => {
+                        imgContainer.classList.add("fade-out");
+                        setTimeout(() => {
+                            imgContainer.remove();
+
+                            // Recalculate sequence numbers after removal
+                            initializeSequence();
+                            updateImageOrder();
+                        }, 300);
+                    });
+                }
+            };
+
+            // Attach listeners for preloaded images
+            document.querySelectorAll('.image-container').forEach(container => {
+                attachCancelListener(container);
+            });
+            const imageContainers = container.querySelectorAll('.image-container');
+            const preloadedImages = document.querySelectorAll('.image-container');
+            preloadedImages.forEach(container => attachCancelListener(container));
+            // Initialize sequence numbers
+            function initializeSequence() {
+                const images = container.querySelectorAll('.image-container');
+                images.forEach((container, index) => {
+                    // Add sequence attribute
+                    container.setAttribute('data-sequence', index + 1);
+
+                    // Add visible sequence number
+                    let sequenceDisplay = container.querySelector('.sequence-number');
+                    if (!sequenceDisplay) {
+                        sequenceDisplay = document.createElement('div');
+                        sequenceDisplay.className = 'sequence-number';
+                        container.appendChild(sequenceDisplay);
+                    }
+                    sequenceDisplay.textContent = index + 1;
+                });
+            }
+
+            imageContainers.forEach(container => {
+                container.addEventListener('dragstart', handleDragStart);
+                container.addEventListener('dragover', handleDragOver);
+                container.addEventListener('drop', handleDrop);
+                container.addEventListener('dragenter', handleDragEnter);
+                container.addEventListener('dragleave', handleDragLeave);
+            });
+            const dropbox = document.getElementById("dropbox");
+            const fileInput = document.getElementById("Images");
+            // const previewContainer = document.getElementById("previewContainer");
+            const selectImagesButton = document.getElementById("selectImages");
+            // document.getElementById("RoomQuantity").disabled = true;
+            // Handle drag-and-drop functionality
+            dropbox.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropbox.style.backgroundColor = "#e6e6e6";
+            });
+
+            dropbox.addEventListener("dragleave", () => {
+                dropbox.style.backgroundColor = "#f9f9f9";
+            });
+
+            dropbox.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropbox.style.backgroundColor = "#f9f9f9";
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            });
+
+            // Open file dialog when clicking the "Select Images" button
+            selectImagesButton.addEventListener("click", () => {
+                fileInput.click();
+            });
+
+            // Handle file selection through the input
+            fileInput.addEventListener("change", (e) => {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+                validateImages();
+            });
+
+            const handleFiles = (files) => {
+                const maxFiles = 5;
+                const existingImages = previewContainer.querySelectorAll('.image-container');
+                if (existingImages.length + files.length > maxFiles) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Limit Exceeded",
+                        text: `You can upload a maximum of ${maxFiles} images.`,
+                    });
+                    return;
+                }
+
+                files.forEach((file) => {
+                    if (!file.type.match("image.*")) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid File",
+                            text: "Only image files are allowed.",
+                        });
+                        return;
+                    }
+
+                    if (!window.FileReader) {
+                        console.error("FileReader is not supported in this browser.");
+                        return;
+                    }
+
+                    const maxFileSize = 2 * 1024 * 1024;
+                    if (file.size > maxFileSize) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "File Too Large",
+                            text: `${file.name} must be less than 2 MB.`,
+                        });
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgContainer = document.createElement("div");
+                        imgContainer.classList.add("image-container");
+                        imgContainer.setAttribute("draggable", "true");
+
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.alt = "Room Image";
+                        img.classList.add("preview-image");
+                        img.style.width = "100px";
+                        img.style.height = "100px";
+                        img.style.cursor = "pointer";
+                        imgContainer.appendChild(img);
+
+                        const cancelButton = document.createElement("button");
+                        cancelButton.textContent = "✖";
+                        cancelButton.classList.add("cancel-button");
+                        cancelButton.addEventListener("click", () => {
+                            imgContainer.classList.add("fade-out");
+                            setTimeout(() => {
+                                imgContainer.remove();
+                                updateSequence();
+                                updateImageOrder();
+                            }, 300);
+                        });
+
+                        imgContainer.appendChild(cancelButton);
+                        previewContainer.appendChild(imgContainer);
+
+                        // Add drag-drop listeners to new container
+                        imgContainer.addEventListener('dragstart', handleDragStart);
+                        imgContainer.addEventListener('dragover', handleDragOver);
+                        imgContainer.addEventListener('drop', handleDrop);
+                        imgContainer.addEventListener('dragenter', handleDragEnter);
+                        imgContainer.addEventListener('dragleave', handleDragLeave);
+
+                        // Update sequence after adding new image
+                        initializeSequence();
+                        updateImageOrder();
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            };
+
+
+            let draggedElement = null;
+
+            function handleDragStart(e) {
+                draggedElement = this;
+                this.style.opacity = '0.4';
+                this.classList.add('dragging');
+
+                // Store the current sequence
+                e.dataTransfer.setData('text/plain', this.getAttribute('data-sequence'));
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                return false;
+            }
+
+            function handleDragEnter(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            }
+
+            function handleDragLeave(e) {
+                this.classList.remove('drag-over');
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+
+                if (draggedElement !== this) {
+                    let items = [...container.querySelectorAll('.image-container')];
+                    const fromIndex = items.indexOf(draggedElement);
+                    const toIndex = items.indexOf(this);
+
+                    if (fromIndex < toIndex) {
+                        this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                    } else {
+                        this.parentNode.insertBefore(draggedElement, this);
+                    }
+
+                    updateSequence();
+                    updateImageOrder();
+                }
+
+                this.classList.remove('drag-over');
+                draggedElement.style.opacity = '1';
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+
+                return false;
+            }
+
+            function updateSequence() {
+                const images = container.querySelectorAll('.image-container');
+                images.forEach((container, index) => {
+                    container.setAttribute('data-sequence', index + 1);
+                    const sequenceDisplay = container.querySelector('.sequence-number');
+                    if (sequenceDisplay) {
+                        sequenceDisplay.textContent = index + 1;
+                    }
+                });
+            }
+
+            function getImageFilename(imgElement) {
+                const src = imgElement.getAttribute('src');
+                return src.split('/').pop();
+            }
+
+            function updateImageOrder() {
+                // Remove existing hidden inputs
+                const existingInputs = container.querySelectorAll('input[name="ExistingPreviews"]');
+                existingInputs.forEach(input => input.remove());
+
+                // Create new hidden inputs in the current order
+                const images = container.querySelectorAll('.image-container');
+                const imageOrder = [];
+
+                images.forEach((container, index) => {
+                    const img = container.querySelector('img');
+                    const filename = getImageFilename(img);
+                    const sequence = index + 1;
+
+                    // Create hidden input for filename
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ExistingPreviews';
+                    input.value = filename;
+                    container.appendChild(input);
+
+                    // Store the order information
+                    imageOrder.push({
+                        filename: filename,
+                        sequence: sequence
+                    });
+                });
+
+                // Log the current order for verification
+                console.log('Current Image Order:', imageOrder);
+
+                // Optionally send to server
+                // sendOrderToServer(imageOrder);
+            }
+
+            // Initialize sequence numbers on load
+            initializeSequence();
+
+
+        }
+
+        // Add the required CSS
+        const style = document.createElement('style');
+        style.textContent = `
+                    .image-container {
+                        position: relative;
+                    }
+
+                    .sequence-number {
+                        position: absolute;
+                        top: 5px;
+                        left: 5px;
+                        background-color: rgba(0, 0, 0, 0.7);
+                        color: white;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+
+                    .dragging .sequence-number {
+                        background-color: #4a90e2;
+                    }
+                `;
+        document.head.appendChild(style);
+
+        function validateImages() {
+            const inputElement = document.getElementById("Images");
+            const errMsg = document.getElementById("ImgErr");
+            const maxFiles = 5; // Maximum allowed files
+            const maxSize = 2 * 1024 * 1024; // Maximum file size (2 MB)
+            const allowedTypes = ["image/jpeg", "image/png", "image/gif"]; // Allowed file types
+            const files = inputElement.files;
+            let previewContainer = document.getElementById("previewContainer");
+            const imageContainers = previewContainer.getElementsByClassName("image-container");
+            // Clear any previous error messages
+            errMsg.innerHTML = "";
+
+            // Check if no files are selected
+            if (files.length === 0 && imageContainers.length === 0) {
+                errMsg.innerHTML = "Please select at least one image.";
+                return false;
+            } else
+
+                // Check file count
+                if ((files.length > maxFiles) && imageContainers.length > maxFiles) {
+                    errMsg.innerHTML = `You can upload a maximum of ${maxFiles} images.`;
+                    return false;
+                } else {
+
+                    // Validate each file
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+
+                        // Check file type
+                        if (!allowedTypes.includes(file.type)) {
+                            errMsg.innerHTML = `File type not allowed: ${file.name}`;
+                            return false;
+                        }
+
+                        // Check file size
+                        if (file.size > maxSize) {
+                            errMsg.innerHTML = `File size exceeds 2MB: ${file.name}`;
+                            return false;
+                        }
+                    }
+                }
+            return true;
+        }
+
+
+        // Initialize when the document is ready
+
+
+        document.addEventListener('DOMContentLoaded', initializeDragAndDrop);
+  </script>
+}
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column grow">
+        <section class="flex flex-column gap-2">
+            <form id="roomForm" class="form" asp-action="SubmitForm" asp-controller="RoomType" method="post" enctype="multipart/form-data">
+                <div class="form-container">
+                    <!-- Left Section -->
+                    <div class="form-section">
+                        <input type="hidden" asp-for="Id" value="@(Model? .Id ?? null)" /> <!-- Hidden input to pass Id -->
+
+                        <div class="form-group">
+                            <label asp-for="Name"></label>
+                            <input asp-for="Name" data-trim placeholder="Enter Name" />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description"></label>
+                            <textarea asp-for="Description" rows="4" placeholder="Enter Description..." style="resize:none" data-trim></textarea>
+                            <span asp-validation-for="Description"></span>
+                        </div>
+                        <div class="form-group">
+                            <div id="range-container">
+                                <div class="range-group">
+                                    <div style="display:flex;flex-direction:column;width:100%;">
+                                        <input asp-for="StartRoom" placeholder="Start Room (e.g., A101)" data-trim data-upper />
+                                        <span asp-validation-for="StartRoom"></span>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;width:100%;">
+                                        <input asp-for="EndRoom" placeholder="End Room (e.g., A194)" data-trim data-upper maxlength="4" />
+                                        <span asp-validation-for="EndRoom" style="color:red;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Section -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label asp-for="Price"></label>
+                            <input asp-for="Price" placeholder="Enter Price" value="@(Model?.Price == null || Model.Price == 0 ? 1.00 : Model.Price)">
+                            <span asp-validation-for="Price"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="RoomQuantity"></label>
+                            <input asp-for="RoomQuantity" placeholder="Enter Room Quantity" value="@(Model?.RoomQuantity == null || Model.RoomQuantity == 0 ? 1 : Model.RoomQuantity)" disabled>
+                            <span asp-validation-for="RoomQuantity"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="RoomCapacity"></label>
+                            <input asp-for="RoomCapacity" value="@(Model?.RoomCapacity == null || Model.RoomCapacity == 0 ? 1 : Model.RoomCapacity)" />
+                            <span asp-validation-for="RoomCapacity"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload-container">
+                    <!-- Drag-and-Drop Area -->
+                    <div id="dropbox" class="dropbox">
+                        <span class="plus-icon">+</span>
+                        <p>Drag & drop images here, or</p>
+                        <button id="selectImages" type="button">Select Images</button>
+                        <input asp-for="Images" name="Images" type="file" multiple accept=".jpg,.jpeg,.png" hidden>
+                    </div>
+                    <span id="ImgErr" class="text-danger" style="color:red;"></span>
+                    <span asp-validation-for="Images"></span>
+                    <!-- Image Preview Area -->
+                    <div id="previewContainer" class="preview-container">
+                        @if (Model != null)
+                        {
+                            @if (Model.ImagePreviews != null && Model.ImagePreviews.Any())
+                            {
+                                foreach (var preview in Model.ImagePreviews)
+                                {
+                                    <input type="hidden" name="ExistingPreviews" value="@preview" />
+                                    <div class="image-container">
+                                        <img src="@preview" alt="Preview" />
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+                <!-- Submit Button -->
+                <div class="submit-btn" style="display:flex;flex-direction:row-reverse;">
+                    <button id="submitBtn">Submit</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+
+@* <script>
+
+
+            function removeRange(button) {
+        const rangeGroup = button.closest(".range-group");
+        rangeGroup.remove();
+
+        // Reindex remaining range groups to maintain sequential indexing
+        const rangeContainer = document.getElementById("range-container");
+        const rangeGroups = rangeContainer.getElementsByClassName("range-group");
+
+        for (let i = 0; i < rangeGroups.length; i++) {
+            const inputs = rangeGroups[i].querySelectorAll("input, span");
+
+            inputs.forEach(input => {
+                if (input.name) {
+                    // Update the name attribute
+                    if (input.name.includes("StartRoom")) {
+                        input.name = `RoomRanges[${i}].StartRoom`;
+                    } else if (input.name.includes("EndRoom")) {
+                        input.name = `RoomRanges[${i}].EndRoom`;
+                    }
+                }
+
+                if (input.dataset.valmsgFor) {
+                    // Update validation message reference
+                    if (input.dataset.valmsgFor.includes("StartRoom")) {
+                        input.dataset.valmsgFor = `RoomRanges[${i}].StartRoom`;
+                    } else if (input.dataset.valmsgFor.includes("EndRoom")) {
+                        input.dataset.valmsgFor = `RoomRanges[${i}].EndRoom`;
+                    }
+                }
+            });
+        }
+        calculateTotal();
+    }
+
+
+
+
+
+
+    // Add event listeners for real-time updates
+    // document.getElementById('range-container').addEventListener('input', calculateTotal);
+</script>
+ *@

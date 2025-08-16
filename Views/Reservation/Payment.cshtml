@@ -1,0 +1,764 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.CheckoutViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<title>Checkout</title>
+<script src="https://www.paypal.com/sdk/js?client-id=ARtCUoz9OLHTBRvRilVY2JsMrXeFLETYyXos4c64hMbcvY_FIfg9c4_-renb_2-r-gUX5Qgn5BSlssRq&currency=MYR&disable-funding=credit,card"></script>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f9f9f9;
+    }
+
+    .checkout-container {
+        padding: 20px;
+    }
+
+    header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .checkout {
+        display: flex;
+        gap: 20px;
+    }
+
+    .shipping-info,
+    .review-cart {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .shipping-info {
+        flex: 2;
+    }
+
+    .review-cart {
+        flex: 1;
+    }
+
+    .cart-items {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .cart-item {
+        display: flex;
+        gap: 5%;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .room-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .form-label {
+        font-size: 1.1rem;
+        color: #333;
+        font-weight: 500;
+    }
+
+
+    h2,
+    h3 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+    input,
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+        input[type=text],
+        input[type=email],
+        input[type=tel],
+        textarea {
+            width: 100%;
+        }
+
+    textarea {
+        resize: none;
+        height: 150px;
+    }
+
+    .terms {
+        margin-top: 10px;
+    }
+
+    .cart-items {
+        list-style: none;
+        padding: 0;
+    }
+
+    .item-details {
+        display: flex;
+        justify-content: space-between;
+    }
+
+
+    .totals p {
+        display: flex;
+        justify-content: space-between;
+        padding: 2%;
+    }
+
+    .pay-now-btn {
+        width: 100%;
+        padding: 10px;
+        background: #1E3DFF;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+    .secure-checkout {
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    #subTitle {
+        color: #c2c2c2;
+    }
+
+    #subTitleBold {
+        font-weight: 900;
+    }
+
+    .payment-methods {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        flex-direction: row;
+        justify-items: center;
+    }
+
+    #payment-method-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+    }
+
+    .payment-method {
+        border: 1px solid #c2c2c2;
+        padding: 4%;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        align-items: center;
+        border-radius: 10px;
+        background-color: #f3f3f3;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+        .payment-method input[type="radio"] {
+            display: none; /* Hide the actual radio button */
+        }
+
+    #bank-transfer:hover {
+        background-color: #003087;
+        cursor: pointer;
+        color: white;
+    }
+
+    #cash:hover {
+        background-color: #3e9c35;
+        cursor: pointer;
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #credit-card:hover {
+        background-color: #ff8c00;
+        cursor: pointer;
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    #paypal:hover {
+        background-color: #0070ba;
+        cursor: pointer;
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .payment-method.active {
+        color: white;
+    }
+
+    /* Active colors for specific payment methods */
+    #cash.active {
+        background-color: #3e9c35;
+    }
+
+    #credit-card.active {
+        background-color: #ff8c00;
+    }
+
+    #paypal.active {
+        background-color: #0070ba;
+    }
+
+    .payment-form {
+        display: none;
+        opacity: 0;
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #c2c2c2;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+        transform: translateY(-20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+        .payment-form.showing {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+
+    button {
+        margin-top: 10px;
+        padding: 10px 15px;
+        border: none;
+        background-color: #0070ba;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        button:hover {
+            background-color: #00548f;
+        }
+
+    #compulsory {
+        color: red;
+    }
+
+</style>
+<div class="checkout-container">
+    <main class="checkout">
+        <section class="shipping-info">
+            <h2>Checkout</h2>
+            <form asp-action="ConfirmPayment" id="paymentForm" asp-controller="Reservation" method="post">
+                <input type="hidden" id="SelectedPaymentMethod" name="SelectedPaymentMethod" value="" />
+
+
+                <div class="form-group">
+                    <label for="user-name">Full Name <span id="compulsory"></span></label>
+                    <input type="text" class="form-control" id="UserName" value="@Model.UserName" readonly />
+
+                </div>
+
+                <div class="form-group">
+                    <label for="UserId" class="form-label">User ID:</label>
+                    <input type="text" class="form-control" id="UserId" value="@Model.UsersId" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="UserId" class="form-label">Email:</label>
+                    <input type="text" class="form-control" id="UserId" value="@Model.UserEmail" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="CheckInDate" class="form-label">Check-In Date:</label>
+                    <input type="text" class="form-control" id="CheckInDate" value="@Model.CheckInDate.ToString("yyyy-MM-dd")" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="CheckOutDate" class="form-label">Check-Out Date:</label>
+                    <input type="text" class="form-control" id="CheckOutDate" value="@Model.CheckOutDate.ToString("yyyy-MM-dd")" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="selected-capacity">Selected Capacity</label>
+                    <input type="text" id="selected-capacity" class="form-control" value="@Model.SelectedCapacity" readonly />
+                </div>
+
+                <input type="hidden" asp-for="rewardId" id="selectedRewardId" name="rewardId" />
+                <input type="hidden" asp-for="rewardDiscount" id="selectedRewardDiscountRate" name="rewardDiscount" />
+                <input type="hidden" asp-for="memberLevel" name="memberLevel" value="@Model.userMember?.Level" />
+                <input type="hidden" asp-for="memberId" value="@Model.userMember?.Id" />
+            </form>
+        </section>
+
+        <section class="review-cart">
+            <h3>Review your selected room</h3>
+            <div class="cart-items">
+                <div class="cart-item" style="display: flex;gap: 5%;">
+                        <div class="images" style="width: 200px;height: 200px;align-items: center;display: flex;"> 
+                            <img src="~/images/RoomType/@Model.Images" alt="Images" style="width: 100%;height: 80%;" /> 
+                        </div> 
+
+                    <div class="room-info"
+                         style="display: flex;flex-direction: column;align-items: flex-start;justify-content: center;gap: 20px;">
+                        <div style="display: flex;flex-direction: column;">
+                            <div>
+                                <label for="RoomId" class="form-label">Room Type: @Model.RoomType</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.userMember != null)
+            {
+                <label for="reward" class="form-label">Rewards</label>
+
+                <br />
+                <input list="rewardsList" class="form-select" id="reward" placeholder="Select or type your reward" />
+
+
+
+                <datalist id="rewardsList">
+                    <option value="">Select or type your reward</option> <!-- Allow empty selection -->
+                    @foreach (var reward in Model?.rewardsList)
+                    {
+                        <option value="@reward.DiscountRate.ToString("0")%"
+                                data-id="@reward.Id"
+                                data-code="@reward.RewardCode"
+                                data-name="@reward.Name"
+                                data-discount="@reward.DiscountRate">
+                            @reward.RewardCode || Name: @reward.Name
+                        </option>
+                    }
+                </datalist>
+
+                <br />
+
+                <br />
+
+                <br />
+            }
+
+            <h3 class="payment-section-title">Please select a payment method:</h3>
+
+            <div class="payment-methods">
+                <div class="payment-method" id="cash">
+                    <div id="payment-method-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-cash" viewBox="0 0 16 16">
+                            <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4" />
+                            <path d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V6a2 2 0 0 1-2-2z" />
+                        </svg>
+                    </div>
+                    <input type="radio" name="payment-method" value="Cash" id="payment-cash" class="payment-radio" />
+                    <div id="payment-method-text">Cash</div>
+                </div>
+
+                <div class="payment-method" id="credit-card">
+                    <div id="payment-method-icon">
+                        <!-- ICON HERE BEGINS -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-credit-card" viewBox="0 0 16 16">
+                            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+                            <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+                        </svg>
+                        <!-- ICON HERE ENDS -->
+                    </div>
+                    <input type="radio" name="payment-method" value="Credit Card" id="payment-credit-card" class="payment-radio" />
+                    <div id="payment-method-text">Credit Cards</div>
+                </div>
+
+                <div class="payment-method" id="paypal">
+                    <div id="payment-method-icon">
+                        <!-- ICON HERE BEGINS -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-paypal" viewBox="0 0 16 16">
+                            <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.35.35 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91q.57-.403.993-1.005a4.94 4.94 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.154a2.7 2.7 0 0 0-.76-.59l-.094-.061ZM6.543 8.82a.7.7 0 0 1 .321-.079H8.3c2.82 0 5.027-1.144 5.672-4.456l.003-.016q.326.186.548.438c.546.623.679 1.535.45 2.71-.272 1.397-.866 2.307-1.663 2.874-.802.57-1.842.815-3.043.815h-.38a.87.87 0 0 0-.863.734l-.03.164-.48 3.043-.024.13-.001.004a.35.35 0 0 1-.348.296H5.595a.106.106 0 0 1-.105-.123l.208-1.32z" />
+                        </svg>
+                        <!-- ICON HERE ENDS -->
+                    </div>
+                    <input type="radio" name="payment-method" value="PayPal" id="payment-paypal" class="payment-radio" />
+                    <div id="payment-method-text">Paypal</div>
+                </div>
+
+            </div>
+
+            <div class="payment-forms">
+                <!-- Cash Form -->
+                @* <form class="payment-form"> *@
+                @*     <h3>Cash Payment</h3> *@
+                @*     <p>No additional details required. Proceed with cash payment.</p> *@
+                @*     <button type="submit">Confirm Cash Payment</button> *@
+                @* </form> *@
+
+                <!-- Stripe  -->
+
+                @* TODO *@
+
+
+                <!-- PayPal  -->
+                @* TODO *@
+
+
+
+            </div>
+
+            <div class="totals" style="margin-top: 5%;">
+                @if (Model.userMember != null)
+                {
+                    <p id="subTitle">
+                        Member Discount: <span>
+                            @{
+                                decimal memberDiscount = 0;
+                                decimal discountAmount = 0;
+                                if (Model.userMember?.Level == "Basic")
+                                {
+                                    memberDiscount = 5;
+                                }
+                                else if (Model.userMember?.Level == "Platinum")
+                                {
+                                    memberDiscount = 10;
+                                }
+                                else if (Model.userMember?.Level == "VIP")
+                                {
+                                    memberDiscount = 20;
+                                }
+                            }
+                            @memberDiscount%
+                        </span>
+                    </p>
+                }
+                <p id="subTitle">Tax (6%): <span>RM  @Model.TaxAmount</span></p>
+                <p id="subTitle">Sub-Total: <span>RM @Model.TotalPrice</span></p>
+                <p id="subTitle">Total Price: <span>RM @Model.TotalRoomPrice</span></p>
+                @if (Model.userMember != null)
+                {
+                    <p id="subTitle">Dicounted Price: <span id="discountPrice"></span></p>
+                }
+            </div>
+
+            <div id="stripe-button-container" style="display: none;">
+                <button id="stripeCheckoutButton" class="pay-now-btn">Pay with Credit Card (Stripe)</button>
+            </div>
+            <div id="paypal-button-container" style="display: none;"></div>
+            <button type="submit" id="payNowButton" class="pay-now-btn">Pay Now</button>
+
+        </section>
+    </main>
+</div>
+
+<script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get the model values from Razor
+            const totalRoomPrice = parseFloat("@Model.TotalRoomPrice");
+            const userLevel = "@Model.userMember?.Level";
+
+            // Get all payment method divs (the clickable cards)
+            const methods = document.querySelectorAll('.payment-method');
+
+            // Get the form element (the one to submit)
+            const paymentForm = document.getElementById("paymentForm");
+
+            // Get the Pay Now button and PayPal button container
+            const payNowButton = document.getElementById("payNowButton");
+            const paypalButtonContainer = document.getElementById("paypal-button-container");
+                    // Handle Pay Now button click
+            payNowButton.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent the default behavior
+
+                // Check if a payment method is selected
+                const selectedMethod = document.querySelector('input[name="payment-method"]:checked');
+                if (!selectedMethod) {
+                    Swal.fire({
+                        title: 'Payment Method Required',
+                        text: 'Please select a payment method before proceeding.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Set the selected payment method
+                document.getElementById("SelectedPaymentMethod").value = selectedMethod.value;
+
+                // Show SweetAlert confirmation dialog
+                Swal.fire({
+                    title: 'Do you want to proceed with the reservation?',
+                    text: 'Make sure all the details are correct before confirming.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm Reservation',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Explicitly submit the form
+                        paymentForm.submit();
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        Swal.fire({
+                            title: 'Cancelled',
+                            text: 'Your reservation has not been processed.',
+                            icon: 'error',
+                            timer: 1500
+                        });
+                    }
+                });
+            });
+
+                // Handle payment method selection
+                methods.forEach((method) => {
+                    method.addEventListener("click", function () {
+                        const radioInput = method.querySelector('input[type="radio"]');
+
+                        if (radioInput) {
+                            radioInput.checked = true;
+
+                            // Highlight the selected method
+                            methods.forEach((otherMethod) => otherMethod.classList.remove('active'));
+                            method.classList.add('active');
+
+                            // Show corresponding payment button/form
+                            if (radioInput.value === "PayPal") {
+                                payNowButton.style.display = 'none';
+                                paypalButtonContainer.style.display = 'block';
+                                document.getElementById("stripe-button-container").style.display = 'none';
+
+                                // Initialize PayPal button
+                                if (typeof paypal !== 'undefined' && paypal.Buttons) {
+                                    if (!paypalButtonContainer.hasChildNodes()) {
+                                           paypal.Buttons({
+        style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'pill',
+            label: 'pay',
+        },
+        createOrder: function (data, actions) {
+            // Use the final discounted price here
+            const discountedPrice = parseFloat(document.getElementById("discountPrice").textContent.replace("RM ", "").replace(",", ""));
+
+            // Ensure the discounted price is valid
+            if (isNaN(discountedPrice) || discountedPrice <= 0) {
+                console.error("Invalid discounted price.");
+                Swal.fire({
+                    title: 'Payment Error',
+                    text: 'The discounted price is invalid. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: discountedPrice.toFixed(2),  // Use discounted price here
+                        currency_code: 'MYR'
+                    }
+                }],
+                application_context: {
+                    shipping_preference: 'NO_SHIPPING'
+                }
+            });
+        },
+        onApprove: function (data, actions) {
+            return actions.order.capture().then(function (details) {
+                const captureId = details.purchase_units[0].payments.captures[0].id;
+                window.location.href = `/Reservation/PaymentSuccess?paymentId=${captureId}&PayerID=${details.payer.payer_id}`;
+            });
+        },
+        onError: function (err) {
+            console.error("PayPal Error:", err);
+            window.location.href = `/Reservation/PaymentFailed?error=${encodeURIComponent(err.message)}`;
+        }
+    }).render('#paypal-button-container');
+                                    }
+                                } else {
+                                    console.error("PayPal SDK not loaded.");
+                                }
+                            } else if (radioInput.value === "Credit Card") {
+                                payNowButton.style.display = 'none';
+                                paypalButtonContainer.style.display = 'none';
+                                document.getElementById("stripe-button-container").style.display = 'block';
+                            } else {
+                                payNowButton.style.display = 'block';
+                                paypalButtonContainer.style.display = 'none';
+                                document.getElementById("stripe-button-container").style.display = 'none';
+                            }
+                        }
+                    });
+                });
+
+         document.getElementById("stripeCheckoutButton").addEventListener("click", async function () {
+        try {
+            const roomId = "@Model.RoomId";
+            const totalRoomPrice = "@Model.TotalRoomPrice";
+            const userName = "@Model.UserName";
+            const userEmail = "@Model.UserEmail";
+            const memberid = "@Model.userMember?.Id";
+            const memberlevel = "@Model.userMember?.Level";
+
+            // Retrieve the values from hidden input fields
+            const selectedRewardId = document.getElementById("selectedRewardId").value || null;
+            const selectedRewardDiscountRate = document.getElementById("selectedRewardDiscountRate").value || null;
+
+            console.log("[DEBUG] RoomId:", roomId);
+            console.log("[DEBUG] TotalRoomPrice:", totalRoomPrice);
+            console.log("[DEBUG] UserName:", userName);
+            console.log("[DEBUG] UserEmail:", userEmail);
+            console.log("[DEBUG] SelectedRewardId:", selectedRewardId);
+            console.log("[DEBUG] SelectedRewardDiscountRate:", selectedRewardDiscountRate);
+
+            const response = await fetch('/Reservation/CreateStripeSession', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    RoomId: roomId,
+                    TotalRoomPrice: totalRoomPrice,
+                    UserName: userName,
+                    UserEmail: userEmail,
+                    memberId: memberid,
+                    memberLevel: memberlevel,
+                    rewardId: selectedRewardId,
+                    rewardDiscount: selectedRewardDiscountRate
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("[ERROR] Server response:", errorData.error);
+                alert("Error creating Stripe session: " + errorData.error);
+                return;
+            }
+
+            const data = await response.json();
+            console.log("[DEBUG] Stripe session data:", data);
+
+            if (data.sessionId) {
+                const stripe = Stripe("pk_test_51QYRg1P8nRpnXNDhFsi3c8kMlnWR05ZqQRiISgLYsshSNsqaaR58a0rA7Ei4CY8uuP4HQdqYqmhUoMnWkuC5P4kd00BYowrLau");
+                stripe.redirectToCheckout({ sessionId: data.sessionId });
+            } else {
+                alert("Failed to create Stripe Checkout session.");
+            }
+        } catch (error) {
+            console.error("[ERROR] Unexpected error:", error);
+            alert("An unexpected error occurred. Please try again.");
+        }
+    });
+
+    function updateDiscountPrice() {
+
+        if (!userLevel) {
+        console.log("[DEBUG] User level is null, skipping discount calculation.");
+        return; // Exit the function early if userLevel is null
+        }
+
+        let memberDiscount = 0;
+
+        // Determine member discount based on user level
+        if (userLevel === "Basic") memberDiscount = 5;
+        else if (userLevel === "Platinum") memberDiscount = 10;
+        else if (userLevel === "VIP") memberDiscount = 20;
+
+        // Get the selected reward code from the input field
+        const discountValue = document.getElementById("reward").value;
+        // Find the matching option in the datalist
+        const matchingOption = Array.from(document.querySelectorAll("#rewardsList option")).find(option => option.value === discountValue);
+
+        // Initialize discountInt to 0, in case there's no valid discount value
+        let discountInt = 0;
+        let selectedReward = null;
+
+    if (matchingOption) {
+        // Get the reward details from the data attributes
+        selectedReward = {
+            id: matchingOption.getAttribute("data-id"),
+            code: matchingOption.getAttribute("data-code"),
+            name: matchingOption.getAttribute("data-name"),
+            discount: parseInt(matchingOption.getAttribute("data-discount") || "0")
+        };
+
+        discountInt = selectedReward.discount;
+        console.log("[DEBUG] Selected Reward Object:", selectedReward);
+    } else {
+        console.log("[DEBUG] No matching reward found.");
+    }
+
+
+        // Calculate the individual discounts
+        const memberDiscountAmount = (memberDiscount / 100) * totalRoomPrice;
+        const rewardDiscountAmount = (discountInt / 100) * totalRoomPrice;
+
+        // Calculate the total discount by adding both discounts
+        const totalDiscountAmount = memberDiscountAmount + rewardDiscountAmount;
+
+        // Update the discounted price in the UI
+        const discountedPrice = totalRoomPrice - totalDiscountAmount;
+        document.getElementById("discountPrice").textContent = `RM ${discountedPrice.toFixed(2)}`;
+
+        // Set the selected reward ID in the hidden input field
+        if (selectedReward) {
+        document.getElementById("selectedRewardId").value = selectedReward.id;
+        document.getElementById("selectedRewardDiscountRate").value = selectedReward.discount;
+        }
+
+        // Log for debugging
+        console.log("[DEBUG] Member Discount Amount:", memberDiscountAmount);
+        console.log("[DEBUG] Reward Discount Amount:", rewardDiscountAmount);
+        console.log("[DEBUG] Total Discount Amount:", totalDiscountAmount);
+        console.log("[DEBUG] Discounted Price:", discountedPrice);
+    }
+
+        // Add event listener for reward selection change
+        document.getElementById("reward").addEventListener("change", updateDiscountPrice);
+
+        // Initialize the discount display
+        updateDiscountPrice();
+
+
+
+    });
+
+
+</script>
+
+

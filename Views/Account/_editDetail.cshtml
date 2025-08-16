@@ -1,0 +1,322 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.profileVM
+
+<style>
+
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+    .validation-summary ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .validation-summary li {
+        margin: 0;
+        padding: 0;
+        color: red;
+        font-weight: bold;
+    }
+
+    .validation-error {
+        color: red; /* Red text for error message */
+        
+    }
+
+   
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="/js/Webcam.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function(){
+        let cameraActive = false;
+
+        Webcam.set({
+            width:360,
+            height:260,
+            image_format:'jpeg',
+            jpeg_quality:75
+        });
+       $('#captureModal').on('show.bs.modal', function () {
+        if (!cameraActive) {
+            Webcam.attach('#idwebcam');
+            cameraActive = true;
+        }
+    });
+
+    // Close Camera on Modal Hide
+    $('#captureModal').on('hide.bs.modal', function () {
+        if (cameraActive) {
+            Webcam.reset();
+            cameraActive = false;
+        }
+    });
+
+           $("#btncapture").click(function () {
+        Webcam.snap(function (data_uri) {
+            $("#idcaptured")[0].src = data_uri; // Set image preview
+           $("input[asp-for='Base64Photo']").val(data_uri); // Assign Base64 string to hidden input
+           $("#base64PhotoInput").val(data_uri);
+        });
+    });
+
+        $("#savePhotoButton").click(function () {
+            const capturedDataUri = $("#idcaptured").attr("src");
+            if (capturedDataUri) {
+                $("#profileImage").attr("src", capturedDataUri); 
+                 
+            }
+        });
+
+        // Upload Photo Input
+        $("#uploadInput").change(function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#profileImage").attr("src", e.target.result); // Update Profile Preview
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+           
+    });
+
+</script>
+
+
+<div class="container-xl px-4 mt-4">
+    
+    <hr class="mt-0 mb-4">
+    <form method="post" asp-action="_editDetail" enctype="multipart/form-data">
+
+        <div asp-validation-summary="ModelOnly"></div>
+    <div class="row">
+        
+        <div class="col-xl-4">
+            
+             
+            <div class="card mb-4 mb-xl-0">
+                <div class="card-header">Profile Picture</div>
+                <div class="card-body text-center">
+                        <label class="upload">
+                            <img id="profileImage" class="img-account-profile rounded-circle mb-2" style="width: 200px; height: 200px; object-fit: cover;" src="~/images/user_photo/@Model.Portrait" alt="">
+                       
+                   
+                    <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+                        
+                            <input asp-for="Photo" name="Photo" accept="image/jpeg,image/png" hidden>
+                            @* accept="image/jpeg,image/png" *@
+                            <span asp-validation-for="Photo" class="validation-error"></span>
+                        
+                    </div>
+                    </label>
+
+                    <div>
+                        <button type="button" class="btn btn-secondary mt-2" data-bs-toggle="modal" data-bs-target="#captureModal">
+                            <input type="hidden"id="base64PhotoInput"  asp-for="Base64Photo" />
+                            
+                            Take Photo
+                        </button>
+                        <span asp-validation-for="Base64Photo" class="validation-error"></span>
+                    </div>
+            </div>
+                <div class="modal fade" id="captureModal" tabindex="-1" aria-labelledby="captureModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="captureModalLabel">Take Photo</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <!-- Webcam Video Stream -->
+                                <div id="idwebcam" class="mb-3"></div>
+                                <button type="button" id="btncapture" class="btn btn-success">Capture</button>
+                                <img id="idcaptured" style="display: none; margin-top: 10px;" />
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="savePhotoButton">Save Photo</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @* <div id="idwebcam"></div> *@
+
+            @* <img id="idcaptured"/> *@
+
+            @* <input type="button" id="btncapture" value="Capture"/> *@
+        </div>
+        <div class="col-xl-8">
+            <!-- Account details card-->
+            <div class="card mb-4">
+                <div class="card-header">Account Details</div>
+                <div class="card-body">
+                        <div class="mb-3">
+                            <label class="small mb-1" for="inputUsername">Username (how your name will appear to other users on the site)</label>
+                            <input  class="form-control" id="inputUsername" type="text" placeholder="Enter your username" value="@Model.Id" readonly>
+                            
+                        </div>
+                        
+                        <div class="row gx-3 mb-3">
+                           
+                            <div class="col-md-6">
+                                <label  class="small mb-1" for="inputFirstName">First name</label>
+                                <input asp-for="FirstName" class="form-control" id="inputFirstName" type="text" placeholder="Enter your first name" value="@Model.FirstName">
+                                <span asp-validation-for="FirstName" class="validation-error"></span>
+                            </div>
+                           
+                            <div class="col-md-6">
+                                <label  class="small mb-1" for="inputLastName">Last name</label>
+                                <input asp-for="LastName" class="form-control" id="inputLastName" type="text" placeholder="Enter your last name" value="@Model.LastName">
+                                <span asp-validation-for="LastName" class="validation-error"></span>
+                               
+                            </div>
+                        </div>
+                       
+                        
+                       
+                        <div class="mb-3">
+                            <label class="small mb-1" for="inputEmailAddress">Email address</label>
+                            <input asp-for="Email"  class="form-control" id="inputEmailAddress" type="text" placeholder="Enter your email address" value="@Model.Email">
+                            <span asp-validation-for="Email" class="validation-error"></span>
+                        </div>
+                       
+                        <div class="row gx-3 mb-3">
+                            
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputPhone">Phone number</label>
+                                <input asp-for="PhoneNum" class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="@Model.PhoneNum">
+                                <span asp-validation-for="PhoneNum" class="validation-error"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="small mb-1" for="inputBirthday">Birthday</label>
+                                @* <input asp-for="BirthDays" type="date" placeholder="BirthDay"> *@
+                                @* <span asp-validation-for="BirthDays" class="validation-error"></span> *@
+
+                                <input asp-for="BirthDay" value="@Model.BirthDay.ToString("yyyy-MM-dd")" class="form-control" id="inputBirthday" type="date" name="birthday" placeholder="Enter your birthday">
+                                <span asp-validation-for="BirthDay" class="validation-error"></span>
+
+                            </div>
+                        </div>
+                        <!-- Save changes button-->
+                        <button class="btn btn-primary" type="submit">Save changes</button>
+                    
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '@TempData["SuccessMessage"]'
+        });
+    </script>
+}
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+    //     Get references to elements
+    //     const uploadButton = document.getElementById('uploadButton');
+    //     const portraitInput = document.getElementById('Portrait');
+
+    //     Add event listener to the button
+    //     uploadButton.addEventListener('click', function () {
+    //         portraitInput.click(); Trigger the hidden file input
+    //     });
+
+    //     portraitInput.addEventListener('change', function () {
+    //     const file = portraitInput.files[0];
+    //     if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
+    //         const reader = new FileReader();
+    //         reader.onload = function (e) {
+    //             profileImage.src = e.target.result; Update the image source
+    //         };
+    //         reader.readAsDataURL(file);
+    //     } else {
+    //         alert("Please select a valid JPG or PNG image.");
+    //     }
+    // });
+        $('.upload input').on('change', e => {
+        const f = e.target.files[0];
+        const img = $(e.target).siblings('img')[0];
+
+        img.dataset.src ??= img.src;
+
+        if (f && f.type.startsWith('image/')) {
+            img.onload = e => URL.revokeObjectURL(img.src);
+            img.src = URL.createObjectURL(f);
+        }
+        else {
+            img.src = img.dataset.src;
+            e.target.value = '';
+        }
+
+        // Trigger input validation
+        $(e.target).valid();
+    });
+    });
+</script>

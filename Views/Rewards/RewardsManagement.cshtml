@@ -1,0 +1,288 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<RewardsVM>
+
+<style>
+
+    /* Container to position the select box */
+    #custom-container {
+        width: 200px;
+        position: relative;
+    }
+
+    /* Styling the select element */
+    .custom-select {
+        width: 100%;
+        padding: 10px 15px;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #333;
+        font-size: 16px;
+        appearance: none; /* Remove default dropdown arrow */
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        /* Hover and focus effects */
+        .custom-select:hover,
+        .custom-select:focus {
+            border-color: var(--color-primary-6);
+            box-shadow: 0 4px 10px rgba(29, 95, 105, 0.3);
+            transform: scale(1.05);
+        }
+
+    /* Adding a custom dropdown arrow */
+    #custom-container::after {
+        content: '▼';
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none; /* Prevent arrow from being clicked */
+        font-size: 14px;
+        color: var(--color-primary-6);
+        transition: all 0.3s ease;
+    }
+
+    /* Change the arrow color on hover */
+    #custom-container:hover::after {
+        color: var(--color-primary-6);
+    }
+
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        $(document).on("click", "th.sortable", function (e) {
+            // Prevent infinite loop by checking if the event originated from the `a` tag
+            if (e.target.tagName !== "A") {
+                // Find the `a` tag inside the clicked `th` and trigger its native click event
+                $(this).find("a#sort-link")[0].click();
+            }
+        });
+
+    $(document).on("click", "tr.data-row", function (event) {
+        // Prevent edit action when clicking on a checkbox
+        if ($(event.target).is(".checkbox")) {
+            event.stopPropagation();
+            return;
+        }
+
+        // Get the rewardId from the clicked row
+        const rewardId = $(this).data("rewardid");
+        console.log(rewardId);
+
+        // Call the GetRewardDetails endpoint
+        $.ajax({
+            url: `/Rewards/getRewardDetails`, // API endpoint
+            method: "GET",
+            data: { rewardId: rewardId }, // Send rewardId as query parameter
+            success: function (response) {
+                // Check if reward details are found
+                if (response) {
+                    // Redirect to a new page with roomId as query parameter
+                    window.location.href = `/Rewards/Details?rewardId=${rewardId}`;
+                } else {
+                    alert("Rewards not found!");
+                }
+            },
+            error: function (xhr) {
+                console.error("Error fetching reward details:", xhr.responseText);
+                alert("An error occurred while fetching reward details.");
+            }
+        });
+    });
+
+
+     // Delete function for bulk actions
+    $('#deleteActionBtn').on('click', function () {
+        const selectedIds = $('.data-row .checkbox:checked').map(function () {
+            return $(this).data('rewardid');
+        }).get();
+
+        if (!selectedIds.length) {
+            alert('No items selected for deletion.');
+            return;
+        }
+
+        // Confirmation dialog
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to update the selected rewards?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, update them!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Proceed with update
+                $.ajax({
+                    url: '/Rewards/DeleteSelectedItems', // Update with your endpoint
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selectedIds),
+                    success: function (response) {
+                        if (response.success) {
+                            // Update status in the table directly
+                            selectedIds.forEach(function (id) {
+                                const statusCell = $(`.data-row[data-rewardid="${id}"] td:last-child`);
+                                const currentStatus = statusCell.text().trim();
+
+                                // Toggle status
+                                const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+                                statusCell.text(newStatus); // Update cell text
+                            });
+
+                            // Clear all checkboxes
+                            $('.data-row .checkbox').prop('checked', false);
+                            $('#selectAll').prop('checked', false); // Clear "Select All" checkbox
+
+                            Swal.fire('Updated!', 'Status updated successfully.', 'success');
+                        } else {
+                            alert(response.message || 'Failed to update the selected rewards.');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error('Error during update:', xhr.responseText);
+                        alert('An error occurred while updating items.');
+                    }
+                });
+            }
+        });
+    });
+
+
+        // Cancel deletion and close the modal when clicking Cancel button
+        $('#cancelActionBtn').on('click', function () {
+            $('#exampleModal').modal('hide');
+        });
+
+        // Handle the Select All checkbox click event
+        $('#selectAll').on('change', function () {
+            // Check the state of the "Select All" checkbox
+            const isChecked = $(this).is(':checked');
+            // Set all checkboxes with the same state
+            $('.data-row .checkbox').prop('checked', isChecked);
+        });
+
+        // Handle individual checkbox clicks to update the "Select All" state
+        $('.data-row .checkbox').on('change', function () {
+            const allCheckboxes = $('.data-row .checkbox');
+            const allChecked = allCheckboxes.length === allCheckboxes.filter(':checked').length;
+            $('#selectAll').prop('checked', allChecked);
+        });
+
+    });
+
+</script>
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column gap-3 grow">
+
+        <section class="flex gap-2 items-center justify-between">
+
+            <div id="bulkActions" class="bulk-actions hidden items-center">
+                <i class="icon" id="deleteActionBtn">
+                    <!-- Trash Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path>
+                    </svg>
+                </i>
+                <small id="labelItemsSelected">0 items selected</small>
+                <i class="icon" id="cancelActionBtn">
+                    <!-- Cancel Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+                    </svg>
+                </i>
+            </div>
+
+
+            <h1 id="title" class="leading-none">Rewards Management</h1>
+
+            <!--Search And Actions-->
+            <div class="flex gap-1 items-center">
+                <div style="display: flex; border: 1px solid #ccc; padding: 1%; align-items: center; justify-content: space-between;">
+                    <!-- Loader Image -->
+                    <img src="/images/loader.gif" id="loader"
+                         style="display: none; position: absolute; width: 24px; height: 24px; z-index: 999;">
+
+
+                    <form data-ajax="true"
+                          data-ajax-update="#target"
+                          data-ajax-loading="#loader"
+                          id="searchForm" style="display: flex; align-items: center; flex-grow: 1; width: 100%;">
+
+
+                        @Html.TextBox("searchBar", "", new { type = "search", autofocus = "", data_trim = "", @class = "search-bar", id = "searchBar", placeholder = "Search ID", style = "outline: none;" })
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                             viewBox="0 0 256 256" id="searchIcon">
+                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                        </svg>
+
+                    </form>
+                </div>
+
+
+                <!-- Optional button if needed -->
+                <form class="form" asp-action="CreateInfoForm" asp-controller="Rewards" method="post" >
+                <button class="button icon create-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fdfdfe"
+                         viewBox="0 0 256 256">
+                        <path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
+                    </svg>
+                </button>
+                </form>
+            </div>
+        </section>
+
+
+        <form data-ajax="true"
+              data-ajax-update="#target"
+              data-ajax-loading="#loader"
+              id="searchForm">
+
+            <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                <label for="pageSize" style="width:15rem;">Page Size:</label>
+
+
+                @Html.DropDownList("pageSize", new List<SelectListItem>
+                {
+                new SelectListItem { Text = "5", Value = "5" },
+                new SelectListItem { Text = "10", Value = "10" },
+                new SelectListItem { Text = "15", Value = "15" }
+                }, new { id = "pageSize", @class = "form-control custom-select", onchange = "$(this.form).submit();" })  <!-- Form submission via AJAX -->
+            </div>
+
+        </form>
+
+        <section class="flex flex-column gap-2">
+
+            <div id="target">
+                <partial name="_RewardsList">
+            </div>
+
+        </section>
+    </main>
+</div>
+
+
+
+
+@section foot {
+    <script>
+        let timer = null;
+
+        $('#searchBar').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 800);
+        });
+    </script>
+}

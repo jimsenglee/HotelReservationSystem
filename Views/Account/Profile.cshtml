@@ -1,0 +1,1352 @@
+﻿@model HotelRoomReservationSystem.Models.ViewModels.profileVM
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <style>
+        .profile-container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 1% auto;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: #c4c4c4;
+            color: #fff;
+        }
+
+            .profile-header img {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .profile-header .details {
+                flex: 1;
+            }
+
+                .profile-header .details h1 {
+                    margin: 0;
+                    font-size: 1.5rem;
+                    color: #fff;
+                    font-weight: 900;
+                }
+
+                .profile-header .details p {
+                    margin: 5px 0;
+                    font-size: 0.9rem;
+                    color: #fff;
+                }
+
+        .account-info,
+        .reservation-section {
+            padding: 20px;
+        }
+
+            .account-info h2,
+            .reservation-section h2 {
+                font-size: 1.2rem;
+                margin-bottom: 10px;
+                border-bottom: 2px solid #007bff;
+                display: inline-block;
+                padding-bottom: 5px;
+            }
+
+            .account-info p {
+                margin: 8px 0;
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+            .tabs button {
+                flex: 1;
+                padding: 10px 0;
+                border: none;
+                background: #f0f0f0;
+                color: #555;
+                font-size: 0.95rem;
+                font-weight: bold;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: all 0.3s ease;
+            }
+
+                .tabs button.active {
+                    background: #007bff;
+                    color: #fff;
+                }
+
+                .tabs button:hover {
+                    background: #0056b3;
+                    color: #fff;
+                }
+
+        /* Reservation Cards */
+        /* Reservation Cards */
+        .reservation-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .search-bar {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center; /* Align items vertically */
+            gap: 10px; /* Add space between the button and input */
+        }
+
+            .search-bar button {
+                order: -1; /* Move the button to the left of the input */
+                padding: 10px 15px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                background-color: #f0f0f0; /* Optional styling */
+                cursor: pointer;
+            }
+
+            .search-bar input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                flex: 1; /* Ensure the input takes up the remaining space */
+            }
+
+
+        .icon-container {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px; /* Adjust size for better visibility */
+            color: #333;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .icon {
+            position: relative;
+            display: inline-block;
+            color: #0070ba;
+            font-size: 22px; /* Adjust size for better visibility */
+        }
+
+        .hover-text {
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 16px; /* Adjust text size */
+            color: white;
+            background-color: #0070ba;
+            margin-left: 10px;
+            border-radius: 5px;
+            padding: 5px 8px;
+            max-width: 0;
+            transition: max-width 0.5s ease-out, opacity 0.5s ease-out;
+            opacity: 0;
+        }
+
+        .icon-container:hover .hover-text {
+            max-width: 160px; /* Set to the max width of the full text */
+            opacity: 1;
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #daterange {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .scrollable {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .tabs button {
+            margin-right: 10px;
+        }
+
+        .reservation-card {
+            display: flex;
+            gap: 15px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            align-items: center;
+            transition: box-shadow 0.3s ease;
+        }
+
+            .reservation-card:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .reservation-card img {
+                width: 80px;
+                height: 80px;
+                border-radius: 6px;
+                object-fit: cover;
+            }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cancel-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+            .cancel-btn:hover {
+                background-color: #b22a37;
+            }
+
+        .pay-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+            .pay-btn:hover {
+                background-color: #218838;
+            }
+
+        .rebook-btn {
+            background-color: #007bff;
+            color: white;
+        }
+
+            .rebook-btn:hover {
+                background-color: #0056b3;
+            }
+
+        .extend-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+
+            .extend-btn:hover {
+                background-color: #e0a800;
+            }
+
+
+        .reservation-details {
+            flex: 1;
+        }
+
+            .reservation-details h4 {
+                margin: 0;
+                font-size: 1rem;
+                color: #007bff;
+            }
+
+            .reservation-details p {
+                margin: 5px 0;
+                font-size: 0.9rem;
+                color: #555;
+            }
+
+        .status {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+            .status.active {
+                background: #28a745;
+            }
+
+            .status.past {
+                background: #6c757d;
+            }
+
+            .status.canceled {
+                background: #dc3545;
+            }
+
+        .voucher {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            margin-bottom: 10px;
+            height: 100px;
+        }
+
+        .voucher-left {
+            background: #007bff; /* Primary blue color */
+            color: #fff;
+            text-align: center;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            width: 100px;
+        }
+
+        .discount {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .voucher-right {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .details {
+            max-width: 70%;
+        }
+
+            .details p {
+                margin: 5px 0;
+                font-size: 14px;
+                color: #333;
+            }
+
+        #feedback-btn {
+            background: #007bff;
+            color: #fff;
+            border: 0;
+            padding: 0.5rem 1rem;
+            border-radius: 10%;
+        }
+
+            #feedback-btn:hover {
+                background: #0056b3;
+            }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #d0d7e2;
+            z-index: 1;
+        }
+
+        .progress-point {
+            position: relative;
+            width: 15px;
+            height: 15px;
+            background-color: #fff;
+            border: 3px solid #4a90e2;
+            border-radius: 50%;
+            z-index: 2;
+            display: inline-block;
+        }
+
+            .progress-point.completed {
+                background-color: #4a90e2;
+            }
+
+            .progress-point:hover {
+                transform: scale(1.2);
+                transition: transform 0.2s ease;
+            }
+
+        .level-info {
+            margin-top: 5px;
+            font-size: 12px;
+            text-align: center;
+            color: #4a4a4a;
+        }
+
+            .level-info span {
+                font-weight: bold;
+                color: #4a90e2;
+            }
+
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+            margin-bottom: 2rem;
+        }
+
+        .dropbox {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            background-color: #f9f9f9;
+            transition: background-color 0.3s;
+        }
+
+            .dropbox:hover {
+                background-color: #f1f1f1;
+            }
+
+        .plus-icon {
+            font-size: 36px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        button#selectImages {
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            button#selectImages:hover {
+                background-color: #0056b3;
+            }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .preview-container img {
+                width: 100px;
+                height: 100px;
+                object-fit: cover;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+        /* Container styling for images */
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+        }
+
+            /* Styling the image */
+            .image-container img {
+                width: 100px;
+                height: 100px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+        /* Cancel button styling */
+        .cancel-button {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            width: 10px;
+            height: 10px;
+            padding: 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+            .cancel-button:hover {
+                background-color: #ff1a1a;
+            }
+
+        .field-validation-error,
+        .validation-summary-errors {
+            color: red;
+        }
+
+        .input-validation-error {
+            border: 2px solid red !important;
+            outline: none;
+        }
+
+    </style>
+    <link rel="stylesheet" href="/css/styless.css" type="t`ext/css" asp-append-version="true">
+    <link rel="stylesheet" href="/css/daterangepicker.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/tmp.css" asp-append-version="true">
+    <script src="/js/daterangepicker.js"></script>
+
+    <script>
+                function openFeedbackModal(reservationId) {
+         Swal.fire({
+            title: 'Submit Your Feedback',
+            html: `
+                <div style="display: flex; gap: 1rem;">
+                    <label>Room Rating:</label>
+                    <fieldset class="rating">
+                        <input type="radio" id="star5" name="rating" value="5" checked/>
+                                            <label class="full" for="star5" title="Awesome - 5 stars"></label>
+                                            <input type="radio" id="star4half" name="rating" value="4.5" />
+                                            <label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
+                                            <input type="radio" id="star4" name="rating" value="4" />
+                                            <label class="full" for="star4" title="Pretty good - 4 stars"></label>
+                                            <input type="radio" id="star3half" name="rating" value="3.5" />
+                                            <label class="half" for="star3half" title="Meh - 3.5 stars"></label>
+                                            <input type="radio" id="star3" name="rating" value="3" />
+                                            <label class="full" for="star3" title="Meh - 3 stars"></label>
+                                            <input type="radio" id="star2half" name="rating" value="2.5" />
+                                            <label class="half" for="star2half" title="Kinda bad - 2.5 stars"></label>
+                                            <input type="radio" id="star2" name="rating" value="2" />
+                                            <label class="full" for="star2" title="Kinda bad - 2 stars"></label>
+                                            <input type="radio" id="star1half" name="rating" value="1.5" />
+                                            <label class="half" for="star1half" title="Meh - 1.5 stars"></label>
+                                            <input type="radio" id="star1" name="rating" value="1" />
+                                            <label class="full" for="star1" title="Sucks big time - 1 star"></label>
+                                            <input type="radio" id="starhalf" name="rating" value="half" />
+                                            <label class="half" for="starhalf" title="Sucks big time - 0.5 stars"></label>
+                    </fieldset>
+                </div>
+                <div style="display: flex;margin-bottom: 1rem;align-items: baseline;">
+                    <label for="feedback-comment">Comment:</label>
+                    <textarea id="feedback-comment" class="swal2-textarea" placeholder="Leave your feedback" style="resize:none;"></textarea>
+                </div>
+                <div class="upload-container">
+                    <!-- Drag-and-Drop Area -->
+                    <div id="dropbox" class="dropbox">
+                        <span class="plus-icon">+</span>
+                        <p>Drag & drop images here, or</p>
+                        <button id="selectImages" type="button">Select Images</button>
+                        <input id="Images" type="file" multiple accept=".jpg,.jpeg,.png" hidden>
+                    </div>
+                    <span id="ImgErr" class="text-danger" style="color:red;"></span>
+                    <div id="previewContainer" class="preview-container"></div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            didOpen: () => {
+                const dropbox = document.getElementById("dropbox");
+                const fileInput = document.getElementById("Images");
+                const previewContainer = document.getElementById("previewContainer");
+                const errorContainer = document.getElementById("ImgErr");
+                const maxFiles = 5;
+                const maxSize = 2 * 1024 * 1024; // 2MB
+
+                // Clear Error Message
+                const clearError = () => {
+                    errorContainer.textContent = "";
+                };
+
+                // Display Error Message
+                const showError = (message) => {
+                    errorContainer.textContent = message;
+                };
+
+                // Drag-and-Drop Functionality
+                dropbox.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    dropbox.style.backgroundColor = "#e6e6e6";
+                });
+
+                dropbox.addEventListener("dragleave", () => {
+                    dropbox.style.backgroundColor = "#f9f9f9";
+                });
+
+                dropbox.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    dropbox.style.backgroundColor = "#f9f9f9";
+                    const files = Array.from(e.dataTransfer.files);
+                    handleFiles(files);
+                });
+
+                // Open File Dialog
+                document.getElementById("selectImages").addEventListener("click", () => {
+                    fileInput.click();
+                });
+
+                // Handle File Selection
+                fileInput.addEventListener("change", (e) => {
+                    const files = Array.from(e.target.files);
+                    handleFiles(files);
+                });
+
+                // Handle Files and Previews
+                function handleFiles(files) {
+                    const existingImages = previewContainer.querySelectorAll('.image-container');
+
+                    if (existingImages.length + files.length > maxFiles) {
+                        showError(`You can upload a maximum of ${maxFiles} images.`);
+                        return;
+                    }
+
+                    files.forEach((file) => {
+                        clearError();
+
+                        if (!file.type.match("image.*")) {
+                            showError("Only image files are allowed.");
+                            return;
+                        }
+
+                        if (file.size > maxSize) {
+                            showError(`${file.name} must be less than 2 MB.`);
+                            return;
+                        }
+
+                        const reader = new FileReader();
+
+                        reader.onload = (e) => {
+                            const imgContainer = document.createElement("div");
+                            imgContainer.classList.add("image-container");
+                                                    // Store file metadata
+                                imgContainer.dataset.fileName = file.name;
+                                imgContainer.dataset.fileType = file.type;
+                                imgContainer.dataset.originalFile = JSON.stringify({
+                                    name: file.name,
+                                    type: file.type,
+                                    size: file.size
+                                });
+
+                            const img = document.createElement("img");
+                            img.src = e.target.result;
+                            imgContainer.appendChild(img);
+
+                            const cancelButton = document.createElement("button");
+                            cancelButton.textContent = "✖";
+                            cancelButton.classList.add("cancel-button");
+                            cancelButton.addEventListener("click", () => {
+                                imgContainer.remove();
+                            });
+
+                            imgContainer.appendChild(cancelButton);
+                            previewContainer.appendChild(imgContainer);
+                        };
+
+                        reader.readAsDataURL(file);
+                    });
+                }
+            },
+
+            preConfirm: () => {
+                         const rating = document.querySelector('input[name="rating"]:checked').value;
+        const comment = document.getElementById("feedback-comment").value;
+        const images = document.getElementById("previewContainer").querySelectorAll("img");
+        const errorContainer = document.getElementById("ImgErr");
+        const imageContainers = document.getElementById("previewContainer").querySelectorAll(".image-container");
+        errorContainer.textContent = "";
+
+        // Create FormData
+        const formData = new FormData();
+        formData.append("ReservationId", reservationId);
+        formData.append("Rating", parseFloat(rating)); // Ensure it's a number
+        formData.append("Comment", comment);
+
+                    const imagePromises = Array.from(imageContainers).map((container, index) => {
+                        const img = container.querySelector("img");
+                        const fileMetadata = JSON.parse(container.dataset.originalFile);
+
+                        return fetch(img.src)
+                            .then(res => res.blob())
+                            .then(blob => {
+                                // Create a new File object with the original filename and type
+                                const file = new File([blob], fileMetadata.name, {
+                                    type: fileMetadata.type
+                                });
+                                formData.append("Images", file);
+                            });
+                    });
+
+                    return Promise.all(imagePromises)
+                        .then(() => formData)
+                        .catch(error => {
+                            console.error("Error processing images:", error);
+                            throw new Error("Failed to process images");
+                        });
+                }
+
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = result.value;
+
+                    fetch('/Feedback/Submit', {
+                        method: 'POST',
+                        body: formData,
+                        // Don't set Content-Type header - browser will set it automatically with boundary
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`${response.message}`);
+                        }
+                        return response.json();
+                    }) 
+                    .then(data => {
+                        Swal.fire("Success!", "Your feedback has been submitted.", "success");
+                        loadTransactions('past');
+                    })
+                    .catch(error => {
+                        console.error("Error submitting feedback:", error);
+                        Swal.fire("Error", "Something went wrong. Please try again later.", "error");
+                    });
+                }
+            });
+        }
+
+
+
+        function updateFeedbackModal(reservationId) {
+        fetch(`/Feedback/GetSpecFeedback?reservationId=${reservationId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(data => {
+           console.log("Feedback ID:", data.feedbackId);
+        console.log("Reservation ID:", data.reservationId);
+        console.log("Room Type Name:", data.roomTypeName);
+        console.log("Room Name:", data.roomName);
+        console.log("Rating:", data.rate); // Ensure consistency with backend naming
+        console.log("Description:", data.description);
+        console.log("Images:", data.images);
+        data.description = (data.description || "").trim();
+            const images = Array.isArray(data.images) ? data.images : [];
+
+
+         Swal.fire({
+            title: 'Update Your Feedback',
+            html: `
+            <div>
+            
+                <h3 style="color: rgb(49 49 49);font-weight: bold;">${data.roomTypeName} > ${data.roomName}</h3>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                    <label>Room Rating:</label>
+                    <fieldset class="rating">
+                        <input type="radio" id="star5" name="rating" value="5" checked/>
+                                            <label class="full" for="star5" title="Awesome - 5 stars"></label>
+                                            <input type="radio" id="star4half" name="rating" value="4.5" />
+                                            <label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
+                                            <input type="radio" id="star4" name="rating" value="4" />
+                                            <label class="full" for="star4" title="Pretty good - 4 stars"></label>
+                                            <input type="radio" id="star3half" name="rating" value="3.5" />
+                                            <label class="half" for="star3half" title="Meh - 3.5 stars"></label>
+                                            <input type="radio" id="star3" name="rating" value="3" />
+                                            <label class="full" for="star3" title="Meh - 3 stars"></label>
+                                            <input type="radio" id="star2half" name="rating" value="2.5" />
+                                            <label class="half" for="star2half" title="Kinda bad - 2.5 stars"></label>
+                                            <input type="radio" id="star2" name="rating" value="2" />
+                                            <label class="full" for="star2" title="Kinda bad - 2 stars"></label>
+                                            <input type="radio" id="star1half" name="rating" value="1.5" />
+                                            <label class="half" for="star1half" title="Meh - 1.5 stars"></label>
+                                            <input type="radio" id="star1" name="rating" value="1" />
+                                            <label class="full" for="star1" title="Sucks big time - 1 star"></label>
+                                            <input type="radio" id="starhalf" name="rating" value="half" />
+                                            <label class="half" for="starhalf" title="Sucks big time - 0.5 stars"></label>
+                    </fieldset>
+                </div>
+                <div style="display: flex;margin-bottom: 1rem;align-items: baseline;">
+                    <label for="feedback-comment">Comment:</label>
+                            <textarea id="feedback-comment" class="swal2-textarea" placeholder="Leave your feedback" style="resize:none;">
+            
+        </textarea>
+
+                </div>
+                <div class="upload-container">
+                    <!-- Drag-and-Drop Area -->
+                    <div id="dropbox" class="dropbox">
+                        <span class="plus-icon">+</span>
+                        <p>Drag & drop images here, or</p>
+                        <button id="selectImages" type="button">Select Images</button>
+                        <input id="Images" type="file" multiple accept=".jpg,.jpeg,.png" hidden>
+                    </div>
+                    <span id="ImgErr" class="text-danger" style="color:red;"></span>
+                    <div id="previewContainer" class="preview-container"></div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            didOpen: () => {
+                const dropbox = document.getElementById("dropbox");
+                const fileInput = document.getElementById("Images");
+                const previewContainer = document.getElementById("previewContainer");
+                const errorContainer = document.getElementById("ImgErr");
+                 const commentTextarea = document.getElementById("feedback-comment");
+            const maxFiles = 5;
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                const ratingValue = data.rate?.toString();
+
+        // Clear existing content
+        previewContainer.innerHTML = "";
+
+        // Load images if available
+                const images = data.images?.$values || []; // Use $values or an empty array if not available
+
+        if (images.length > 0) {
+            images.forEach(image => {
+                const img = document.createElement("img");
+                 let imgContainer = document.createElement("div");
+                            imgContainer.classList.add("image-container");
+                img.src = `/images/Feedback/${image.name}`; // Adjust the path as needed
+                img.alt = "Feedback Image";
+                img.style.width = "100px"; // Optional: Set a default size
+                img.style.height = "100px";
+                img.style.objectFit = "cover";
+
+            // Set the data-original-file attribute with JSON metadata
+            imgContainer.dataset.originalFile = JSON.stringify({
+                name: image.name,
+                type: image.type,
+                size: image.size
+            });
+
+                const cancelButton = document.createElement("button");
+                    cancelButton.textContent = "✖";
+                    cancelButton.classList.add("cancel-button");
+                    cancelButton.addEventListener("click", () => {
+                        imgContainer.remove();
+                    });
+
+                      imgContainer.appendChild(img); // Add the image
+        imgContainer.appendChild(cancelButton); // Add the cancel button
+                    previewContainer.appendChild(imgContainer);
+            });
+        } else {
+            previewContainer.innerHTML = "<p>No images available.</p>";
+        }
+
+        if (commentTextarea) {
+                commentTextarea.value = data.description;
+            }
+
+            if (ratingValue) {
+                const ratingInput = document.querySelector(`input[name="rating"][value="${ratingValue}"]`);
+                if (ratingInput) {
+                    ratingInput.checked = true;
+                }
+            }
+                // Clear Error Message
+                const clearError = () => {
+                    errorContainer.textContent = "";
+                };
+
+                // Display Error Message
+                const showError = (message) => {
+                    errorContainer.textContent = message;
+                };
+
+                // Drag-and-Drop Functionality
+                dropbox.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    dropbox.style.backgroundColor = "#e6e6e6";
+                });
+
+                dropbox.addEventListener("dragleave", () => {
+                    dropbox.style.backgroundColor = "#f9f9f9";
+                });
+
+                dropbox.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    dropbox.style.backgroundColor = "#f9f9f9";
+                    const files = Array.from(e.dataTransfer.files);
+                    handleFiles(files);
+                });
+                 
+                // Open File Dialog
+                document.getElementById("selectImages").addEventListener("click", () => {
+                    fileInput.click();
+                });
+
+                // Handle File Selection
+                fileInput.addEventListener("change", (e) => {
+                    const files = Array.from(e.target.files);
+                    handleFiles(files);
+                });
+
+                // Handle Files and Previews
+                function handleFiles(files) {
+                    const existingImages = previewContainer.querySelectorAll('.image-container');
+                   const noImagesMessage = previewContainer.querySelector('p'); 
+                   
+                   // Remove the "No images available" message if it exists
+        if (noImagesMessage && noImagesMessage.textContent === "No images available.") {
+            noImagesMessage.remove();
+        }
+                    if (existingImages.length + files.length > maxFiles) {
+                        showError(`You can upload a maximum of ${maxFiles} images.`);
+                        return;
+                    }
+
+                    files.forEach((file) => {
+                        clearError();
+
+                        if (!file.type.match("image.*")) {
+                            showError("Only image files are allowed.");
+                            return;
+                        }
+
+                        if (file.size > maxSize) {
+                            showError(`${file.name} must be less than 2 MB.`);
+                            return;
+                        }
+
+                        const reader = new FileReader();
+
+                        reader.onload = (e) => {
+                            imgContainer = document.createElement("div");
+                            imgContainer.classList.add("image-container");
+                                                    // Store file metadata
+                                imgContainer.dataset.fileName = file.name;
+                                imgContainer.dataset.fileType = file.type;
+                                imgContainer.dataset.originalFile = JSON.stringify({
+                                    name: file.name,
+                                    type: file.type,
+                                    size: file.size
+                                });
+
+                            const img = document.createElement("img");
+                            img.src = e.target.result;
+                            imgContainer.appendChild(img);
+
+                            const cancelButton = document.createElement("button");
+                            cancelButton.textContent = "✖";
+                            cancelButton.classList.add("cancel-button");
+                            cancelButton.addEventListener("click", () => {
+                                imgContainer.remove();
+                            });
+
+                            imgContainer.appendChild(cancelButton);
+                            previewContainer.appendChild(imgContainer);
+                        };
+
+                        reader.readAsDataURL(file);
+                    });
+                }
+            },
+
+            preConfirm: () => {
+                    const rating = document.querySelector('input[name="rating"]:checked').value;
+                    const comment = document.getElementById("feedback-comment").value;
+                    const images = document.getElementById("previewContainer").querySelectorAll("img");
+                    const errorContainer = document.getElementById("ImgErr");
+                    const imageContainers = document.getElementById("previewContainer").querySelectorAll(".image-container");
+                    errorContainer.textContent = "";
+
+                        const formData = new FormData();
+                        formData.append("ReservationId", reservationId);
+                        formData.append("FeedbackId", data.feedbackId);
+                        formData.append("Rating", parseFloat(rating)); // Match the VM property name and type
+                        formData.append("Comment", comment);
+                             
+                            const imagePromises = Array.from(imageContainers).map((container) => { // Fix here
+            const img = container.querySelector("img");
+            const fileMetadataRaw = container.dataset.originalFile;
+
+            if (!fileMetadataRaw) {
+                console.error("Missing data-original-file attribute:", container);
+                return Promise.reject("Missing or invalid data-original-file attribute");
+            }
+
+            const fileMetadata = JSON.parse(fileMetadataRaw);
+
+            return fetch(img.src)
+                .then(res => res.blob())
+                .then(blob => {
+                    const file = new File([blob], fileMetadata.name, {
+                        type: fileMetadata.type
+                    });
+                    formData.append("Images", file);
+                });
+        });
+
+        return Promise.all(imagePromises)
+            .then(() => formData)
+            .catch(error => {
+                console.error("Error processing images:", error);
+                throw new Error("Failed to process images");
+            });
+                }
+
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = result.value;
+
+                    fetch('/Feedback/Update', {
+                        method: 'POST',
+                        body: formData,
+                        // Don't set Content-Type header - browser will set it automatically with boundary
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`${response.message}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.fire("Success!", "Your feedback has been submitted.", "success");
+                        loadTransactions('past');
+                    })
+                    .catch(error => {
+                        console.error("Error submitting feedback:", error);
+                        Swal.fire("Error", "Something went wrong. Please try again later.", "error");
+                    });
+                }
+            });
+            })
+        .catch(error => console.error("Error fetching feedback details:", error));
+        }
+    </script>
+}
+
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <img src="/images/user_photo/@Model.Portrait" alt="Profile Picture">
+        <div class="details">
+            <h1>@Model.FirstName @Model.LastName</h1>
+            <p style="color:white;">Email: @Model.Email</p>
+            <p style="color:white;">Phone: @Model.PhoneNum</p>
+        </div>
+    </div>
+
+    <!-- Account Info -->
+    <div class="account-info">
+        <div style="display:flex;">
+            <h2>Account Information</h2>
+            <a href="/Account/editProfile" style="color: black;">
+                <div style="padding:0 2%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                    </svg>
+                </div>
+            </a>
+        </div>
+        <p><strong>Birthday:</strong> @Model.BirthDay.ToString("MMMM dd, yyyy")</p>
+        @* <p><strong>Address:</strong> 1 Trump Tower, New York, NY, USA</p> *@
+        <p>
+            <strong>Member Since:</strong> @(Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToString("MMMM dd, yyyy") : "N/A")
+        </p>
+        <p>
+            @if (Model.Memberships != null)
+            {
+                <h2>Membership Details</h2>
+                <div class="progress-container">
+                    <div class="progress-line"></div>
+                    <div class="progress-point @(Model.Memberships.Loyalty <= 1000 ? "completed" : "")" title="Basic"></div>
+                    <div class="progress-point @(Model.Memberships.Loyalty > 1000 ? "completed" : "")" title="Platinum"></div>
+                    <div class="progress-point @(Model.Memberships.Loyalty >= 2500 ? "completed" : "")" title="VIP"></div>
+                </div>
+
+                @Html.Raw(Helper.GetLevelInfo(Model.Memberships.Loyalty))
+            <p><strong>Membership Level:</strong> @Model.Memberships.Level</p>
+            <p><strong>Points:</strong> @Model.Memberships.Points</p>
+            }
+        </p>
+    </div>
+
+    <!-- Reservation Section -->
+    <div class="reservation-section">
+        <div class="reservation-header">
+            <h2>Reservation History</h2>
+            <!-- Date Range Picker -->
+            <div class="search-bar">
+                <input type="text" name="datetimes" id="daterange" placeholder="Select Date Range" />
+                <button id="clearDateRange" class="btn">Clear</button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Search reservations..." oninput="filterReservations()">
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="active" onclick="showTab('active')">Active</button>
+            <button onclick="showTab('past')">Past</button>
+            <button onclick="showTab('canceled')">Canceled</button>
+            <button onclick="showTab('rewards')">Rewards</button>
+        </div>
+
+        <!-- Scrollable Reservation List -->
+        <div id="reservationContainer">
+            <div id="active" class="reservation-list scrollable">
+            </div>
+
+            <div id="past" class="reservation-list scrollable" style="display: none;">
+            </div>
+
+            <div id="canceled" class="reservation-list scrollable" style="display: none;">
+            </div>
+            <!-- Rewards -->
+            <div id="rewards" class="reservation-list" style="display: none;">
+                @if (Model.MembershipRewards != null && Model.MembershipRewards.Any())
+                {
+                    <ul>
+                        @foreach (var membershipReward in Model.MembershipRewards)
+                        {
+                            // Find the corresponding reward from the Rewards collection
+                            var reward = Model.Rewards.FirstOrDefault(r => r.Id == membershipReward.RewardId);
+
+                            if (reward != null && reward.ValidUntil >= DateTime.Now && reward.Status == "Active")
+                            {
+                                <div class="voucher">
+                                    <div class="voucher-left">
+                                        <div class="label">Discount</div>
+                                        <div class="discount"> @reward.DiscountRate.ToString("F0")%</div>
+                                    </div>
+
+                                    <div class="voucher-right">
+                                        <div class="details">
+                                            <p><strong>Name:</strong> @reward.Name</p>
+                                            <p><strong>Reward Code:</strong>@reward.RewardCode</p>
+                                            <p><strong>Quantity:</strong> @membershipReward.Quantity</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No rewards available for your membership.</p>
+                }
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#daterange").daterangepicker({
+            locale: {
+                cancelLabel: 'Clear' // Clear button text
+            },
+            autoUpdateInput: false // Prevent the field from being pre-filled
+        }, function (start, end) {
+            const startDate = start.format("YYYY-MM-DD");
+            const endDate = end.format("YYYY-MM-DD");
+
+            // Update the input field manually when a range is selected
+            $("#daterange").val(startDate + " - " + endDate);
+
+            // Load transactions based on the selected date range
+            loadTransactions('active', startDate, endDate);
+            loadTransactions('past', startDate, endDate);
+            loadTransactions('canceled', startDate, endDate);
+        });
+
+        // Clear Date Range
+        $("#clearDateRange").click(function () {
+            $("#daterange").val(''); // Empty the input field
+            loadTransactions('active');
+            loadTransactions('past');
+            loadTransactions('canceled');
+        });
+
+        // Initial load for active transactions
+        loadTransactions('active');
+
+    });
+
+    // Show Tab Logic
+    function showTab(tab) {
+        document.querySelectorAll('.reservation-list').forEach(list => {
+            list.style.display = 'none';
+        });
+        document.getElementById(tab).style.display = 'grid';
+
+        document.querySelectorAll('.tabs button').forEach(button => {
+            button.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        if (tab === 'active') {
+            loadTransactions('active');
+        } else if (tab === 'past') {
+            loadTransactions('past');
+        } else if (tab === 'canceled') {
+            loadTransactions('canceled');
+        }
+    }
+
+    function loadTransactions(status, startDate = '', endDate = '') {
+        const searchQuery = document.getElementById('search').value.trim();
+            console.log(`Loading transactions for status: ${status}`);
+    console.log(`Search Query: ${document.getElementById('search').value.trim()}`);
+    console.log(`Start Date: ${startDate}, End Date: ${endDate}`);
+
+        $.ajax({
+            url: '/Reservation/GetTransactions',
+            method: 'GET',
+            data: {
+                status: status,
+                search: searchQuery || '',
+                startDate: startDate,
+                endDate: endDate
+            },
+            success: function (response) {
+                $('#' + status).html(response);
+
+            }
+        });
+    }
+
+    // Filter Logic for search
+    function filterReservations() {
+        const query = document.getElementById('search').value.trim().toLowerCase();
+        loadTransactions('active');  // Always reload the active tab on search
+        loadTransactions('past');    // Reload past tab
+        loadTransactions('canceled'); // Reload canceled tab
+    }
+
+    function cancelReservation(transactionId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to cancel this reservation?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'No',
+            confirmButtonText: 'Yes',
+                    reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/Reservation/CancelReservation',
+                    type: 'POST',
+                    data: { transactionId: transactionId },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire('Canceled!', response.message, 'success');
+                            loadTransactions('active');
+                            loadTransactions('canceled');
+                             } else {
+                            Swal.fire('Error!', response.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error!', 'Failed to process the payment. Please try again later.', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+        function payForReservation(transactionId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to proceed to payment for this reservation?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, pay now!',
+                                reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/Reservation/PayReservation',
+                    type: 'POST',
+                    data: { transactionId: transactionId },
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = response.redirectUrl; // Redirect to payment page
+                        } else {
+                            Swal.fire('Error!', response.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error!', 'Failed to process payment. Please try again later.', 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '@Html.Raw(TempData["SuccessMessage"])'
+        });
+    </script>
+}
+@if (TempData["infoMessage"] != null)
+{
+    <script>
+        Swal.fire({
+            icon: 'info',
+            title: 'No Change',
+            text: '@Html.Raw(TempData["infoMessage"])'
+        });
+    </script>
+}

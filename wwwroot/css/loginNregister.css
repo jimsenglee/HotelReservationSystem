@@ -1,0 +1,189 @@
+﻿#container {
+    display: flex;
+    height: 130vh;
+}
+
+/* Left Section */
+.left-section {
+    flex: 1;
+    background-color: #eaeaea;
+    background-image: url("/images/loginViews.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.validation-error {
+    position: absolute;
+    top: 100%; /* Position directly below the input */
+    left: 0;
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+
+
+.illustration img {
+    object-fit: cover;
+}
+
+/* Right Section */
+.right-section {
+    flex: 1;
+    background-color: #fff; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-container {
+    width: 75%;
+    text-align: center;
+}
+
+.logo {
+    font-size: 2rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin: 10px 0;
+}
+
+p {
+    margin: 10px 0;
+    color: #555;
+}
+
+.validation-summary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.validation-summary li {
+    margin: 0;
+    padding: 0;
+    color: red;
+    font-weight: bold;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input[type=text],
+input[type=email],
+input[type=password],
+input[type=date] {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    transition: border-bottom 0.3s ease;
+    padding: 8px 0;
+    font-size: 16px;
+    flex: 1;
+    background: transparent;
+}
+
+input:focus {
+    outline: none;
+    border-bottom: 1px solid #000;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.signup-btn {
+    background-color: #000;
+    color: #fff;
+}
+
+.google-signup-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    gap: 10px;
+}
+
+    .google-signup-btn img {
+        width: 20px;
+        height: 20px;
+    }
+
+.login-link {
+    margin-top: 15px;
+}
+
+    .login-link a {
+        color: #6f42c1;
+        text-decoration: none;
+    }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+input::placeholder {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+input:focus::placeholder {
+    color: transparent;
+    /* Hide placeholder on focus */
+}
+
+
+.form-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    /* border-bottom: 1px solid #ccc; */
+    transition: border-bottom 0.3s ease;
+}
+
+.password-group svg {
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+    fill: #aaa;
+    margin-bottom: -2px;
+}
+
+    .password-group svg:hover {
+        fill: #000;
+    }
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+#forgetPass {
+    color: #6f42c1;
+    text-decoration: none;
+}
+
+    #forgetPass:hover {
+        text-decoration: underline;
+        color: #6f42c1;
+    }
+
+
+.password-group .hidden-field {
+    position: absolute; 
+    left: -9999px;
+}

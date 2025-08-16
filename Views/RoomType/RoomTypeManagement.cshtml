@@ -1,0 +1,2116 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList.Mvc.Core
+@using X.PagedList
+@model IPagedList<RoomTypeDetailsVM>
+
+@{
+    ViewBag.Title = "Room Type Management";
+}
+
+@section head {
+    <style>
+        .details-card {
+            position: absolute;
+            display: none;
+            width: 350px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+            .details-card.visible {
+                display: block;
+            }
+
+            .details-card .card-content {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .details-card input,
+            .details-card button {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                margin-bottom: 10px;
+            }
+
+                .details-card button.submit-button {
+                    background-color: #007bff;
+                    color: #fff;
+                    border: none;
+                    cursor: pointer;
+                }
+
+                    .details-card button.submit-button:hover {
+                        background-color: #0056b3;
+                    }
+
+        /* Container to position the select box */
+        #custom-container {
+            width: 18rem;
+            position: relative;
+        }
+
+        /* Styling the select element */
+        .custom-select {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            font-size: 16px;
+            appearance: none; /* Remove default dropdown arrow */
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+            /* Hover and focus effects */
+            .custom-select:hover,
+            .custom-select:focus {
+                border-color: var(--color-primary-6);
+                box-shadow: 0 4px 10px rgba(29, 95, 105, 0.3);
+                transform: scale(1.05);
+            }
+
+        /* Adding a custom dropdown arrow */
+        #custom-container::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none; /* Prevent arrow from being clicked */
+            font-size: 14px;
+            color: var(--color-primary-6);
+            transition: all 0.3s ease;
+        }
+
+        /* Change the arrow color on hover */
+        #custom-container:hover::after {
+            color: var(--color-primary-6);
+        }
+
+        /*  .undo-notification {
+                                                                                            position: fixed;
+                                                                                            bottom: 10px;
+                                                                                            right: 10px;
+                                                                                            background-color: #f8d7da;
+                                                                                            color: #721c24;
+                                                                                            padding: 10px;
+                                                                                            border: 1px solid #f5c6cb;
+                                                                                            border-radius: 5px;
+                                                                                            z-index: 1000;
+                                                                                            display: flex;
+                                                                                            flex-direction: column;
+                                                                                            gap: 5px;
+                                                                                            width: auto;
+                                                                                            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+                                                                                        }
+
+                                                                                            .undo-notification .undo-button {
+                                                                                                background-color: #f5c6cb;
+                                                                                                border: none;
+                                                                                                color: #721c24;
+                                                                                                cursor: pointer;
+                                                                                                padding: 5px 10px;
+                                                                                                border-radius: 3px;
+                                                                                                align-self: flex-start;
+                                                                                            }
+
+                                                                                        .progress-bar-container {
+                                                                                            position: relative;
+                                                                                            background-color: #f5c6cb;
+                                                                                            border-radius: 3px;
+                                                                                            overflow: hidden;
+                                                                                            height: 5px;
+                                                                                            width: 100%;
+                                                                                        }
+
+                                                                                        .progress-bar {
+                                                                                            background-color: #721c24;
+                                                                                            height: 100%;
+                                                                                            width: 0%;
+                                                                                            transition: width 1.2s linear;
+                                                                                        } */
+
+
+        .undo-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .undo-button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .progress-bar-container {
+            position: relative;
+            height: 5px;
+            background: #ddd;
+            flex-grow: 1;
+            margin-left: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: #007bff;
+            animation: progress-bar-animation 5s linear forwards;
+        }
+
+        .btnAct {
+            background: white;
+            width: 100%;
+            color: black;
+            border-radius: 0;
+        }
+
+            .btnAct:hover {
+                background: #ccc;
+            }
+
+
+        .input-validation-error {
+            border: 2px solid red !important;
+            outline: none;
+        }
+
+        .range-group {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .selected-rooms {
+            margin-top: 1rem;
+        }
+
+            .selected-rooms span {
+                display: inline-block;
+                background-color: #e0e0e0;
+                margin: 0.5rem;
+                padding: 0.5rem 1rem;
+                border-radius: 1rem;
+                position: relative;
+            }
+
+                .selected-rooms span .remove {
+                    position: absolute;
+                    top: -10px;
+                    right: -12px;
+                    background: red;
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    padding: 0.9rem;
+                }
+
+        .dropdown-container {
+            position: relative;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 89%;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+            .dropdown.show {
+                display: block;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .dropdown div {
+                padding: 10px;
+                cursor: pointer;
+            }
+
+                .dropdown div:hover {
+                    background-color: #f4f4f9;
+                }
+
+    </style>
+
+    <script>
+            // function initializeHandlers(){
+                $(document).ready(function () {
+
+                    // Trim input
+                $('[data-trim]').on('change', e => {
+                    e.target.value = e.target.value.trim();
+                });
+
+                // Auto uppercase
+                $('[data-upper]').on('input', e => {
+                    const a = e.target.selectionStart;
+                    const b = e.target.selectionEnd;
+                    e.target.value = e.target.value.toUpperCase();
+                    e.target.setSelectionRange(a, b);
+                });
+
+            //                $(document).on('click', '.status-btn', function () {
+            //     const button = $(this);
+            //     const row = button.closest('tr'); // Find the corresponding row
+            //     const roomTypeId = row.data('roomtypeid'); // Get the RoomTypeId from the data attribute
+
+            //     // Define the color cycle and the corresponding text
+            //     const statusCycle = [
+            //         { color: '#28a745', text: 'Available' },  // Green for Available
+            //         { color: '#dc3545', text: 'Unavailable' },   // Red for Unavailable
+            //         { color: '#6c757d', text: 'Maintenance' } // Gray for Maintenance
+            //     ];
+
+            //     // Get the current background color of the button
+            //     const currentColor = button.css('background-color');
+            //     const currentIndex = statusCycle.findIndex(status => status.color === rgbToHex(currentColor));
+
+            //     // Calculate the next index in the cycle
+            //     const nextIndex = (currentIndex + 1) % statusCycle.length;
+
+            //     // Update the button's color and text
+            //     const newStatus = statusCycle[nextIndex];
+            //     button.css({
+            //         'background-color': newStatus.color,
+            //         'color': 'white'
+            //     }).text(newStatus.text);
+
+            //     // Send the updated status to the server via AJAX
+            //     $.ajax({
+            //         url: '/RoomType/UpdateStatus', // Adjust this URL based on your route configuration
+            //         type: 'POST',
+            //         contentType: 'application/json',
+            //         data: JSON.stringify({
+            //             roomTypeId: roomTypeId,
+            //             status: newStatus.text
+            //         }),
+            //         success: function (response) {
+            //             if (response.success) {
+            //                 console.log('Status updated successfully.');
+            //             } else {
+            //                 alert('Failed to update status. Please try again.');
+            //             }
+            //         },
+            //         error: function (xhr, status, error) {
+            //             console.error('Error:', error);
+            //             alert('An error occurred while updating the status.');
+            //         }
+            //     });
+            // });
+
+            // // Helper function to convert RGB to Hex for comparison
+            // function rgbToHex(rgb) {
+            //     const rgbArray = rgb.match(/\d+/g).map(Number);
+            //     return (
+            //         '#' +
+            //         rgbArray
+            //             .map(x => x.toString(16).padStart(2, '0'))
+            //             .join('')
+            //     );
+            // }
+
+                  $('.create-btn').on('click', function(){
+                window.location.href = "/RTForm";
+            });
+
+                $(document).on("click", "th.sortable", function (e) {
+                // Prevent infinite loop by checking if the event originated from the `a` tag
+                if (e.target.tagName !== "A") {
+                    // Find the `a` tag inside the clicked `th` and trigger its native click event
+                    $(this).find("a#sort-link")[0].click();
+                }
+            });
+
+            // $(document).on("click", "tr.data-row", function (e) {
+            //      if (!$(e.target).is("input[type='checkbox']") && !$(e.target).is(".status-btn")) {
+            //     // Get the roomId from the clicked row
+            //     const id = $(this).data("roomtypeid");
+            //     console.log(id);
+            //     // Call the GetRoomDetails endpoint
+            //     $.ajax({
+            //         url: `/RoomType/GetRoomTypeDetails`,
+            //         method: "GET",
+            //         data: { id: id }, // Send roomId as query parameter
+            //         success: function (response) {
+            //             // Check if room details are found
+            //             if (response) {
+            //                 // Redirect to a new page with roomId as query parameter
+            //                 window.location.href = `/RoomType/Details?roomTypeId=${id}`;
+            //             } else {
+            //                 alert("Room not found!");
+            //             }
+            //         },
+            //         error: function (xhr) {
+            //             console.error("Error fetching room details:", xhr.responseText);
+            //             alert("An error occurred while fetching room details.");
+            //         }
+            //     });
+            //     }
+            // });
+            let id = null;
+            $(document).on("click", "tr.data-row", function (e) {
+                // Prevent modal from appearing if checkbox or status button is clicked
+                if (!$(e.target).is("input[type='checkbox']") && !$(e.target).is(".status-btn")) {
+                    // Get the roomTypeId from the clicked row
+                    id = $(this).data("roomtypeid");
+
+                    // Get the user's click position
+                    const clickPosition = {
+                        top: e.pageY,
+                        left: e.pageX
+                    };
+
+                    // Show the modal beside the click position
+                    const modal = $("#roomActionModal");
+                    modal.find(".room-id").text(`Room Type ID: ${id}`);
+                    modal.css({
+                        display: "block",
+                        position: "absolute",
+                        top: clickPosition.top + "px",
+                        left: clickPosition.left + 10 + "px" // Offset slightly to the right of the click
+                    });
+                }
+            });
+
+            $(document).on("click", function (e) {
+                    const modal = $("#roomActionModal");
+            if (!$(e.target).closest("#roomActionModal").length && // Click is not inside the modal
+            !$(e.target).closest("tr.data-row").length){
+                            $("#roomActionModal").css("display", "none");
+            }
+                });
+
+            ///////////////////////////////////////////////////////////////////////////////////////
+            // Remove Room Features
+            ///////////////////////////////////////////////////////////////////////////////////////
+            $('#removeRoom').on('click', function(){
+                       $.ajax({
+        url: '/GetRoomsByRowId', // The URL to the controller action
+        type: 'GET',
+        data: { id: id },
+        success: function (data) {
+            if (data.RoomRange == null || data.RoomList == null) {
+                Swal.fire({
+                icon: 'warning',
+                title: 'No Rooms Available',
+                text: 'There are no rooms available in this category. Please check again later or select another category.',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false, // Prevent closing by clicking outside
+                allowEscapeKey: false   // Prevent closing by pressing escape
+            });
+            } else{
+        let roomRangeHtml;
+                        if (typeof data.RoomRange === 'object' && data.RoomRange.$values) {
+            // Get the array of room ranges from $values
+            const roomRanges = data.RoomRange.$values;
+
+            roomRangeHtml = `
+                ${roomRanges
+                    .map(roomRange => `<span data-room-range="${roomRange.trim()}">${roomRange.trim()}</span>`)
+                    .join(',\n')}
+            `;
+
+            console.log(roomRangeHtml);
+        } else {
+            console.error('RoomRange is not in the expected format');
+        }
+
+                            Swal.fire({
+                title: 'Select Rooms for Disabled',
+                html: `
+                     <div>
+                    <strong>Available Room Ranges:</strong>
+                    <div>${roomRangeHtml}</div>
+                </div>
+
+                <label for="selectAllSpecRoom">Select All Room</label>
+                <input type="checkbox" id="selectAllSpecRoom">
+                <br />
+
+                    <label for="select-rooms">Search and select rooms:</label>
+                    <input type="text" id="select-rooms" placeholder="Type to search rooms" autocomplete="off" maxlength="4" style="width:100%; margin-bottom:10px;padding:1rem;font-size:1rem;" disabled />
+                    <div id="room-dropdown" class="dropdown">
+                        ${generateRoomList(data.RoomList)} <!-- Dynamically generated rooms list -->
+                    </div>
+                    <div id="selected-rooms"></div>
+                    <div id="error-message" style="color: red; display: none;">Please select at least one room.</div>
+                `,
+                showCancelButton: true,
+                didOpen: () => {
+                    const selectRoomsInput = document.getElementById('select-rooms');
+                    const dropdown = document.getElementById('room-dropdown');
+                    const swalButtons = document.querySelector('.swal2-actions');
+                    const saveButton = document.querySelector('.swal2-confirm');
+                    const selectedRoomsContainer = document.getElementById('selected-rooms');
+                         const errorMessage = document.getElementById('error-message');
+                                    const selectAllSpecRoom = document.getElementById('selectAllSpecRoom');
+ 
+
+                    // Function to toggle the dropdown visibility
+                    const toggleDropdown = () => {
+                        console.log("toggle");
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                            setTimeout(() => {
+                                dropdown.style.display = 'none';
+                                swalButtons.style.visibility = 'visible'; // Show SweetAlert buttons
+                                updateSaveButtonState();
+                                }, 200);
+                        } else {
+                            dropdown.style.display = 'block';
+                            setTimeout(() => {
+                                dropdown.classList.add('show');
+                                swalButtons.style.visibility = 'hidden'; // Hide SweetAlert buttons
+                            }, 0);
+                        }
+                    };
+
+                    // Check selected rooms and toggle the save button
+                           const updateSaveButtonState = () => {
+            const selectedRoomsContainer = document.getElementById('selected-rooms'); // Ensure the container is selected
+            const roomCheckedInput = document.querySelectorAll('.room-checkbox:checked'); // Assuming room-checkbox represents the checkboxes
+
+            // Check if selectedRoomsContainer exists before accessing its children
+            var hasSelectedRooms = selectedRoomsContainer ? selectedRoomsContainer.children.length > 0 : false;
+            // Ensure roomChecked exists and has items
+            if (roomCheckedInput.length > 0) {
+                // If rooms are checked, override the 'hasSelectedRooms' logic
+                hasSelectedRooms = true;
+            }
+            saveButton.disabled = !hasSelectedRooms; // Disable the button if no rooms are selected
+        };
+
+                       selectAllSpecRoom.addEventListener('change', function () {
+                    if (this.checked) {
+                        // Check all checkboxes
+                        const checkboxes = document.querySelectorAll('.room-checkbox');
+                        checkboxes.forEach(checkbox => checkbox.checked = true);
+                                checkboxes.forEach(checkbox => {
+            checkbox.checked = true;  // Uncheck each checkbox
+            // Call the updateSelectedRooms for each checkbox
+            updateSelectedRooms(true, checkbox.closest('.room-checkbox-item').dataset.roomName, checkbox.value);
+        });
+
+                        selectRoomsInput.disabled = true;
+                        updateRoomRangeColors();
+                        updateSaveButtonState();
+                    } else {
+                        // Uncheck all checkboxes
+                        const checkboxes = document.querySelectorAll('.room-checkbox');
+                                checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            updateSelectedRooms(false, checkbox.closest('.room-checkbox-item').dataset.roomName, checkbox.value);
+        });
+                        selectRoomsInput.disabled = false;
+                        updateRoomRangeColors();
+                        updateSaveButtonState();
+                    }
+                });
+
+                const checkAllRefresh = () => {
+                    selectAllSpecRoom.checked = true;
+                    const checkboxes = document.querySelectorAll('.room-checkbox');
+                                checkboxes.forEach(checkbox => {
+            checkbox.checked = true;  // Uncheck each checkbox
+            // Call the updateSelectedRooms for each checkbox
+            updateSelectedRooms(true, checkbox.closest('.room-checkbox-item').dataset.roomName, checkbox.value);
+        });
+
+                        selectRoomsInput.disabled = true;
+                        updateRoomRangeColors();
+                        updateSaveButtonState();
+                }
+                                    checkAllRefresh();
+
+
+                    // Function to handle input and dropdown interaction
+                    const filterRooms = (event) => {
+                        const input = selectRoomsInput.value.toLowerCase();
+                        const items = document.querySelectorAll('.room-checkbox-item');
+                        let validRoom = false;
+
+                        // Show or hide items based on the input
+                        items.forEach((item) => {
+                            const roomName = item.dataset.roomName.toLowerCase();
+                            if (roomName.includes(input) || input === '') {
+                                item.style.display = 'flex';
+                                validRoom = true;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+
+                        // Handle no matching rooms
+                        const noRecordsMessage = dropdown.querySelector('.no-records');
+                        if (!validRoom) {
+                            if (!noRecordsMessage) {
+                                dropdown.insertAdjacentHTML('beforeend', '<div class="no-records">No matching rooms found</div>');
+                            }
+                        } else if (noRecordsMessage) {
+                            noRecordsMessage.remove();
+                        }
+
+                         if (event.key === 'Enter') {
+                                if (input.trim() === '') {
+                                    errorMessage.textContent = 'Please input something.';
+                                    errorMessage.style.display = 'block';
+                                } else {
+                                    const matchingItem = Array.from(items).find((item) =>
+                                        item.dataset.roomName.toLowerCase() === input
+                                    );
+
+                                    if (matchingItem) {
+                                        const checkbox = matchingItem.querySelector('.room-checkbox');
+                                        if (checkbox && !checkbox.checked) {
+                                            checkbox.checked = true;
+                                            updateSelectedRooms(true, matchingItem.dataset.roomName, checkbox.value);
+                                        }
+                                        selectRoomsInput.value = '';
+                                        items.forEach((item) => (item.style.display = 'flex'));
+                                        errorMessage.style.display = 'none'; // Clear any previous error messages
+                                    } else {
+                                        errorMessage.textContent = 'The room you entered does not exist. Please try again!';
+                                        errorMessage.style.display = 'block';
+                                    }
+                                }
+                            }
+                    };
+                    
+                                // Use event delegation for dynamically added elements
+                dropdown.addEventListener('click', (event) => {
+                    const item = event.target.closest('.room-checkbox-item');
+                    if (item) {
+                        const checkbox = item.querySelector('.room-checkbox');
+
+                        // Prevent double toggle when clicking the checkbox directly
+                        if (event.target.tagName === 'INPUT') return;
+
+                        // Toggle the checkbox manually
+                        checkbox.checked = !checkbox.checked;
+
+                        // Call your update functions
+                        updateRoomRangeColors();
+                        updateSelectedRooms(checkbox.checked, item.dataset.roomName, checkbox.value);
+                    }
+                });
+
+                // Add event listeners for checkboxes
+                dropdown.querySelectorAll('.room-checkbox').forEach((checkbox) => {
+                    checkbox.addEventListener('change', (event) => {
+                        const item = checkbox.closest('.room-checkbox-item');
+                        updateSelectedRooms(checkbox.checked, item.dataset.roomName, checkbox.value);
+                    });
+                });
+
+
+                selectRoomsInput.addEventListener('click', (event) => {
+            toggleDropdown();
+        });
+        selectRoomsInput.addEventListener('keyup', filterRooms); // Filter rooms with debounce
+
+                    // Update the save button state when selected rooms change
+                    const observer = new MutationObserver(updateSaveButtonState);
+                    observer.observe(selectedRoomsContainer, { childList: true });
+
+                // Handle clicks to track if they occur inside the dropdown
+        document.addEventListener('pointerdown', (event) => {
+           let isClickInsideDropdown = dropdown.contains(event.target) || selectRoomsInput.contains(event.target);
+            setTimeout(() => {
+                // Only hide the dropdown if the click was not inside it
+                if (!isClickInsideDropdown) {
+                    dropdown.classList.remove('show');
+                    dropdown.style.display = 'none';
+                    swalButtons.style.visibility = 'visible'; // Show SweetAlert buttons
+                    updateSaveButtonState();
+                }
+                isClickInsideDropdown = false; // Reset the flag
+            }, 200);
+        });
+                },
+                confirmButtonText: 'Save',
+                cancelButtonText: 'Cancel',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const selectedRooms = [];
+                    document.querySelectorAll('.room-checkbox:checked').forEach(checkbox => {
+                        selectedRooms.push(checkbox.value);
+                    });
+                    if (selectedRooms.length === 0) {
+                        const errorMessage = document.getElementById('error-message');
+                        errorMessage.style.display = 'block'; // Show inline error
+                        return false; // Prevent SweetAlert from closing
+                    }
+                    return selectedRooms;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let selectedRooms = result.value;
+                    console.log('Selected rooms:', selectedRooms); // Handle selected rooms
+
+                     // Show a confirmation message after clicking Save
+                    Swal.fire({
+                        title: 'Confirm your action',
+                        text: 'Do you want to save the selected rooms?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, save',
+                        cancelButtonText: 'Cancel'
+                    }).then((confirmationResult) => {
+                        if (confirmationResult.isConfirmed) {
+                            // Show success message after confirming
+                            console.log(selectedRooms);
+                                     $.ajax({
+                url: '/Remove', // The URL to the controller action
+                type: 'POST',
+                data: { roomId: selectedRooms },
+                success: function (response) {
+                           if (response.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                refreshList(); // Call your function after the alert is dismissed
+            });
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: response.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                refreshList(); // Call your function after the alert is dismissed
+            });
+        }
+
+                }
+                                     });
+                            
+                        } else {
+                            // If user cancels, you can handle it here if needed
+                            Swal.fire('Action canceled', '', 'info');
+                        }
+                    });
+                    // Swal.fire('Rooms Saved!', 'Your selected rooms have been saved.', 'success');
+                }
+                selectedRooms = [];
+            });
+            }
+            }
+            });
+            });
+
+
+            // Function to generate the room list dynamically inside the SweetAlert modal
+        //            function generateRoomList(rooms) {
+        //     // Ensure `rooms` is in the expected format
+        //     const firstRoom = rooms.$values[0];
+        //     const roomArray = rooms.$values[0].RoomType.Rooms.$values|| [];
+        //     let roomListHtml = '';
+        //     roomListHtml += `
+        //             <div class="room-checkbox-item" data-room-id="${firstRoom.Id}" data-room-name="${firstRoom.Name}" style="display:flex;align-items:center;gap:1rem;">
+        //                 <label>${firstRoom.Name}</label>
+        //                 <input type="checkbox" class="room-checkbox" data-name="${firstRoom.Name}" value="${firstRoom.Id}">
+        //             </div>
+        //         `;
+        //     roomArray.forEach(room => {
+        //         if(room.Id != null){
+        //         roomListHtml += `
+        //             <div class="room-checkbox-item" data-room-id="${room.Id}" data-room-name="${room.Name}" style="display:flex;align-items:center;gap:1rem;">
+        //                 <label>${room.Name}</label>
+        //                 <input type="checkbox" class="room-checkbox" data-name="${room.Name}" value="${room.Id}">
+        //             </div>
+        //         `;
+        //         }
+        //     });
+            
+        //     return roomListHtml;
+        // }
+
+        function generateRoomList(rooms) {
+            // Check if $values exists and has valid data
+            const topLevelValues = rooms.$values || [];
+            let roomListHtml = '';
+
+            // Loop through top-level values
+            topLevelValues.forEach(item => {
+                const roomData = item.$values || []; // Access nested $values array
+
+                if (roomData.length === 2) {
+                    const [roomId, roomName] = roomData;
+
+                    // Generate the HTML for the room
+                    roomListHtml += `
+                        <div class="room-checkbox-item" data-room-id="${roomId}" data-room-name="${roomName}" style="display:flex;align-items:center;gap:1rem;">
+                            <label>${roomName}</label>
+                            <input type="checkbox" class="room-checkbox" data-name="${roomName}" value="${roomId}">
+                        </div>
+                    `;
+                }
+            });
+
+            return roomListHtml;
+        }
+
+        
+        // function generateRoomsList(rooms){
+
+        //       const roomArray = rooms.$values || [];
+        //     let roomListHtml = '';
+
+        //     roomArray.forEach(room => {
+        //         if(room.Id != null){
+        //         roomListHtml += `
+        //             <div class="room-checkbox-item" data-room-id="${room.Id}" data-room-name="${room.Name}" style="display:flex;align-items:center;gap:1rem;">
+        //                 <label>${room.Name}</label>
+        //                 <input type="checkbox" class="room-checkbox" data-name="${room.Name}" value="${room.Id}">
+        //             </div>
+        //         `;
+        //         }
+        //     });
+
+        //     return roomListHtml;
+        // }
+           
+            // Function to generate the room type list dynamically inside the SweetAlert modal
+                       function generateRoomTypeList(roomTypes) {
+            // Access the `$values` array or default to an empty array if not present
+            
+            const roomTypeArray = roomTypes.$values || [];
+
+            let roomTypeListHtml = '';
+            var index = 0;
+            roomTypeArray.forEach(roomType => {
+                if(index > 0){
+                roomTypeListHtml += `
+                    <option value="${roomType}"></option>
+                `;
+                }
+                index++;
+            });
+            return roomTypeListHtml;
+        }
+
+
+
+            ///////////////////////////////////////////////////////////////////////////////////////
+            // Drop down list of rooms
+            ////////////////////////////////////////////////////////////////////////////////////
+
+                        // Prevent blur when clicking inside the dropdown or on checkboxes
+            // $('#room-dropdown').on('mousedown', function (event) {
+            //     event.preventDefault(); // Prevent the blur event from firing
+            // });
+
+            // Close the dropdown on clicks outside the input and dropdown
+            // $(document).on('click', function (event) {
+            //     const dropdown = document.getElementById('room-dropdown');
+            //     const input = document.getElementById('select-rooms');
+
+            //     // Close dropdown if the click is outside the dropdown or input
+            //     if (!dropdown.contains(event.target) && event.target !== input) {
+            //         dropdown.classList.remove('show');
+            //         dropdown.style.display = 'none';
+            //     }
+            // });
+
+                        // Toggle dropdown visibility when input is clicked
+            // $(document).on('click', '#select-rooms', function () {
+            //     console.log("Dropdown toggled");
+            //     const dropdown = document.getElementById('room-dropdown');
+            //    const swalButtons = document.querySelector('.swal2-actions');
+            //    console.log(dropdown.classList.contains('show'));
+            //     if (dropdown.classList.contains('show')) {
+            //         dropdown.classList.remove('show');
+            //         setTimeout(() => {
+            //             dropdown.style.display = 'none';
+            //         swalButtons.style.visibility = 'visible';
+            //         }, 200);
+            //     } else {
+            //         console.log("changed");
+            //         dropdown.style.display = 'block';
+            //         console.log(dropdown.style.display == 'block');
+            //         setTimeout(() => {
+            //             dropdown.classList.add('show');
+            //             swalButtons.style.visibility = 'hidden';
+            //         }, 0);
+            //     }
+            // });
+
+            // Handle the 'select all' checkbox
+            // $(document).on('change', '#selectAll', function () {
+            //     const isChecked = $(this).is(':checked');
+            //     $('#select-rooms').prop('disabled', isChecked);
+
+            //     // Optionally clear the input when disabled
+            //     if (isChecked) {
+            //         $('#select-rooms').val('');
+            //         $('#selected-rooms').empty();
+            //         const checkboxes = document.querySelectorAll('.room-checkbox');
+
+            //         // Check all checkboxes
+            //         checkboxes.forEach(checkbox => {
+            //             checkbox.checked = true;
+            //         });
+            //         updateRoomRangeColors();
+            //     } else {
+            //         const checkboxes = document.querySelectorAll('.room-checkbox');
+            //         // Uncheck each checkbox
+            //         checkboxes.forEach(checkbox => {
+            //             checkbox.checked = false;
+            //         });
+            //         updateRoomRangeColors();
+            //     }
+            // });
+
+
+            ///////////////////////////////////////////////////////////////////
+            //Add room new feature
+            ///////////////////////////////////////////////////////////////////
+            $('#addNewRoom').on('click', function(){
+                showInputAlert();
+            });
+
+            async function showInputAlert() {
+              const { value: formValues } = await Swal.fire({
+                title: 'Enter Room Details',
+                html: `
+                  <div style="display:flex;flex-direction:column;width:100%;">
+                    <input id="start-room" class="swal2-input" placeholder="Start Room (e.g., A101)" maxlength="4" />
+                    <span id="start-room-error" style="color:red;font-size:12px;"></span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;width:100%;">
+                    <input id="end-room" class="swal2-input" placeholder="End Room (e.g., A194)" maxlength="4" />
+                    <span id="end-room-error" style="color:red;font-size:12px;"></span>
+                  </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                didOpen: () => {
+                  const startRoomInput = document.getElementById('start-room');
+                  const endRoomInput = document.getElementById('end-room');
+                  const roomPattern = /^[A-Z]\d{3}$/;
+                    const swalOkButton = Swal.getConfirmButton();
+
+            // Disable the OK button initially
+            swalOkButton.disabled = true;
+
+                  // Automatically convert input to uppercase on keyup
+                  startRoomInput.addEventListener('keyup', () => {
+                    startRoomInput.value = startRoomInput.value.toUpperCase();
+                    validateInput(); // Re-validate on input
+                     swalOkButton.disabled = true;
+                  });
+
+                  endRoomInput.addEventListener('keyup', () => {
+                    endRoomInput.value = endRoomInput.value.toUpperCase();
+                    validateInput(); // Re-validate on input
+                     swalOkButton.disabled = true;
+                  });
+
+                  const validateInput = async () => {
+                    const startRoomError = document.getElementById('start-room-error');
+                    const endRoomError = document.getElementById('end-room-error');
+
+                    // Clear errors
+                    startRoomError.textContent = '';
+                    endRoomError.textContent = '';
+
+                    // Real-time validation for both start and end room
+                    if (!roomPattern.test(startRoomInput.value)) {
+                      startRoomError.textContent = 'Invalid Start Room. Format: A101.';
+                    }
+
+                    if (!roomPattern.test(endRoomInput.value)) {
+                      endRoomError.textContent = 'Invalid End Room. Format: A194.';
+                    }
+
+                    // Additional validation: Start Room should not be greater than End Room
+                    const startRoomNumber = parseInt(startRoomInput.value.slice(1), 10); // Extract number part and convert to integer
+                    const endRoomNumber = parseInt(endRoomInput.value.slice(1), 10); // Extract number part and convert to integer
+
+                    if (startRoomNumber > endRoomNumber) {
+                      endRoomError.textContent = 'Start Room cannot be greater than End Room.';
+                    }
+                    // AJAX call to check server-side validation
+                    const response = await fetch(`/CheckValueValidateEndRoom?EndRoom=${endRoomInput.value}&StartRoom=${startRoomInput.value}`, {
+                      method: 'GET',
+                    });
+                    const result = await response.json();
+
+                    // Handle server response for validation
+                    if (result !== true) {
+                      endRoomError.textContent = result; // Display error returned from backend
+                    } else{
+                        const responses = await fetch(`/CheckDuplicateRoom?StartRoom=${startRoomInput.value}&EndRoom=${endRoomInput.value}`, {
+                      method: 'GET',
+                    });
+                    const duplicateResult = await responses.json();
+                    if (duplicateResult.success !== true) {
+                             let duplicateRoomsLength = duplicateResult?.validRoomCount || 0;
+                             console.log(duplicateRoomsLength);
+              if (duplicateRoomsLength === 0) {
+                endRoomError.textContent = 'All rooms in the range are duplicates. Please choose a different range.';
+              } else {
+                endRoomError.textContent = duplicateResult.message;
+                     swalOkButton.disabled = false;
+              }
+              return;
+                    }
+                     swalOkButton.disabled = false;
+                    }
+                  };
+                },
+                preConfirm: async () => {
+                  const startRoomInput = document.getElementById('start-room').value;
+                  const endRoomInput = document.getElementById('end-room').value;
+
+                  // Final validation
+                  const roomPattern = /^[A-Z]\d{3}$/;
+
+
+                  if (!roomPattern.test(startRoomInput)) {
+                    Swal.showValidationMessage('Invalid Start Room. Format: A101.');
+                    return false;
+                  }
+                  if (!roomPattern.test(endRoomInput)) {
+                    Swal.showValidationMessage('Invalid End Room. Format: A194.');
+                    return false;
+                  }
+
+                  // Final comparison: Start Room should not be greater than End Room
+                  const startRoomNumber = parseInt(startRoomInput.slice(1), 10); // Extract number part and convert to integer
+                  const endRoomNumber = parseInt(endRoomInput.slice(1), 10); // Extract number part and convert to integer
+
+                  if (startRoomNumber > endRoomNumber) {
+                    Swal.showValidationMessage('Start Room cannot be greater than End Room.');
+                    return false;
+                  }
+
+
+
+                  // Make AJAX request to check the backend validation before submitting
+                   const response = await fetch(`/CheckValueValidateEndRoom?EndRoom=${endRoomInput}&StartRoom=${startRoomInput}`, {
+                    method: 'GET',
+                  });
+
+                  const result = await response.json();
+                  // If there's an error returned by the backend, show it
+                  if (result !== true) {
+                    Swal.showValidationMessage(result);
+                    return false;
+                  }
+
+                  return { startRoom: startRoomInput, endRoom: endRoomInput };
+                },
+              });
+
+              if (formValues) {
+                $.ajax({
+                    url: '/RoomType/AddRoom', // Adjust this URL based on your route configuration
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        Id: id,
+                        StartRoom: formValues.startRoom,
+                        EndRoom: formValues.endRoom,
+                    }),
+                    success: function (response) {
+                        if (response.success) {
+                                        Swal.fire('Success!', 'Room details submitted successfully.', 'success');
+                refreshList();
+                        } else {
+                            tryAgainMsg();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+                        errMsg();
+                    }
+                });
+              }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            //Modify features
+            ///////////////////////////////////////////////////////////////////
+            $('#modifyRoom').on('click', function(){
+                if(id != null){
+                                 $.ajax({
+                    url: `/RoomType/StoreSession`,
+                    method: "POST",
+                    data: {
+                        key: "SelectRoomType",
+                        value: id,
+                        action: "Details",
+                        controller: "RoomType",
+                    }, // Send roomId as query parameter
+                    success: function (response) {
+                        if (response.redirectUrl) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                                    tryAgainMsg();
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("Error fetching room details:", xhr.responseText);
+                                errMsg();
+                }
+
+            });
+            } else {
+                tryAgainMsg();
+            }
+            });
+
+            $('#closeRoomActionCard').on('click', function(){
+                            $("#roomActionModal").css("display", "none");
+            });
+            function tryAgainMsg(){
+                Swal.fire({
+              icon: 'info',
+              title: 'Oops...',
+              text: 'Please try again later.'
+            });
+            }
+
+            function errMsg(){
+                Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'An error occurred while fetching room details.'
+            });
+                    }
+            ///////////////////////////////////////////////////////////////////
+            // Replace Rooms
+            ///////////////////////////////////////////////////////////////////
+
+                    $('#moveRoom').on('click', function(){
+                        let rtInput = "";
+                $.ajax({
+        url: '/GetRoomsByRowId', // The URL to the controller action
+        type: 'GET',
+        data: { id: id, require : "Yes" },
+        success: function (data) {
+            if (!data || data.RoomRange == null || data.RoomList == null || data.RoomTypeList == null) {
+                Swal.fire({
+                icon: 'warning',
+                title: 'No Rooms Available',
+                text: 'There are no rooms available in this category. Please check again later or select another category.',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+            });
+            } else{
+                let roomRangeHtml;
+              if (typeof data.RoomRange === 'object' && data.RoomRange.$values) {
+            // Get the array of room ranges from $values
+            const roomRanges = data.RoomRange.$values;
+
+            roomRangeHtml = `
+                ${roomRanges
+                    .map(roomRange => `<span data-room-range="${roomRange.trim()}">${roomRange.trim()}</span>`)
+                    .join(',\n')}
+            `;
+
+            console.log(roomRangeHtml);
+        } else {
+            console.error('RoomRange is not in the expected format');
+        }
+
+                            Swal.fire({
+                title: 'Select Rooms for Moving',
+                html: `
+                     <div>
+                    <strong>Available Room Ranges:</strong>
+                    <div>${roomRangeHtml}</div>
+                </div>
+
+                <label for="selectAllSpecRoom">Select All Room</label>
+                <input type="checkbox" id="selectAllSpecRoom">
+                <br />
+
+                    <label for="select-rooms">Search and select rooms:</label>
+                    <input type="text" id="select-rooms" placeholder="Type to search rooms" autocomplete="off" maxlength="4" style="width:100%; margin-bottom:10px;padding:1rem;font-size:1rem;" disabled />
+                    <div id="room-dropdown" class="dropdown">
+                        ${generateRoomList(data.RoomList)} <!-- Dynamically generated rooms list -->
+                    </div>
+                    <div id="error-message" style="color: red; display: none;">Please select at least one room.</div>
+
+                    <label for="select-roomTypeList">Room Type: </label>
+                        <input list="roomTypeList" id="select-roomTypeList" placeholder="Enter Room Type" style="width: 100%;font-size: 1rem;padding: 1rem;"/>
+                            <datalist id="roomTypeList">
+                            ${generateRoomTypeList(data.RoomTypeList)}<!-- Dynamically generated rooms type list -->
+                            </datalist>
+                    <div id="error-message-roomType" style="color: red; display: none;">Please select at least one room.</div>
+
+                    <div id="selected-rooms" style="margin-top: 1rem;"></div>
+                `,
+                showCancelButton: true,
+                didOpen: () => {
+                    const selectRoomsInput = document.getElementById('select-rooms');
+                    const roomTypeInput = document.getElementById('select-roomTypeList');
+                    const dropdown = document.getElementById('room-dropdown');
+                    const swalButtons = document.querySelector('.swal2-actions');
+                    const saveButton = document.querySelector('.swal2-confirm');
+                    const selectedRoomsContainer = document.getElementById('selected-rooms');
+                         const errorMessage = document.getElementById('error-message');
+                         const errRT = document.getElementById('error-message-roomType');
+                                    const selectAllSpecRoom = document.getElementById('selectAllSpecRoom');
+
+
+                    // Function to toggle the dropdown visibility
+                    const toggleDropdown = () => {
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                            setTimeout(() => {
+                                dropdown.style.display = 'none';
+                                swalButtons.style.visibility = 'visible'; // Show SweetAlert buttons
+                                updateSaveButtonState();
+                                }, 200);
+                        } else {
+                            dropdown.style.display = 'block';
+                            setTimeout(() => {
+                                dropdown.classList.add('show');
+                                swalButtons.style.visibility = 'hidden'; // Hide SweetAlert buttons
+                            }, 0);
+                        }
+                    };
+
+                    // Check selected rooms and toggle the save button
+                           const updateSaveButtonState = () => {
+            const selectedRoomsContainer = document.getElementById('selected-rooms'); // Ensure the container is selected
+            const roomCheckedInput = document.querySelectorAll('.room-checkbox:checked'); // Assuming room-checkbox represents the checkboxes
+
+            // Check if selectedRoomsContainer exists before accessing its children
+            var hasSelectedRooms = selectedRoomsContainer ? selectedRoomsContainer.children.length > 0 : false;
+            // Ensure roomChecked exists and has items
+            if (roomCheckedInput.length > 0) {
+                // If rooms are checked, override the 'hasSelectedRooms' logic
+                hasSelectedRooms = true;
+            }
+            saveButton.disabled = !hasSelectedRooms; // Disable the button if no rooms are selected
+        };
+
+           // Function to validate if room type exists in the RoomTypeList
+                               const validateRoomType = () => {
+            const inputRoomType = roomTypeInput.value.trim().toLowerCase(); // Get the user input
+            const availableRoomTypes = data.RoomTypeList.$values.map(roomType => roomType.trim().toLowerCase()); // List of valid room types
+            
+            if (inputRoomType && !availableRoomTypes.includes(inputRoomType)) {
+                errRT.textContent = 'The room type you entered does not exist. Please select a valid room type.';
+                errRT.style.display = 'block'; // Show the error message
+                saveButton.disabled = true; // Disable the Save button
+            } else {
+            if(inputRoomType != ""){
+                errRT.style.display = 'none'; // Hide the error message
+                updateSaveButtonState();
+            } else{
+                 errRT.textContent = 'Please input the room type you are target.';
+                errRT.style.display = 'block'; // Show the error message
+                saveButton.disabled = true;
+            }
+            }
+        };
+
+                       selectAllSpecRoom.addEventListener('change', function () {
+                    if (this.checked) {
+                        // Check all checkboxes
+                        const checkboxes = document.querySelectorAll('.room-checkbox');
+                        checkboxes.forEach(checkbox => checkbox.checked = true);
+                                checkboxes.forEach(checkbox => {
+            checkbox.checked = true;  // Uncheck each checkbox
+            // Call the updateSelectedRooms for each checkbox
+            updateSelectedRooms(true, checkbox.closest('.room-checkbox-item').dataset.roomName, checkbox.value);
+        });
+
+                        selectRoomsInput.disabled = true;
+                        updateRoomRangeColors();
+                        validateRoomType();
+                    } else {
+                        // Uncheck all checkboxes
+                        const checkboxes = document.querySelectorAll('.room-checkbox');
+                                checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            updateSelectedRooms(false, checkbox.closest('.room-checkbox-item').dataset.roomName, checkbox.value);
+        });
+                        selectRoomsInput.disabled = false;
+                        updateRoomRangeColors();
+                        validateRoomType();
+                    }
+                });
+
+                const checkAllRefresh = () => {
+                    selectAllSpecRoom.checked = true;
+                    const checkboxes = document.querySelectorAll('.room-checkbox');
+                                checkboxes.forEach(checkbox => {
+            checkbox.checked = true;  // Uncheck each checkbox
+                saveButton.disabled = true; // Disable the Save button
+            updateSelectedRooms(true, checkbox.closest('.room-checkbox-item').dataset.roomName, checkbox.value);
+        });
+
+                        selectRoomsInput.disabled = true;
+                        updateRoomRangeColors()
+                }
+                                    checkAllRefresh();
+
+
+                    // Function to handle input and dropdown interaction
+                    const filterRooms = (event) => {
+                        const input = selectRoomsInput.value.toLowerCase();
+                        const items = document.querySelectorAll('.room-checkbox-item');
+                        let validRoom = false;
+
+                        // Show or hide items based on the input
+                        items.forEach((item) => {
+                            const roomName = item.dataset.roomName.toLowerCase();
+                            if (roomName.includes(input) || input === '') {
+                                item.style.display = 'flex';
+                                validRoom = true;
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+
+                        // Handle no matching rooms
+                        const noRecordsMessage = dropdown.querySelector('.no-records');
+                        if (!validRoom) {
+                            if (!noRecordsMessage) {
+                                dropdown.insertAdjacentHTML('beforeend', '<div class="no-records">No matching rooms found</div>');
+                            }
+                        } else if (noRecordsMessage) {
+                            noRecordsMessage.remove();
+                        }
+
+                         if (event.key === 'Enter') {
+                                if (input.trim() === '') {
+                                    errorMessage.textContent = 'Please input something.';
+                                    errorMessage.style.display = 'block';
+                                } else {
+                                    const matchingItem = Array.from(items).find((item) =>
+                                        item.dataset.roomName.toLowerCase() === input
+                                    );
+
+                                    if (matchingItem) {
+                                        const checkbox = matchingItem.querySelector('.room-checkbox');
+                                        if (checkbox && !checkbox.checked) {
+                                            checkbox.checked = true;
+                                            updateSelectedRooms(true, matchingItem.dataset.roomName, checkbox.value);
+                                        }
+                                        selectRoomsInput.value = '';
+                                        items.forEach((item) => (item.style.display = 'flex'));
+                                        errorMessage.style.display = 'none'; // Clear any previous error messages
+                                    } else {
+                                        errorMessage.textContent = 'The room you entered does not exist. Please try again!';
+                                        errorMessage.style.display = 'block';
+                                    }
+                                }
+                            }
+                    };
+
+                                // Use event delegation for dynamically added elements
+                dropdown.addEventListener('click', (event) => {
+                    const item = event.target.closest('.room-checkbox-item');
+                    if (item) {
+                        const checkbox = item.querySelector('.room-checkbox');
+
+                        // Prevent double toggle when clicking the checkbox directly
+                        if (event.target.tagName === 'INPUT') return;
+
+                        // Toggle the checkbox manually
+                        checkbox.checked = !checkbox.checked;
+
+                        // Call your update functions
+                        updateRoomRangeColors();
+                        updateSelectedRooms(checkbox.checked, item.dataset.roomName, checkbox.value);
+                    }
+                });
+
+                // Add event listeners for checkboxes
+                dropdown.querySelectorAll('.room-checkbox').forEach((checkbox) => {
+                    checkbox.addEventListener('change', (event) => {
+                        const item = checkbox.closest('.room-checkbox-item');
+                        updateSelectedRooms(checkbox.checked, item.dataset.roomName, checkbox.value);
+                    });
+                });
+
+             
+
+            
+
+        // Add event listeners
+        roomTypeInput.addEventListener('input', validateRoomType); // Trigger validation on input
+        roomTypeInput.addEventListener('blur', validateRoomType);  // Trigger validation when focus is lost
+
+        selectRoomsInput.addEventListener('click', toggleDropdown); // Open/close dropdown on click
+        selectRoomsInput.addEventListener('keyup', filterRooms); // Filter rooms with debounce
+
+                    // Update the save button state when selected rooms change
+                    const observer = new MutationObserver(updateSaveButtonState);
+                    observer.observe(selectedRoomsContainer, { childList: true });
+
+                // Handle clicks to track if they occur inside the dropdown
+        document.addEventListener('pointerdown', (event) => {
+           let isClickInsideDropdown = dropdown.contains(event.target) || selectRoomsInput.contains(event.target);
+            setTimeout(() => {
+                // Only hide the dropdown if the click was not inside it
+                if (!isClickInsideDropdown) {
+                    dropdown.classList.remove('show');
+                    dropdown.style.display = 'none';
+                    swalButtons.style.visibility = 'visible'; // Show SweetAlert buttons
+                    validateRoomType();
+                }
+                isClickInsideDropdown = false; // Reset the flag
+            }, 200);
+        });
+                },
+                confirmButtonText: 'Save',
+                cancelButtonText: 'Cancel',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const selectedRooms = [];
+                    document.querySelectorAll('.room-checkbox:checked').forEach(checkbox => {
+                        selectedRooms.push(checkbox.value);
+                    });
+                    rtInput = document.getElementById("select-roomTypeList").value.trim();
+                    if (selectedRooms.length === 0) {
+                        const errorMessage = document.getElementById('error-message');
+                        errorMessage.style.display = 'block'; // Show inline error
+                        return false; // Prevent SweetAlert from closing
+                    }
+                    return selectedRooms;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let selectedRooms = result.value;
+                    console.log('Selected rooms:', selectedRooms); // Handle selected rooms
+                    console.log(rtInput);
+                     // Show a confirmation message after clicking Save
+                    Swal.fire({
+                        title: 'Confirm your action',
+                        text: 'Do you want to save the selected rooms?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, save',
+                        cancelButtonText: 'Cancel'
+                    }).then((confirmationResult) => {   
+                        if (confirmationResult.isConfirmed) {
+                            // Show success message after confirming
+                           $.ajax({
+                url: '/Remove', // The URL to the controller action
+                type: 'POST',
+                data: { roomId: selectedRooms, roomType: rtInput },
+                success: function (response) {
+                           if (response.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                refreshList(); // Call your function after the alert is dismissed
+            });
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: response.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                refreshList(); // Call your function after the alert is dismissed
+            });
+        }
+
+                }
+                                     });
+                        } else {
+                            // If user cancels, you can handle it here if needed
+                            Swal.fire('Action canceled', '', 'info');
+                        }
+                    });
+                    // Swal.fire('Rooms Saved!', 'Your selected rooms have been saved.', 'success');
+                }
+                selectedRooms = [];
+            });
+            }
+            }
+            });
+            });
+
+                // Handle the Select All checkbox click event
+            //     $('#selectAll').on('change', function () {
+            //         // Check the state of the "Select All" checkbox
+            //         const isChecked = $(this).is(':checked');
+            //         // Set all checkboxes with the same state
+            //         $('.data-row .checkbox').prop('checked', isChecked);
+            //     });
+
+            //     // Handle individual checkbox clicks to update the "Select All" state
+            //         $('.data-row .checkbox').on('change', function () {
+            //     const allCheckboxes = $('.data-row .checkbox');
+            //     const allChecked = allCheckboxes.length === allCheckboxes.filter(':checked').length;
+            //     $('#selectAll').prop('checked', allChecked);
+            // });
+
+            $('.trash-button').on('click', function () {
+                // Get selected room IDs
+                const selectedIds = $('.checkbox:checked').map(function () {
+                    return $(this).data('roomid');
+                }).get();
+
+                if (selectedIds.length === 0) {
+                    alert('No items selected for deletion.');
+                    return;
+                }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `${selectedIds.length} room(s) marked for deletion.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete them!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send the delete request
+                    $.ajax({
+                        url: `RoomDelete?roomIds=${selectedIds.join(',')}`,
+                        type: 'GET',
+                        success: function (response) {
+                            Swal.fire({
+                                title: 'Marked for Deletion!',
+                                text: response.message,
+                                icon: 'info',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                // Show Undo Notification
+                                const undoNotification = $(`
+                                    <div class="undo-notification">
+                                        <span>${selectedIds.length} room(s) marked for deletion. Undo?</span>
+                                        <button class="undo-button">Undo</button>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar"></div>
+                                        </div>
+                                    </div>
+                                `);
+
+                                $('body').append(undoNotification);
+
+                                // Start progress bar animation
+                                undoNotification.find('.progress-bar')
+                                    .css({ width: '100%' })
+                                    .animate({ width: '0%' }, 5000);
+
+                                // Set a timeout to finalize deletion
+                                const deleteTimeout = setTimeout(() => {
+                                    // Commit the transaction after 5 seconds
+                                    $.ajax({
+                                        url: "Commit",
+                                        type: 'GET',
+                                        success: function () {
+                                            console.log("Commit successful");
+                                            undoNotification.remove();
+                                            refreshList(); // Refresh the data
+                                        },
+                                        error: function () {
+                                            Swal.fire({
+                                                title: 'Error!',
+                                                text: 'Failed to commit deletion.',
+                                                icon: 'error',
+                                                confirmButtonText: 'Try Again'
+                                            });
+                                        }
+                                    });
+                                }, 5000);
+
+                                // Handle Undo Button
+                                undoNotification.find('.undo-button').on('click', function () {
+                                    clearTimeout(deleteTimeout); // Cancel the timeout
+                                    undoNotification.remove();  // Remove the notification
+
+                                    // Rollback the transaction
+                                    $.ajax({
+                                        url: "Roll",
+                                        type: 'GET',
+                                        success: function () {
+                                            Swal.fire({
+                                                title: 'Undo Successful!',
+                                                text: 'The deletion has been canceled.',
+                                                icon: 'success',
+                                                confirmButtonText: 'OK'
+                                            });
+                                            refreshList(); // Refresh the data
+                                        },
+                                        error: function () {
+                                            Swal.fire({
+                                                title: 'Error!',
+                                                text: 'Failed to undo deletion.',
+                                                icon: 'error',
+                                                confirmButtonText: 'Try Again'
+                                            });
+                                        }
+                                    });
+                                });
+                            });
+                        },
+                        error: function (error) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.responseJSON?.message || 'Failed to mark rooms for deletion.',
+                                icon: 'error',
+                                confirmButtonText: 'Try Again'
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Cancelled',
+                        text: 'No rooms were deleted.',
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+
+            });
+
+            function getHiddenFormValues() {
+                const sort = $('input[name="sort"]').val(); // Retrieve 'sort' value
+                const dir = $('input[name="dir"]').val(); // Rertrieve 'dir' value
+                const page = $('input[name="page"]').val(); // Retrieve 'page' value
+                const pageSize = $('input[name="pageSize"]').val(); // Retrieve 'pageSize' value
+                const searchBar = $('input[name="searchBar"]').val(); // Retrieve 'searchBar' value
+                const status= $('input[name="status"]').val(); // Retrieve 'status' value
+                return {
+                    sort: sort,
+                    dir: dir,
+                    page: page,
+                    pageSize: pageSize,
+                    searchBar: searchBar,
+                    status: status,
+                };
+            }
+
+            function refreshList() {
+                const formValues = getHiddenFormValues(); // Get the hidden form values
+
+                // Use the retrieved hidden form values to refresh the table
+                $.ajax({
+                    url: `RefreshList?searchBar=${formValues.searchBar}&sort=${formValues.sort}&dir=${formValues.dir}&page=${formValues.page}&pageSize=${formValues.pageSize}&status=${formValues.status}`,
+                    type: 'GET',
+                    success: function (html) {
+                        // Replace the content with the updated list
+                        $('#target').html(html); // Replace #roomTableContainer with your container ID
+                    },
+                    error: function () {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to reload room data.',
+                            icon: 'error',
+                            confirmButtonText: 'Try Again'
+                        });
+                    }
+                });
+            }
+            // Finalize the delete after timeout
+            // function finalizeDelete(selectedIds) {
+
+            //     $.ajax({
+            //         url: `RoomDelete?roomIds=${selectedIds.join(',')}`, // Deletion URL
+            //         type: 'GET',
+            //         success: function (response) {
+            //             console.log(response);
+            //             console.log(selectedIds);
+            //         },
+            //         error: function (error) {
+            //             Swal.fire({
+            //                 title: 'Error!',
+            //                 text: error.responseJSON?.message || 'An error occurred while deleting the rooms.',
+            //                 icon: 'error',
+            //                 confirmButtonText: 'Try Again'
+            //             });
+            //         }
+            //     });
+            // }
+
+            // Cancel bulk actions
+            $('#cancelActionBtn').on('click', function () {
+                $('.checkbox').prop('checked', false); // Uncheck all checkboxes
+                $('#bulkActions').addClass('hidden'); // Hide bulk actions bar
+                $('#labelItemsSelected').text('0 items selected');
+            });
+
+
+            });
+
+                   function submitViaAjax(element) {
+                $(element).closest("RForm").submit(); // Let unobtrusive AJAX handle the form submission
+            }
+
+            /////////////////////////////////////////////////////////////////////////////////////////
+            // Drop down list of rooms
+            /////////////////////////////////////////////////////////////////////////////////////////
+            document.addEventListener("DOMContentLoaded", () => {
+
+            //         // Use event delegation to handle clicks on dynamically added elements
+            // document.addEventListener('click', (event) => {
+            //     // Check if the clicked element is inside a room-checkbox-item
+            //     const item = event.target.closest('.room-checkbox-item');
+            //     if (item) {
+            //         const checkbox = item.querySelector('.room-checkbox');
+
+            //         // Prevent double toggle when clicking the checkbox directly
+            //         if (event.target.tagName === 'INPUT') return;
+
+            //         // Toggle the checkbox manually
+            //         checkbox.checked = !checkbox.checked;
+
+            //         // Call your update functions
+            //         updateRoomRangeColors();
+            //         updateSelectedRooms(checkbox.checked, item.dataset.roomName, checkbox.value);
+            //     }
+            // });
+
+
+            //     // Handle checkbox change events
+            //     document.querySelectorAll('.room-checkbox').forEach((checkbox) => {
+            //         checkbox.addEventListener('change', (event) => {
+            //             const item = checkbox.closest('.room-checkbox-item');
+            //             updateSelectedRooms(checkbox.checked, item.dataset.roomName, checkbox.value);
+            //         });
+            //     });
+
+                // document.getElementById('select-rooms').addEventListener('input', () => {
+                    $(document).on('input', '#select-rooms', function () {
+                    const input = document.getElementById('select-rooms').value.toLowerCase();
+                    const items = document.querySelectorAll('.room-checkbox-item');
+
+                    items.forEach((item) => {
+                        const roomName = item.dataset.roomName.toLowerCase();
+                        item.style.display = roomName.includes(input) || input === '' ? 'flex' : 'none';
+                    });
+                });
+
+                // Handle clicks outside the dropdown
+                // window.addEventListener('click', (event) => {
+                //     const dropdown = document.getElementById('room-dropdown');
+                //     const input = document.getElementById('select-rooms');
+                //     if (!dropdown.contains(event.target) && event.target !== input) {
+                //         dropdown.style.display = 'none';
+                //     }
+                // });
+                });
+
+
+                        let selectedRooms = [];
+            function updateSelectedRooms(isChecked, roomName, roomId) {
+                if (!roomName || !roomId) return; // Ignore if roomName or roomId is invalid
+
+                // const selectedRoomsContainer = document.getElementById('selected-rooms');
+                const roomElementId = `selected-room-${roomName}`;
+
+                const selectedContainer = document.getElementById('selected-rooms');
+                if (isChecked) {
+                    // Add the room to the selected-rooms column
+                    // if (!document.getElementById(roomElementId)) {
+                    if (!selectedRooms.some(room => room.id === roomId)) {
+                        selectedRooms.push({ id: roomId, name: roomName });
+                        const span = document.createElement('span');
+                        span.id = roomElementId;
+                        span.textContent = roomName;
+                        span.textContent = `Room ${roomName}`;
+                        span.setAttribute('data-room-id', roomId);
+
+                                // Apply inline styles to the span element
+                            span.style.display = 'inline-block';
+                            span.style.backgroundColor = '#e0e0e0';
+                            span.style.margin = '0.5rem';
+                            span.style.padding = '0.5rem 1rem';
+                            span.style.borderRadius = '1rem';
+                            span.style.position = 'relative';
+
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.textContent = 'x';
+                        removeBtn.className = 'remove';
+                                // Apply inline styles to the remove button
+                          removeBtn.style.position = 'absolute';
+                          removeBtn.style.top = '-10px';
+                          removeBtn.style.right = '-12px';
+                          removeBtn.style.background = 'red';
+                          removeBtn.style.color = 'white';
+                          removeBtn.style.border = 'none';
+                          removeBtn.style.borderRadius = '50%';
+                          removeBtn.style.width = '20px';
+                          removeBtn.style.height = '20px';
+                          removeBtn.style.display = 'flex';
+                          removeBtn.style.alignItems = 'center';
+                          removeBtn.style.justifyContent = 'center';
+                          removeBtn.style.cursor = 'pointer';
+                          removeBtn.style.fontSize = '0.9rem';
+                          removeBtn.style.padding = '0.9rem';
+
+                          removeBtn.onclick = () => {
+                              document.getElementById('selectAllSpecRoom').checked = false;
+                            document.getElementById(`selected-room-${roomName}`).remove();
+                            const checkbox = document.querySelector(`.room-checkbox[value="${roomId}"]`);
+                            if (checkbox) checkbox.checked = false;
+                            const index = selectedRooms.findIndex(room => room.id === roomId);
+                            if (index > -1) selectedRooms.splice(index, 1);
+                            updateRoomRangeColors();
+                        };
+
+                        span.appendChild(removeBtn);
+                        selectedContainer.appendChild(span);
+                        updateRoomRangeColors();
+                    }
+                } else {
+                    const index = selectedRooms.findIndex(room => room.id === roomId);
+                    if (index > -1) selectedRooms.splice(index, 1);
+                    // Remove the room from the selected-rooms column
+                    const roomDiv = document.getElementById(roomElementId);
+                    if (roomDiv) selectedContainer.removeChild(roomDiv);
+                }
+            }
+
+            // Function to remove a room from the selected-rooms column
+            function removeRoom(roomId) {
+                const checkbox = document.querySelector(`.room-checkbox[value="${roomId}"]`);
+                if (checkbox) checkbox.checked = false;
+
+                const selectedContainer = document.getElementById('selected-rooms');
+                const roomDiv = document.querySelector(`#selected-room-${roomName}`);
+                if (roomDiv) selectedContainer.removeChild(roomDiv);
+                console.log("Here" + selectedRooms);
+                updateRoomRangeColors();
+            }
+
+            //             function filterRooms(event) {
+            //                 console.log("ashdjs");
+            //     const input = document.getElementById('select-rooms').value.toLowerCase();
+            //     const items = document.querySelectorAll('.room-checkbox-item');
+            //     let validRoom = false;
+            //     // Show or hide items based on the input
+            //     items.forEach((item) => {
+            //         const roomName = item.dataset.roomName.toLowerCase();
+            //         if (roomName.includes(input) || input === '') {
+            //             item.style.display = 'flex';
+            //             validRoom = true; // Set validRoom to true if a match is found
+            //         } else {
+            //             item.style.display = 'none';
+            //         }
+            //     });
+            //     // Check if any valid room was found
+            //     const roomDropdown = document.getElementById('room-dropdown'); // Assuming this is your dropdown element
+            //     if (!validRoom) {
+            //         // If no valid room is found, show the "No matching rooms found" message
+            //         if (!roomDropdown.querySelector('.no-records')) {
+            //             roomDropdown.insertAdjacentHTML('beforeend', '<div class="no-records">No matching rooms found</div>');
+            //         }
+            //     } else {
+            //         // If valid rooms are found, remove the "No matching rooms found" message
+            //         const noRecordsMessage = roomDropdown.querySelector('.no-records');
+            //         if (noRecordsMessage) {
+            //             noRecordsMessage.remove();
+            //         }
+            //     }
+
+
+            //     if (event.key === 'Enter') {
+            //         if (input.trim() === '') {
+            //             Swal.fire({
+            //         icon: 'warning',
+            //         title: 'Empty Value',
+            //         text: 'Please input something.',
+            //         confirmButtonText: 'OK',
+            //         allowOutsideClick: false, // Prevent closing the parent modal
+            //         allowEscapeKey: false,   // Prevent escape key from closing it
+            //     });
+            //         } else {
+
+            //             const matchingItem = Array.from(items).find((item) =>
+            //                 item.dataset.roomName.toLowerCase() === input
+            //             );
+
+            //             if (matchingItem) {
+            //                 // If a match is found, toggle the checkbox and append the room
+            //                 const checkbox = matchingItem.querySelector('.room-checkbox');
+            //                 if (checkbox && !checkbox.checked) {
+            //                     checkbox.checked = true;
+            //                     updateSelectedRooms(true, matchingItem.dataset.roomName, checkbox.value);
+            //                 }
+            //                 // Clear the input and reset the dropdown
+            //                 document.getElementById('select-rooms').value = '';
+            //                 items.forEach((item) => (item.style.display = 'flex')); // Show all items
+            //             } else {
+            //                 // Show a SweetAlert notification if no match is found
+            //                Swal.fire({
+            //             icon: 'warning',
+            //             title: 'Room Not Found',
+            //             text: 'The room you entered does not exist. Please try again!',
+            //             confirmButtonText: 'OK',
+            //             allowOutsideClick: false, // Prevent closing the parent modal
+            //             allowEscapeKey: false,   // Prevent escape key from closing it
+            //         });
+            //             }
+            //         }
+            //     }
+            // }
+            let roomChecked = null;
+
+            function updateRoomRangeColors() {
+                // Get all selected room names
+
+                roomChecked = Array.from(document.querySelectorAll('.room-checkbox:checked'))
+                    .map(checkbox => checkbox.dataset.name);
+                console.log("00000000000000000000000000000000");
+                console.log(roomChecked);
+                // Get all room range elements
+                const roomRanges = document.querySelectorAll('[data-room-range]');
+
+                roomRanges.forEach(rangeElement => {
+                    const range = rangeElement.getAttribute('data-room-range');
+                    const isSelected = roomChecked.some(room => isRoomInRange(room, range));
+
+                    // Change color based on whether any selected room is in the range
+                    rangeElement.style.color = isSelected ? '#ff0000' : 'inherit';
+                });
+            }
+
+            // Helper function to check if a room is in a range
+            function isRoomInRange(room, range) {
+                // Split the range to check if it's a single room or a range
+                const parts = range.split('-');
+                if (parts.length === 1) {
+                    // Single room case, e.g., "A121"
+                    return room.trim().toUpperCase() === parts[0].trim().toUpperCase();
+                } else if (parts.length === 2) {
+                    // Range case, e.g., "A105 - A109"
+                    const start = parts[0].trim().toUpperCase();
+                    const end = parts[1].trim().toUpperCase();
+                    room = room.trim().toUpperCase();
+
+                    return room.localeCompare(start) >= 0 && room.localeCompare(end) <= 0;
+                }
+
+                return false; // Not a valid range or room
+            }
+    </script>
+}
+
+<div class="body-content flex flex-column">
+    <main class="flex flex-column gap-3 grow">
+        <section class="flex gap-2 items-center justify-between">
+            <div id="bulkActions" class="bulk-actions hidden items-center" style="-webkit-user-select: none;-ms-user-select: none;user-select: none;">
+                <i class="icon trash-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                         viewBox="0 0 256 256">
+                        <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z">
+                        </path>
+                    </svg>
+                </i>
+                <small id="labelItemsSelected">0 items selected</small>
+                <i class="icon" id="cancelActionBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         viewBox="0 0 256 256">
+                        <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
+                        </path>
+                    </svg>
+                </i>
+            </div>
+
+            <h1 id="title" class="leading-none">Room Type</h1>
+
+            <!-- Search and Actions -->
+            <div class="flex gap-1 items-center">
+                <div style="display: flex; border: 1px solid #ccc; padding: 1%; align-items: center; justify-content: space-between;">
+                    <!-- Loader Image -->
+                    <img src="/images/loader.gif" id="loader"
+                         style="display: none; position: absolute; width: 24px; height: 24px; z-index: 999;">
+
+
+
+                    <form data-ajax="true"
+                          data-ajax-update="#target"
+                          data-ajax-loading="#loader"
+                          id="searchForm" style="display: flex; align-items: center; flex-grow: 1; width: 100%;">
+
+
+                        @Html.TextBox("searchBar", "", new { type = "search", autofocus = "", data_trim = "", @class = "search-bar", id = "searchBar", placeholder = "Search ID", style = "outline: none;" })
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                             viewBox="0 0 256 256" id="searchIcon">
+                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                        </svg>
+
+                    </form>
+                </div>
+
+                <!-- Optional button if needed -->
+                <button class="button icon create-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#fdfdfe"
+                         viewBox="0 0 256 256">
+                        <path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"></path>
+                    </svg>
+                </button>
+            </div>
+
+        </section>
+
+        <form data-ajax="true"
+              data-ajax-update="#target"
+              data-ajax-loading="#loader"
+              id="searchForm">
+
+            <div style="display:flex; gap:1rem;">
+                <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                    <label for="pageSize" style="width:15rem;">Page Size:</label>
+
+
+                    @Html.DropDownList("pageSize", new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "5", Value = "5" },
+                    new SelectListItem { Text = "10", Value = "10" },
+                    new SelectListItem { Text = "15", Value = "15" },
+                    new SelectListItem { Text = "All", Value = "0" },
+                    }, new { id = "pageSize", @class = "form-control custom-select", onchange = "$(this.form).submit();" })  <!-- Form submission via AJAX -->
+                </div>
+                <div style="display:flex;flex-direction:row;align-items:center;" id="custom-container">
+                    <label for="statusFilter" style="width:15rem;">Status :</label>
+
+
+                    @Html.DropDownList("status", new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "All", Value = "All" },
+                    new SelectListItem { Text = "Available", Value = "Available" },
+                    new SelectListItem { Text = "Unavailable", Value = "Unavailable" }
+                    }, new { id = "status", @class = "form-control custom-select", onchange = "$(this.form).submit();" })
+                </div>
+            </div>
+        </form>
+
+        <section class="flex flex-column gap-2">
+            <div id="roomActionModal" style="display:none; position:absolute; width:300px; background-color:white; border:1px solid #ccc; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                <input type="hidden" name="name" value="" />
+                <button class="btnAct" id="modifyRoom">Modify Room</button>
+                <button class="btnAct" id="addNewRoom">Add New Room</button>
+                <button class="btnAct" id="removeRoom">Remove Room</button>
+                <button class="btnAct" id="moveRoom">Move Room to Category</button>
+                <button class="btnAct" id="closeRoomActionCard">Close</button>
+            </div>
+            @*  <div class="form-group">
+                <div style="color:#ccc">
+                    @if (ViewBag.RoomRange != null)
+                    {
+                        var roomRangeList = ViewBag.RoomRange as List<string>;
+
+                        for (int i = 0; i < roomRangeList.Count; i++)
+                        {
+                            <span data-room-range="@roomRangeList[i]"
+                                  style="color:red">
+                                @roomRangeList[i]
+                            </span>
+                            @if (i < roomRangeList.Count - 1)
+                            {
+                                <span>, </span>
+                            }
+                        }
+                    }
+                </div>
+            </div> *@
+
+            @*   <div class="dropdown-container" style="display: none;">
+                <div style="display:flex;align-items: center;justify-content: flex-start;">
+                    <label for="selectAll" style="margin-bottom:0;width:30%;">Select All Rooms</label>
+                    <input style="width:20%;" type="checkbox" id="selectAll" />
+                </div>
+                <label for="select-rooms">Select Room for edit:</label>
+                <input type="text" id="select-rooms" placeholder="Type to search rooms and press Enter" onkeyup="filterRooms(event)" onclick="toggleDropdown()" maxlength="4" autocomplete="off" data-trim data-upper disabled />
+                <div class="dropdown" id="room-dropdown">
+                    @* @if (ViewBag.RoomList != null)
+                    {
+                        foreach (var room in ViewBag.RoomList as List<Rooms>)
+                        {
+                            <div class="room-checkbox-item" data-room-id="@room.Id" data-room-name="@room.Name" style="display:flex;align-items:center;">
+                                <label>@room.Name</label>
+                                <input type="checkbox" class="room-checkbox" data-name="@room.Name" value="@room.Id">
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="room-checkbox-item" style="display:flex;align-items:center;">
+                            <p>Not room.</p>
+                        </div>
+                    } 
+                </div>
+                <div class="selected-rooms" id="selected-rooms">
+                    <!-- Selected rooms will appear here -->
+                </div>
+            </div> *@
+
+
+            <div id="target">
+                <partial name="_RoomTypeList" />
+            </div>
+        </section>
+    </main>
+</div>
+
+
+@section foot {
+    <script>
+        let timer = null;
+
+        $('#searchBar').on('input', e => {
+            clearTimeout(timer);
+            timer = setTimeout(() => $(e.target.form).submit(), 800);
+        });
+    </script>
+}

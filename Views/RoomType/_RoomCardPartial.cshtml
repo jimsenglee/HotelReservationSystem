@@ -1,0 +1,32 @@
+﻿@* @model IEnumerable<RoomType> *@
+@model IEnumerable<HotelRoomReservationSystem.Models.ViewModels.RTWithImgVM>
+
+<div class="row">
+    @if (Model?.Any() == true)
+    {
+        @foreach (var roomType in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-5 roomType-card"
+                 data-roomTypeId="@roomType.RtId"
+                 data-aos="fade-up">
+                <a href="javascript:void(0);" class="room">
+                    <figure class="img-wrap">
+                        <img src="/images/RoomType/@roomType.Images" alt="Room Image" class="img-fluid mb-3" style="width:349.99px;height:249.99px;">
+                    </figure>
+                    <div class="p-3 text-center category-info">
+                        <h2>@roomType.RtName</h2>
+                        <span class="text-uppercase letter-spacing-1">RM @(roomType?.Price.ToString("F2") ?? "0.00") / per night</span>
+                    </div>
+                </a>
+            </div>
+            System.Diagnostics.Debug.WriteLine($"Room Type Rendered: {roomType.RtName} - Price: {roomType.Price}");
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <p class="text-center text-danger">No rooms available for the selected dates.</p>
+        </div>
+        System.Diagnostics.Debug.WriteLine("No Room Types Available for Selected Dates");
+    }
+</div>

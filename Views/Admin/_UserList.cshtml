@@ -1,0 +1,185 @@
+﻿@using HotelRoomReservationSystem.Models.ViewModels;
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<UserDetailVM>
+@{
+    
+    ViewData["Title"] = "Rooms";
+    string[] fields = ["No", "Name","Email","PhoneNum","DateCreated","Birth","Portrait","Role", "Status"];
+}
+
+@Html.Hidden("sort", "", new { form = "searchForm" })
+@Html.Hidden("dir", "", new { form = "searchForm" })
+@Html.Hidden("page", Model.PageNumber, new { form = "searchForm" })
+@Html.Hidden("pageSize", ViewBag.PageSize, new { form = "searchForm" })
+@Html.Hidden("searchBar", ViewBag.Name, new { form = "searchForm" })
+@Html.Hidden("status", ViewBag.Status, new { form = "searchForm" })
+@Html.Hidden("role", ViewBag.Role, new { form = "searchForm" })
+
+@if (Model?.Any() == true)
+{
+    <table class="data-table">
+        <thead>
+            <tr class="no-hover">
+                <th><input id="selectAll" class="input checkbox all" type="checkbox" /></th>
+                @foreach (var searchForm in fields)
+                {
+                    string d = "asc";
+                    string c = "";
+
+                    if (searchForm == ViewBag.Sort)
+                    {
+                        d = ViewBag.Dir == "des" ? "asc" : "des";
+                        c = ViewBag.Dir;
+                    }
+
+                    <th class="sortable">
+                        <a href="?searchBar=@ViewBag.Name&sort=@searchForm&dir=@d&pageSize=@ViewBag.PageSize&page=@Model.PageNumber"
+                           data-ajax="true"
+                           data-ajax-update="#target"
+                           data-ajax-loading="#loader"
+                           class=" @c"
+                           id="sort-link">
+                            @searchForm
+                        </a>
+                    </th>
+
+
+                }
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var (r, index) in Model.Select((room, index) => (room, index)))
+            {
+                <tr class="data-row"
+                    data-userId="@r.Id">
+                    <td><input class="input checkbox" type="checkbox" data-userId="@r.Id" /></td>
+                    <td>@(index + 1)</td>
+                    <td>@r.Name</td>
+                    <td>@r.Email</td>
+                    <td>@r.PhoneNum</td>
+                    <td>@r.DateCreated</td>
+                    <td>@r.DOB</td>
+                    <td><img src="/images/user_photo/@r.Portrait" width="100" height="100" /></td>
+                    <td>@r.Role</td>
+
+                    <td id="status">
+                        <button type="button" class="status-btn"
+                                style="background-color: @(r?.Status == "VERIFY" ? "#28a745"
+                                : (r?.Status == "BLOCK" ? "#dc3545"
+                                : (r?.Status == "PENDING" ? "#6c757d"
+                                : (r?.Status == "DELETED" ? "#6c757d"
+                                : (r?.Status == "REQUESTED" ? "#ffc107"
+                                : (r?.Status == "RECOVERING" ? "#007bff" : "transparent")))))); color: white;">
+                            @r.Status
+                        </button>
+                    </td>
+
+                </tr>
+
+            }
+        </tbody>
+    </table>
+
+}
+else
+{
+    <h1 style="color:black; display:flex;justify-content:center;">No users available.</h1>
+
+}
+
+@{
+    int currentPage = Model.PageNumber;
+    int totalPages = Model.PageCount;
+    string previousPageUrl = currentPage > 1
+        ? $"?searchBar={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={currentPage - 1}&pageSize={ViewBag.PageSize}&status={ViewBag.Status}"
+        : null;
+    string nextPageUrl = currentPage < totalPages
+        ? $"?searchBar={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={currentPage + 1}&pageSize={ViewBag.PageSize}&status={ViewBag.Status}"
+        : null;
+
+    var ajaxOptions = new AjaxOptions
+            {
+                HttpMethod = "get",
+                UpdateTargetId = "target",
+                LoadingElementId = "loader"
+            };
+}
+@if(totalPages != 0){ 
+<section class="flex items-center justify-between" style="margin-top:3rem">
+    <!-- Displaying current range of items -->
+    <small class="muted">
+        @((currentPage - 1) * Model.PageSize + 1) -
+        @(Math.Min(currentPage * Model.PageSize, Model.TotalItemCount)) /
+        @Model.TotalItemCount items
+    </small>
+
+    <div class="flex gap-2 items-center">
+        <div class="flex gap-05 items-center">
+            <form data-ajax="true"
+                  data-ajax-update="#target"
+                  data-ajax-loading="#loader"
+                  class="flex items-center gap-05">
+                <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+                <input class="input number small"
+                       type="number"
+                       name="page"
+                       min="1"
+                       max="@totalPages"
+                       value="@currentPage"
+                       onchange="$(this.form).submit();"
+                       required />
+                <small class="muted">/</small>
+                <small class="muted">@totalPages pages</small>
+            </form>
+        </div>
+
+        <div class="flex gap-05 items-center">
+            <!-- Previous button -->
+            @if (!string.IsNullOrEmpty(previousPageUrl))
+            {
+                <a href="@previousPageUrl"
+                   data-ajax="true"
+                   data-ajax-update="#target"
+                   data-ajax-loading="#loader"
+                   class="button icon link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#247783" viewBox="0 0 256 256">
+                        <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+                    </svg>
+                </a>
+            }
+            else
+            {
+                <button class="button icon link" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#d3d3d3" viewBox="0 0 256 256">
+                        <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path>
+                    </svg>
+                </button>
+            }
+
+            <!-- Next button -->
+            @if (!string.IsNullOrEmpty(nextPageUrl))
+            {
+                <a href="@nextPageUrl"
+                   data-ajax="true"
+                   data-ajax-update="#target"
+                   data-ajax-loading="#loader"
+                   class="button icon link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#247783" viewBox="0 0 256 256">
+                        <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+                    </svg>
+                </a>
+            }
+            else
+            {
+                <button class="button icon link" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#d3d3d3" viewBox="0 0 256 256">
+                        <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+                    </svg>
+                </button>
+            }
+        </div>
+    </div>
+</section>
+}

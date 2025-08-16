@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Payment Cancelled";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+<div class="payment-cancelled-container">
+    <h2>Payment Cancelled</h2>
+    <p>Your payment was canceled. If you wish to complete the payment, please try again.</p>
+
+    <div>
+        <h3>Reservation Details:</h3>
+        <ul>
+            <li><strong>Reservation ID:</strong> @ViewBag.ReservationId</li>
+        </ul>
+    </div>
+
+    <p>If you have any questions, feel free to reach out to our support team.</p>
+
+    <a href="@Url.Action("Checkout", "Reservation")" class="btn btn-primary">Try Again</a>
+</div>
